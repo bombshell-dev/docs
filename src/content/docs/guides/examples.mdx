@@ -17,7 +17,14 @@ const name = await text({
   placeholder: 'John Doe',
 });
 
-console.log(`Hello, ${isCancel(name)}!`);
+// isCancel is a TypeScript type guard that checks if the result is a symbol
+// If true, TypeScript knows name is a symbol in this block
+if (isCancel(name)) {
+  console.log('Operation cancelled');
+  process.exit(0);
+}
+
+console.log(`Hello, ${name}!`);
 ```
 
 ### Selection Menu
@@ -39,9 +46,7 @@ if (isCancel(framework)) {
   process.exit(0);
 }
 
-// Convert to string before using in template literal
-const frameworkStr = isCancel(framework);
-console.log(`You selected ${frameworkStr}`);
+console.log(`You selected ${framework}`);
 ```
 
 ### Confirmation Dialog
@@ -77,6 +82,11 @@ async function setupProject() {
     },
   });
 
+  if (isCancel(name)) {
+    console.log('Operation cancelled');
+    process.exit(0);
+  }
+
   const type = await select({
     message: 'Project type:',
     options: [
@@ -93,7 +103,7 @@ async function setupProject() {
 
   // Get additional details based on project type
   let framework;
-  if (String(type) === 'web') {
+  if (type === 'web') {
     framework = await select({
       message: 'Choose a framework:',
       options: [
@@ -111,7 +121,7 @@ async function setupProject() {
 
   // Confirm setup
   const shouldProceed = await confirm({
-    message: `Create ${isCancel(type)} project "${isCancel(name)}"${framework ? ` with ${isCancel(framework)}` : ''}?`,
+    message: `Create ${type} project "${name}"${framework ? ` with ${framework}` : ''}?`,
   });
 
   if (shouldProceed) {
@@ -145,10 +155,20 @@ async function setupConfig(): Promise<Config> {
     },
   });
 
+  if (isCancel(port)) {
+    console.log('Operation cancelled');
+    process.exit(0);
+  }
+
   const host = await text({
     message: 'Enter host:',
     defaultValue: 'localhost',
   });
+
+  if (isCancel(host)) {
+    console.log('Operation cancelled');
+    process.exit(0);
+  }
 
   const mode = await select({
     message: 'Select mode:',
@@ -180,8 +200,8 @@ async function setupConfig(): Promise<Config> {
   return {
     port: Number(port),
     host,
-    mode: String(mode) as 'development' | 'production',
-    features: [String(features)],
+    mode: mode as 'development' | 'production',
+    features: [features],
   };
 }
 ```
@@ -208,13 +228,19 @@ async function cliTool() {
       process.exit(0);
     }
 
-    if (String(action) === 'exit') break;
+    if (action === 'exit') break;
 
-    switch (String(action)) {
+    switch (action) {
       case 'create': {
         const name = await text({
           message: 'Enter item name:',
-        }) as string;
+        });
+        
+        if (isCancel(name)) {
+          console.log('Operation cancelled');
+          break;
+        }
+        
         console.log(`Created item: ${name}`);
         break;
       }
@@ -225,10 +251,17 @@ async function cliTool() {
       case 'delete': {
         const item = await text({
           message: 'Enter item to delete:',
-        }) as string;
+        });
+        
+        if (isCancel(item)) {
+          console.log('Operation cancelled');
+          break;
+        }
+        
         const shouldDelete = await confirmPrompt({
           message: `Delete ${item}?`,
         });
+        
         if (shouldDelete) {
           console.log(`Deleted ${item}`);
         }
@@ -248,11 +281,11 @@ import { text, select, isCancel } from '@clack/prompts';
 interface UserData {
   name: string;
   email: string;
-  age: string;
+  age: number;
   role: string;
 }
 
-async function collectUserData(): Promise<UserData> {
+async function collectUserData(): Promise<UserData | null> {
   const name = await text({
     message: 'Full name:',
     validate: (value) => {
@@ -261,6 +294,12 @@ async function collectUserData(): Promise<UserData> {
       return undefined;
     },
   });
+
+  if (isCancel(name)) {
+    console.log('Operation cancelled');
+    process.exit(0);
+    return null;
+  }
 
   const email = await text({
     message: 'Email address:',
@@ -271,7 +310,13 @@ async function collectUserData(): Promise<UserData> {
     },
   });
 
-  const age = await text({
+  if (isCancel(email)) {
+    console.log('Operation cancelled');
+    process.exit(0);
+    return null;
+  }
+
+  const ageInput = await text({
     message: 'Age:',
     validate: (value) => {
       const num = parseInt(value);
@@ -279,7 +324,13 @@ async function collectUserData(): Promise<UserData> {
       if (num < 18 || num > 100) return 'Age must be between 18 and 100';
       return undefined;
     },
-  })
+  });
+
+  if (isCancel(ageInput)) {
+    console.log('Operation cancelled');
+    process.exit(0);
+    return null;
+  }
 
   const role = await select({
     message: 'Select role:',
@@ -290,15 +341,16 @@ async function collectUserData(): Promise<UserData> {
     ],
   });
 
-  if (isCancel(role) || isCancel(name) || isCancel(email) || isCancel(age)) {
+  if (isCancel(role)) {
     console.log('Operation cancelled');
     process.exit(0);
+    return null;
   }
 
   return {
     name,
     email,
-    age,
+    age: parseInt(ageInput),
     role,
   };
 }
