@@ -1,0 +1,8 @@
+@font-face {
+	font-family: "Urbanist";
+	/* Use a relative path to the local font file in `url()`. */
+	src: url("./urbanist-latin-ext-600-normal.ttf") format("opentype");
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}

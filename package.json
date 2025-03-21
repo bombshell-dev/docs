@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "clack-docs",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -10,8 +10,12 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.32.4",
-    "astro": "^5.5.3",
-    "sharp": "^0.32.5"
+    "@astrojs/starlight": "^0.32.2",
+    "@clack/core": "^0.4.1",
+    "@clack/prompts": "^0.10.0",
+    "@types/node": "^22.13.11",
+    "astro": "^5.1.5",
+    "expressive-code-twoslash": "^0.4.0",
+    "sharp": "^0.33.5"
   }
 }

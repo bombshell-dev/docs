@@ -1,36 +1,56 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
+i18nReady: true
+title: Bombshell
+description: Effortlessly build beautiful command-line apps.
 template: splash
+editUrl: false
+lastUpdated: false
 hero:
-  tagline: Congrats on setting up a new Starlight project!
+  tagline: Effortlessly build beautiful command-line apps.
   image:
-    file: ../../assets/houston.webp
+    alt: Bombshell Logo
+    dark: "../../assets/dark.svg"
+    light: "../../assets/light.svg"
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Get started
+      link: /basics/getting-started/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
-      variant: minimal
+      variant: primary
+    - text: GitHub repository
+      link: https://github.com/bombshell-dev/clack
+      icon: github
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { CardGrid, LinkButton, Card } from '@astrojs/starlight/components';
 
-## Next steps
+<CardGrid>
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
+  <Card title="Type-Safe" icon="rocket">
+    Built with TypeScript from the ground up. Get full type safety and autocompletion for all components and primitives.
+  </Card>
+
+  <Card title="Beautiful UI" icon="seti:smarty">
+    Modern, consistent, and beautiful command-line interfaces with customizable styling and theming.
+  </Card>
+
+  <Card title="Interactive Prompts" icon="seti:smarty">
+    Rich set of interactive components including text input, selection menus, confirmations, and more.
+  </Card>
+
+  <Card title="Form Validation" icon="approve-check">
+    Built-in validation with custom error messages and type checking for all input fields.
+  </Card>
+
+  <Card title="Progressive Disclosure" icon="information">
+    Show relevant options based on user input, making complex workflows simple and intuitive.
+  </Card>
+
+  <Card title="Error Handling" icon="warning">
+    Graceful error handling with cancellation support and clear error messages.
+  </Card>
+
+  <Card title="Customizable" icon="sun">
+    Extend and customize every aspect of your CLI with low-level primitives and custom components.
+  </Card>
+
 </CardGrid>
