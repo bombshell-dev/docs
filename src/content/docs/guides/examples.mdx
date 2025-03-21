@@ -10,14 +10,14 @@ This guide provides practical examples of using Clack in different scenarios.
 ### Simple Text Input
 
 ```ts twoslash
-import { text } from '@clack/prompts';
+import { text, isCancel } from '@clack/prompts';
 
 const name = await text({
   message: 'What is your name?',
   placeholder: 'John Doe',
-}) as string;
+});
 
-console.log(`Hello, ${name}!`);
+console.log(`Hello, ${isCancel(name)}!`);
 ```
 
 ### Selection Menu
@@ -40,7 +40,7 @@ if (isCancel(framework)) {
 }
 
 // Convert to string before using in template literal
-const frameworkStr = String(framework);
+const frameworkStr = isCancel(framework);
 console.log(`You selected ${frameworkStr}`);
 ```
 
@@ -75,7 +75,7 @@ async function setupProject() {
       if (value.length === 0) return 'Name is required';
       return undefined;
     },
-  }) as string;
+  });
 
   const type = await select({
     message: 'Project type:',
@@ -111,7 +111,7 @@ async function setupProject() {
 
   // Confirm setup
   const shouldProceed = await confirm({
-    message: `Create ${String(type)} project "${name}"${framework ? ` with ${String(framework)}` : ''}?`,
+    message: `Create ${isCancel(type)} project "${isCancel(name)}"${framework ? ` with ${isCancel(framework)}` : ''}?`,
   });
 
   if (shouldProceed) {
@@ -246,9 +246,9 @@ async function cliTool() {
 import { text, select, isCancel } from '@clack/prompts';
 
 interface UserData {
-  name: string | symbol;
-  email: string | symbol;
-  age: number;
+  name: string;
+  email: string;
+  age: string;
   role: string;
 }
 
@@ -279,7 +279,7 @@ async function collectUserData(): Promise<UserData> {
       if (num < 18 || num > 100) return 'Age must be between 18 and 100';
       return undefined;
     },
-  });
+  })
 
   const role = await select({
     message: 'Select role:',
@@ -290,7 +290,7 @@ async function collectUserData(): Promise<UserData> {
     ],
   });
 
-  if (isCancel(role)) {
+  if (isCancel(role) || isCancel(name) || isCancel(email) || isCancel(age)) {
     console.log('Operation cancelled');
     process.exit(0);
   }
@@ -298,8 +298,8 @@ async function collectUserData(): Promise<UserData> {
   return {
     name,
     email,
-    age: Number(age),
-    role: String(role),
+    age,
+    role,
   };
 }
 ``` 
