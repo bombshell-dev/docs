@@ -1,0 +1,7 @@
+{
+    "name": "bombshell-docs",
+    "compatibility_date": "2025-03-23",
+    "assets": {
+        "directory": "./dist"
+    }
+}
