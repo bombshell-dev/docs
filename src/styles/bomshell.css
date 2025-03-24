@@ -1,0 +1,208 @@
+:root[data-theme=dark] {
+    body {
+        background-color: oklch(15% 0.0064 285.47);
+    }
+    
+    .site-title.site-title {
+        scale: 1.3;
+        gap: 0.3rem;
+        padding-left: 1.25rem;
+        color: white;
+    }
+
+    .site-title > img {
+        background-image:
+            linear-gradient(to right, #F4F5F9, #A9ABB7);
+        color: transparent;
+        background-clip: text;
+    }
+
+    .site-title > span {
+        background-image:
+            linear-gradient(to right, #F4F5F9, #A9ABB7);
+        color: transparent;
+        background-clip: text;
+    }
+    
+    mobile-starlight-toc > nav {
+        background-color: oklch(15% 0.0064 285.47);
+    }
+    
+    header.header {
+        background-color: oklch(15% 0.0064 285.47);
+        outline: 2px solid oklch(31.44% 0.0145 274.42);
+    }
+    main > .content-panel:nth-child(1) {
+        padding-bottom: 1rem;
+    }
+    main > .content-panel:nth-child(2) {
+        padding-top: 0;
+        border-top: initial;
+    }
+    
+    site-search > button[aria-label="Search"] {
+        border-radius: 1.5rem;
+    }
+
+    li:has(> a[aria-current=page]) {
+        border-inline-start: 4px solid oklch(65.84% 0.2894 337.23);
+    }
+    
+    a[aria-current=page] {
+        color: oklch(65.84% 0.2894 337.23);
+        background-color: initial;
+    }
+    
+    a[aria-current=page]:is(:hover, :focus) {
+        color: white;
+    }
+
+    .content-panel > .sl-container :where(h1, h2) {
+        background-image:
+            linear-gradient(to left, #F4F5F9, #A9ABB7);
+        color: transparent;
+        background-clip: text;
+        width: fit-content;
+    }
+    
+    .sidebar-pane.sidebar-pane {
+        border-inline-end: initial;
+        outline: 1px solid oklch(31.44% 0.0145 274.42);
+    }
+    
+    .right-sidebar.right-sidebar {
+        border-inline-start: initial;
+    }
+    
+    starlight-toc > nav > ul > li {
+        border-inline-start: 1px solid oklch(31.44% 0.0145 274.42);
+        &:has(> a[aria-current="true"]) {
+            border-color: white;
+            border-inline-start-width: 4px;
+        }
+    }
+
+    @media (min-width: 72rem) {
+        .main-frame > div {
+            display: grid;
+            grid-auto-flow: column;
+            padding-left: 5rem;
+            grid-template-columns: 1fr 20rem;
+        }
+    }
+
+    aside[aria-label="Note"] {
+        background-color: initial;
+        background-image: radial-gradient(
+            at top,
+            oklch(32.11% 0.1509 262.21 / 1),
+            oklch(32.11% 0.1509 262.21 / 0.5)
+        );
+        border-inline-start: initial;
+        outline: 2px solid oklch(46.29% 0.1883 262.82);
+        & > p:first-child {
+           text-transform: uppercase;
+           color: oklch(85.36% 0.1463 206.92);
+           & > svg {
+               display: none;
+           }
+           &::before {
+               content: "";
+               display: block;
+               width: 14px;
+               height: 14px;
+               border-radius: 50%;
+               background-color: oklch(85.36% 0.1463 206.92);
+           }
+        }
+    }
+
+    button.custom-button {
+        height: 3rem;
+        width: 7rem;
+        margin-right: 2rem;
+        margin-top: 2rem;
+        border-radius: 0.25rem;
+        border: initial;
+        text-transform: uppercase;
+        background-color: initial;
+        &[data-variant="primary"] {
+            outline: 3px solid oklch(65.84% 0.2894 337.23);
+            background-image: radial-gradient(
+                farthest-side at top,
+                oklch(65.84% 0.2894 337.23 / 0.6),
+                oklch(65.84% 0.2894 337.23 / 0.2)
+            );
+        }
+        &[data-variant="secondary"] {
+            outline: 3px solid oklch(87.3% 0 0);
+            background-image: radial-gradient(
+                farthest-side at top,
+                oklch(87.3% 0 0 / 0.6),
+                oklch(87.3% 0 0 / 0.2)
+            );
+        }
+    }
+
+    sl-sidebar-state-persist > ul > li:has(> a) {
+        margin-top: initial;
+        &:first-child > a {
+            color: oklch(65.84% 0.2894 337.23);
+            background-color: initial;
+            border-radius: 4px;
+            outline: 2px solid oklch(65.84% 0.2894 337.23);
+            background-image: linear-gradient(to right, oklch(65.84% 0.2894 337.23 / 0.1), oklch(65.84% 0.2894 337.23 / 0.5));
+        }
+
+        &:first-child > a:is(:hover, :focus) {
+            background-image: radial-gradient(circle at top, oklch(65.84% 0.2894 337.23), oklch(49.84% 0.2894 337.23));
+            color: white;
+        }
+    }
+
+    sl-sidebar-state-persist ul > li > details > summary {
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-columns: auto 1fr auto;
+        &::before {
+            content: "";
+            display: block;
+            grid-column: 2;
+            height: 2px;
+            background-image: linear-gradient(
+                to left,
+                oklch(35.19% 0.0207 269.43),
+                oklch(35.19% 0.0207 269.43 / 0)
+            );
+        }
+        &::after {
+            content: "";
+            grid-column: 3;
+            display: block;
+            width: 14px;
+            height: 14px;
+            background-color: oklch(35.19% 0.0207 269.43);
+        }
+    }
+
+    .caret {
+        display: none;
+    }
+
+    .group-label > .large, starlight-toc > nav > h2 {
+        color: oklch(87.3% 0 0);
+        text-transform: uppercase;
+    }
+
+    starlight-toc > nav > ul > li > a[aria-current="true"] {
+        color: white;
+    }
+
+    .sidebar-pane.sidebar-pane, .right-sidebar {
+        background-image: linear-gradient(
+            to bottom,
+            oklch(20% 0.0102 285.47) 0rem,
+            oklch(15% 0.0064 285.47) 26rem
+        );
+    }
+}
