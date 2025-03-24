@@ -2,6 +2,7 @@
 title: Core
 description: Learn about the core functionality of Clack
 ---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 The `@clack/core` package provides the fundamental building blocks for creating interactive command-line interfaces. It's designed to be flexible, extensible, and easy to use.
 
@@ -40,9 +41,23 @@ The `Prompt` class serves as the foundation for all prompt types. It provides:
 
 To start using the core package, first install it:
 
-```bash
-npm install @clack/core
-```
+<Tabs>
+	<TabItem label="npm" icon="seti:npm">
+		```bash
+		npm install @clack/core
+		```
+	</TabItem>
+	<TabItem label="pnpm" icon="pnpm">
+		```bash
+		pnpm add @clack/core
+		```
+	</TabItem>
+	<TabItem label="Yarn" icon="seti:yarn">
+		```bash
+		yarn add @clack/core
+		```
+	</TabItem>
+</Tabs>
 
 Then import the components you need:
 
