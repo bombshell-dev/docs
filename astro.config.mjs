@@ -3,6 +3,8 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import ecTwoSlash from "expressive-code-twoslash";
 
+const site = "https://docs.bomb.sh/";
+
 // https://astro.build/config
 export default defineConfig({
   integrations: [
@@ -25,6 +27,36 @@ export default defineConfig({
       editLink: {
         baseUrl: "https://github.com/bombshell-dev/clack/docs/edit/main/",
       },
+      head: [
+        {
+          tag: "meta",
+          attrs: {
+            name: "og:image",
+            content: `${site}og-docs.png`,
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:image",
+            content: `${site}og-docs.png`,
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:site",
+            content: "bombshell",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:creator",
+            content: "bombshell",
+          },
+        },
+      ],
       social: {
         discord: "https://bomb.sh/chat",
         blueSky: "https://bomb.sh/on/bluesky",
