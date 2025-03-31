@@ -1,6 +1,6 @@
+import starlight from "@astrojs/starlight";
 // @ts-check
 import { defineConfig } from "astro/config";
-import starlight from "@astrojs/starlight";
 import ecTwoSlash from "expressive-code-twoslash";
 
 const site = "https://docs.bomb.sh/";
@@ -65,15 +65,15 @@ export default defineConfig({
       sidebar: [
         {
           label: "Basics",
-          autogenerate: { directory: "basics" },
+          autogenerate: { directory: "docs/basics" },
         },
         {
           label: "Clack",
-          autogenerate: { directory: "clack" },
+          autogenerate: { directory: "docs/clack" },
         },
         {
           label: "Guides",
-          autogenerate: { directory: "guides" },
+          autogenerate: { directory: "docs/guides" },
         },
       ],
     }),
