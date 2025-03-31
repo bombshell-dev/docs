@@ -63,6 +63,10 @@ export default defineConfig({
         github: "https://bomb.sh/on/github",
       },
       sidebar: [
+        { label: "clack", link: "/" },
+        { label: "tab", link: "/" },
+        { label: "[ ... ]", link: "/" },
+        { label: "[ ... ]", link: "/" },
         {
           label: "Basics",
           autogenerate: { directory: "basics" },
