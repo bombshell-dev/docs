@@ -7,6 +7,8 @@ const site = "https://docs.bomb.sh/";
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://bomb.sh/',
+  base: '/docs',
   integrations: [
     starlight({
       title: "Bombshell",
@@ -65,15 +67,15 @@ export default defineConfig({
       sidebar: [
         {
           label: "Basics",
-          autogenerate: { directory: "docs/basics" },
+          autogenerate: { directory: "basics" },
         },
         {
           label: "Clack",
-          autogenerate: { directory: "docs/clack" },
+          autogenerate: { directory: "clack" },
         },
         {
           label: "Guides",
-          autogenerate: { directory: "docs/guides" },
+          autogenerate: { directory: "guides" },
         },
       ],
     }),
