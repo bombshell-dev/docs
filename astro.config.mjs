@@ -7,7 +7,7 @@ const site = "https://docs.bomb.sh/";
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://bomb.sh/',
+  site: 'https://docs.bomb.sh/',
   base: '/docs',
   integrations: [
     starlight({
