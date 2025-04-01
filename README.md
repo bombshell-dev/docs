@@ -41,14 +41,11 @@ To edit an existing page:
 
 ## Integration with bomb.sh
 
-This documentation is designed to be integrated with the bomb.sh website. The content in this directory will be pulled into the `/docs/clack/` route in the bomb.sh repository.
+This documentation is designed to be integrated with the `bomb.sh` website. The content in this repository is deployed to the `docs.bomb.sh` subdomain and proxied through `bomb.sh/docs/`. Because of this, this site is developed and deployed using `/docs/` as a path prefix.
+
+> [!IMPORTANT]
+> When adding internal docs links, be sure to include the `/docs/` prefix!
 
 ## Local Development
 
-To preview the documentation locally, you'll need to clone the bomb.sh repository and set up the integration. Follow these steps:
-
-1. Clone the bomb.sh repository
-2. Set up the integration to pull in this documentation
-3. Run the development server
-
-See the bomb.sh repository for more detailed instructions on local development.
+To preview the documentation locally, clone this repository, install the dependencies with `pnpm`, and run the local development server. This site is intentionally developed independently of the main `bomb.sh` website.
