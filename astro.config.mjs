@@ -9,6 +9,7 @@ const site = "https://docs.bomb.sh/";
 export default defineConfig({
   site: 'https://docs.bomb.sh/',
   base: '/docs',
+  outDir: './dist/docs/',
   integrations: [
     starlight({
       title: "Bombshell",
