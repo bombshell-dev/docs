@@ -21,3 +21,14 @@ td,
 blockquote {
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
+.cli-preview {
+	padding: 1em;
+	border: 1px solid #292929;
+	border-radius: 0.5em;
+	white-space: pre;
+	line-height: 1.2em;
+	font-family: monospace;
+	background-color: #181818;
+	color: white;
+}
