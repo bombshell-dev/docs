@@ -29,7 +29,36 @@ const name = await text({
 });
 ```
 
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  What is your name?
+<font color="#06989A">│</font>  <span style="background-color:#FFFFFF"><font color="#181818">J</font></span><font color="#AAAAAA">ohn Doe</font>
+<font color="#06989A">└</font></pre>
+
+### Password Input
+```ts twoslash
+import { password } from '@clack/prompts';
+
+const secret = await password({
+  message: 'What is your password?',
+  mask: '*',
+  validate: (value) => {
+    if (value.length < 8) return 'Your password must be at least 8 characters';
+    if (!/[A-Z]/.test(value)) return 'Your password must be least contain 1 uppercase letter';
+    if (!/[0-9]/.test(value)) return 'Your password must be least contain 1 number';
+    if (!/[*?!@&]/.test(value)) return 'Your password must be least contain 1 special characters (*?!@&)';
+    return undefined;
+  },
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  What is your password?
+<font color="#06989A">│</font>  *****<span style="background-color:#FFFFFF"><font color="#FFFFFF">_</font></span>
+<font color="#06989A">└</font></pre>
+
 ### Selection
+
+#### Simple value
 
 ```ts twoslash
 import { select } from '@clack/prompts';
@@ -44,6 +73,57 @@ const framework = await select({
 });
 ```
 
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  Pick a framework
+<font color="#06989A">│</font>  <font color="#4E9A06">●</font> Next.js
+<font color="#06989A">│</font>  ○ Astro
+<font color="#06989A">│</font>  ○ SvelteKit
+<font color="#06989A">└</font></pre>
+
+#### Complex value
+
+```ts twoslash
+import { select } from '@clack/prompts';
+
+const framework = await select({
+  message: 'Pick a framework',
+  options: [
+    { value: { framework: 'Next', language: 'React' }, label: 'Next.js' },
+    { value: { framework: null, language: 'Astro' }, label: 'Astro' },
+    { value: { framework: 'Sveltekit', language: 'Svelte' }, label: 'SvelteKit' },
+  ],
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  Pick a framework
+<font color="#06989A">│</font>  <font color="#4E9A06">●</font> Next.js
+<font color="#06989A">│</font>  ○ Astro
+<font color="#06989A">│</font>  ○ SvelteKit
+<font color="#06989A">└</font></pre>
+
+#### Multiple values
+
+```ts twoslash
+import { multiselect } from '@clack/prompts';
+
+const framework = await multiselect({
+  message: 'Pick a framework',
+  options: [
+    { value: { framework: 'Next', language: 'React' }, label: 'Next.js' },
+    { value: { framework: null, language: 'Astro' }, label: 'Astro' },
+    { value: { framework: 'Sveltekit', language: 'Svelte' }, label: 'SvelteKit' },
+  ],
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  Pick a framework
+<font color="#06989A">│</font>  <font color="#4E9A06">◼</font> Next.js
+<font color="#06989A">│</font>  <font color="#06989A">◻</font> Astro
+<font color="#06989A">│</font>  ◻ SvelteKit
+<font color="#06989A">└</font></pre>
+
 ### Confirmation
 
 ```ts twoslash
@@ -53,6 +133,11 @@ const shouldProceed = await confirm({
   message: 'Do you want to continue?',
 });
 ```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  Do you want to continue?
+<font color="#06989A">│</font>  <font color="#4E9A06">●</font> Yes / ○ No
+<font color="#06989A">└</font></pre>
 
 ## Installation
 
