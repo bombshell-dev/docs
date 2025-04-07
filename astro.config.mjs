@@ -33,13 +33,13 @@ export default defineConfig({
 				baseUrl: "https://github.com/bombshell-dev/docs/edit/main/",
 			},
 			head: [
-        {
-          tag: 'link',
-          attrs: {
-            rel: 'stylesheet',
-            href: 'https://use.typekit.net/bst3mzh.css?v=4'
-          }
-        },
+				{
+					tag: "link",
+					attrs: {
+						rel: "stylesheet",
+						href: "https://use.typekit.net/bst3mzh.css?v=4",
+					},
+				},
 				{
 					tag: "meta",
 					attrs: {
@@ -82,20 +82,23 @@ export default defineConfig({
 						icon: "seti:hex",
 						link: "/clack/basics/getting-started",
 						items: [
-              { label: "Basics", autogenerate: { directory: 'clack/basics' } },
-              { label: "Packages", autogenerate: { directory: 'clack/packages' } },
-              { label: "Guides", autogenerate: { directory: 'clack/guides' } },
-            ],
+							{ label: "Basics", autogenerate: { directory: "clack/basics" } },
+							{
+								label: "Packages",
+								autogenerate: { directory: "clack/packages" },
+							},
+							{ label: "Guides", autogenerate: { directory: "clack/guides" } },
+						],
 					},
-          {
+					{
 						label: "Args",
 						id: "args",
 						icon: "seti:powershell",
 						link: "/args/basics/getting-started",
 						items: [
-              { label: "Basics", autogenerate: { directory: 'args/basics' } },
-              { label: "Guides", autogenerate: { directory: 'args/guides' } },
-            ],
+							{ label: "Basics", autogenerate: { directory: "args/basics" } },
+							{ label: "Guides", autogenerate: { directory: "args/guides" } },
+						],
 					},
 				]),
 			],
