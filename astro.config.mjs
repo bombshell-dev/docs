@@ -5,11 +5,11 @@ import { defineConfig } from "astro/config";
 import ecTwoSlash from "expressive-code-twoslash";
 import topics from "starlight-sidebar-topics";
 
-const site = "https://docs.bomb.sh/";
+const site = "https://bomb.sh/docs/";
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://docs.bomb.sh/",
+	site: "https://bomb.sh/",
 	base: "/docs",
 	outDir: "./dist/docs/",
 	integrations: [
@@ -30,9 +30,16 @@ export default defineConfig({
 				plugins: [ecTwoSlash()],
 			},
 			editLink: {
-				baseUrl: "https://github.com/bombshell-dev/clack/docs/edit/main/",
+				baseUrl: "https://github.com/bombshell-dev/docs/edit/main/",
 			},
 			head: [
+        {
+          tag: 'link',
+          attrs: {
+            rel: 'stylesheet',
+            href: 'https://use.typekit.net/bst3mzh.css?v=4'
+          }
+        },
 				{
 					tag: "meta",
 					attrs: {
