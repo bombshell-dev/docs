@@ -139,6 +139,92 @@ const shouldProceed = await confirm({
 <font color="#06989A">│</font>  <font color="#4E9A06">●</font> Yes / ○ No
 <font color="#06989A">└</font></pre>
 
+## Support functions
+
+### Intro
+
+```ts twoslash
+import { intro } from '@clack/prompts';
+
+intro('Welcome to clack')
+```
+
+<pre class="cli-preview"><font color="#555753">┌</font>  Welcome to clack</pre>
+
+### Outro
+
+```ts twoslash
+import { outro } from '@clack/prompts';
+
+outro('All operations are finished')
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#555753">└</font>  All operations are finished</pre>
+
+### Note
+
+```ts twoslash
+import { note } from '@clack/prompts';
+
+note(
+  'You can edit the file src/index.jsx',
+  'Next steps.'
+);
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#4E9A06">◇</font>  Next steps. <font color="#555753">─────────────────────────╮</font>
+<font color="#555753">│</font>                                       <font color="#555753">│</font>
+<font color="#555753">│</font>  You can edit the file src/index.jsx  <font color="#555753">│</font>
+<font color="#555753">│</font>                                       <font color="#555753">│</font>
+<font color="#555753">├───────────────────────────────────────╯</font></pre>
+
+The second parameter (the title) is optional
+```ts twoslash
+import { note } from '@clack/prompts';
+
+note(
+  'All files have been created.',
+);
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#4E9A06">◇</font>   <font color="#555753">─────────────────────────────╮</font>
+<font color="#555753">│</font>                                <font color="#555753">│</font>
+<font color="#555753">│</font>  All files have been created.  <font color="#555753">│</font>
+<font color="#555753">│</font>                                <font color="#555753">│</font>
+<font color="#555753">├────────────────────────────────╯</font></pre>
+
+### Logs
+
+```ts twoslash
+import { log } from '@clack/prompts';
+
+log.step('Check files')
+log.info('No files to update')
+log.message('Entering directory "src"')
+log.error('Permission denied on file src/secret.js')
+log.success('Installation complete')
+log.warn('Directory is empty, skipping')
+log.warning('Directory is empty, skipping')
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#4E9A06">◇</font>  Check files
+<font color="#555753">│</font>
+<font color="#3465A4">●</font>  No files to update
+<font color="#555753">│</font>
+<font color="#555753">│</font>  Entering directory &quot;src&quot;
+    <font color="#555753">│</font>
+<font color="#CC0000">■</font>  Permission denied on file src/secret.js
+<font color="#555753">│</font>
+<font color="#4E9A06">◆</font>  Installation complete
+<font color="#555753">│</font>
+<font color="#C4A000">▲</font>  Directory is empty, skipping
+<font color="#555753">│</font>
+<font color="#C4A000">▲</font>  Directory is empty, skipping</pre>
+
 ## Installation
 
 ```bash
