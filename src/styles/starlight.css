@@ -1,10 +1,46 @@
 :root {
-	/* Font settings */
-	--sl-font: 'Urbanis', sans-serif;
-	--sl-font-heading: 'Urbanist', sans-serif;
+	--sl-font: system-ui, sans-serif;
+	--sl-font-heading: 'polymath-display', sans-serif;
 	
-	/* Ensure these are set for both light and dark themes */
 	--sl-color-text-heading: var(--sl-color-text);
+	--sl-text-h1: var(--sl-text-6xl);
+}
+
+:is(h1, h2, h3, h4, h5, h6) {
+  font-feature-settings: 'ss03' on, 'ss12' on;
+}
+
+:is(h1, .starlight-sidebar-topics) {
+  font-feature-settings: 'ss01' on, 'ss03' on, 'ss09' on, 'ss10' on, 'ss12' on;
+  font-family: var(--sl-font-heading);
+}
+:is(.starlight-sidebar-topics li) {
+	font: inherit;
+	font-feature-settings: inherit;
+	text-transform: lowercase;
+}
+
+:is(h1) {
+  --c-border: var(--color-white-100);
+  --c-start: var(--color-white-90);
+  --c-end: var(--color-white-50);
+  --s-border: 1px;
+  -webkit-text-stroke-color: var(--c-border);
+  -webkit-text-stroke-width: var(--s-border);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(to right, var(--c-start), var(--c-end));
+  letter-spacing: 1px;
+}
+
+:is(h2, h3, h4, h5, h6) {
+  --c-start: var(--color-white-100);
+  --c-end: var(--color-white-50);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(to right, var(--c-start), var(--c-end));
 }
 
 /* Target specific elements */

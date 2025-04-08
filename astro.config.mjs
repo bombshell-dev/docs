@@ -15,14 +15,13 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: "Bombshell",
-			customCss: [
-				// Relative path to your @font-face CSS file.
-				"./src/fonts/font-face.css",
-			],
 			logo: {
 				dark: "./src/assets/dark.svg",
 				light: "./src/assets/light.svg",
 			},
+      customCss: [
+        './src/styles/tint.css'
+      ],
 			components: {
 				Head: "./src/starlightOverrides/Head.astro",
 			},
@@ -37,7 +36,7 @@ export default defineConfig({
 					tag: "link",
 					attrs: {
 						rel: "stylesheet",
-						href: "https://use.typekit.net/bst3mzh.css?v=4",
+						href: "https://use.typekit.net/bst3mzh.css?v=5",
 					},
 				},
 				{
