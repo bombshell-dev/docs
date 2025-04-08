@@ -89,17 +89,7 @@ export default defineConfig({
 							},
 							{ label: "Guides", autogenerate: { directory: "clack/guides" } },
 						],
-					},
-					{
-						label: "Args",
-						id: "args",
-						icon: "seti:powershell",
-						link: "/args/basics/getting-started",
-						items: [
-							{ label: "Basics", autogenerate: { directory: "args/basics" } },
-							{ label: "Guides", autogenerate: { directory: "args/guides" } },
-						],
-					},
+					}
 				]),
 			],
 		}),
