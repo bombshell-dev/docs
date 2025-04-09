@@ -32,3 +32,14 @@ blockquote {
 	background-color: #181818;
 	color: white;
 }
+
+.ap-wrapper {
+	border: 1px solid #292929;
+	border-radius: 0.5em;
+	overflow: clip;
+	margin-top: 1rem;
+}
+
+.ap-player {
+	padding: 0.5em;
+}
