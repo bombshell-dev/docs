@@ -132,7 +132,7 @@
   --space-cell-padding: var(--space-150);
 }
 
-:root([data-theme=dark]) {
+:root[data-theme=dark] {
     --surface-border-highlight: var(--color-gray-70);
     --surface-border-fill: var(--color-gray-80);
     --surface-fill: var(--color-gray-80);

@@ -2,8 +2,20 @@
 	--sl-font: system-ui, sans-serif;
 	--sl-font-heading: 'polymath-display', sans-serif;
 	
-	--sl-color-text-heading: var(--sl-color-text);
+	--sl-color-text-heading: var(--heading-fill);
 	--sl-text-h1: var(--sl-text-6xl);
+  --sl-color-accent-low: hsl(311 100% 0% / 0.5);
+  --sl-color-accent: hsl(311 100% 50% / 0.9);
+  --sl-color-accent-high: hsl(311 100% 50% / 1);
+
+  --sl-color-bg: var(--container-fill);
+  --sl-color-bg-nav: var(--container-fill);
+  --sl-color-bg-sidebar: var(--container-fill);
+  --sl-color-bg-inline-code: var(--surface-inner-fill);
+  --sl-color-bg-accent: var(--sl-color-accent-high);
+  --sl-color-hairline-light: var(--surface-border-fill);
+  --sl-color-hairline: var(--surface-border-fill);
+  --sl-color-hairline-shade: var(--surface-border-fill);
 }
 
 :is(h1, h2, h3, h4, h5, h6) {
