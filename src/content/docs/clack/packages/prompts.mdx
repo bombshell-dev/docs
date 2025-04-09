@@ -3,6 +3,10 @@ title: Prompts
 description: Learn about the prompts package and its capabilities
 ---
 
+import Asciinema from "~components/asciinema.svelte"
+import castText from '~assets/cast/clack/text.cast?url'
+import castPassword from '~assets/cast/clack/password.cast?url'
+
 The `@clack/prompts` package provides a collection of pre-built, high-level prompts that make it easy to create interactive command-line interfaces. It builds on top of the core package to provide a more developer-friendly experience.
 
 ## Key Features
@@ -29,10 +33,7 @@ const name = await text({
 });
 ```
 
-<pre class="cli-preview"><font color="#555753">│</font>
-<font color="#06989A">◆</font>  What is your name?
-<font color="#06989A">│</font>  <span style="background-color:#FFFFFF"><font color="#181818">J</font></span><font color="#AAAAAA">ohn Doe</font>
-<font color="#06989A">└</font></pre>
+<Asciinema cast={castText} client:only rows={5} />
 
 ### Password Input
 ```ts twoslash
@@ -51,10 +52,7 @@ const secret = await password({
 });
 ```
 
-<pre class="cli-preview"><font color="#555753">│</font>
-<font color="#06989A">◆</font>  What is your password?
-<font color="#06989A">│</font>  *****<span style="background-color:#FFFFFF"><font color="#FFFFFF">_</font></span>
-<font color="#06989A">└</font></pre>
+<Asciinema cast={castPassword} client:only rows={5} />
 
 ### Selection
 
@@ -216,7 +214,7 @@ log.warning('Directory is empty, skipping')
 <font color="#3465A4">●</font>  No files to update
 <font color="#555753">│</font>
 <font color="#555753">│</font>  Entering directory &quot;src&quot;
-    <font color="#555753">│</font>
+<font color="#555753">│</font>
 <font color="#CC0000">■</font>  Permission denied on file src/secret.js
 <font color="#555753">│</font>
 <font color="#4E9A06">◆</font>  Installation complete

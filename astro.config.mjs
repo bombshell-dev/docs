@@ -4,6 +4,7 @@ import { defineConfig } from "astro/config";
 
 import ecTwoSlash from "expressive-code-twoslash";
 import topics from "starlight-sidebar-topics";
+import svelte from "@astrojs/svelte";
 
 const site = "https://bomb.sh/docs/";
 
@@ -93,5 +94,8 @@ export default defineConfig({
 				]),
 			],
 		}),
+		svelte({
+			extensions: ['.svelte']
+		})
 	],
 });
