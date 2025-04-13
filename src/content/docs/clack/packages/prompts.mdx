@@ -3,6 +3,8 @@ title: Prompts
 description: Learn about the prompts package and its capabilities
 ---
 
+import { Aside } from "@astrojs/starlight/components"
+
 The `@clack/prompts` package provides a collection of pre-built, high-level prompts that make it easy to create interactive command-line interfaces. It builds on top of the core package to provide a more developer-friendly experience.
 
 ## Key Features
@@ -139,9 +141,105 @@ const shouldProceed = await confirm({
 <font color="#06989A">│</font>  <font color="#4E9A06">●</font> Yes / ○ No
 <font color="#06989A">└</font></pre>
 
+## Grouping
+
+### Group Multiselect
+
+```ts twoslash
+import { groupMultiselect } from '@clack/prompts';
+
+const projectOptions = await groupMultiselect({
+    message: 'Define your project',
+    options: {
+        'Testing': [
+            { value: 'Jest' },
+            { value: 'Playwright' },
+            { value: 'Vitest' }
+        ],
+        'Language': [{
+            label: "Javascript",
+            value: 'js'
+        }, {
+            label: 'TypeScript',
+            value: 'ts'
+        }, {
+            label: "CoffeeScript",
+            value: 'coffee'
+        }],
+        'Code quality': [
+            { value: 'Prettier' },
+            { value: 'ESLint' },
+            { value: 'Biome.js' },
+        ]
+    }
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  Define your project
+<font color="#06989A">│</font>  <font color="#4E9A06">◼</font> Testing
+<font color="#06989A">│</font>  │ <font color="#4E9A06">◼</font> Jest
+<font color="#06989A">│</font>  │ <font color="#4E9A06">◼</font> Playwright
+<font color="#06989A">│</font>  └ <font color="#4E9A06">◼</font> Vitest
+<font color="#06989A">│</font>  <font color="#06989A">◻</font> Language
+<font color="#06989A">│</font>  │ <font color="#4E9A06">◼</font> Javascript
+<font color="#06989A">│</font>  │ <font color="#06989A">◻</font> TypeScript
+<font color="#06989A">│</font>  └ <font color="#06989A">◻</font> CoffeeScript
+<font color="#06989A">│</font>  ◻ Code quality
+<font color="#06989A">│</font>  │ ◻ Prettier
+<font color="#06989A">│</font>  │ ◻ ESLint
+<font color="#06989A">│</font>  └ <font color="#4E9A06">◼</font> Biome.js
+<font color="#06989A">└</font></pre>
+
+### Group
+
+With `group`, you can sequence questions and make them dependent against previous answers and get a final object that contain all results together
+
+```ts twoslash
+import { group, text, password } from '@clack/prompts';
+
+const account = await group({
+    email: () => text({
+        message: 'What is your email address?',
+        validate: (value) => {
+            if (!/^[a-z0-9_.-]+@[a-z0-9_.-]+\.[a-z]{2,}$/i.test(value)) return 'Please enter a valid email'
+        }
+    }),
+    username: ({results}) => text({
+        message: 'What is your username?',
+        placeholder: results.email?.replace(/@.+$/, '').toLowerCase() ?? '',
+        validate: (value) => {
+            if (value.length < 2) return 'Please enter at least 2 characters'
+        }
+    }),
+    password: () => password({
+        message: 'Define your password'
+    })
+});
+```
+
+<Aside type="caution">The provided Regular Expression is just for demonstration purpose, use a proper email validation in your application.</Aside>
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#4E9A06">◇</font>  What is your email address?
+<font color="#555753">│</font>  john.doe@example.com
+<font color="#555753">│</font>
+<font color="#4E9A06">◇</font>  What is your username?
+<font color="#555753">│</font>  john.doe
+<font color="#555753">│</font>
+<font color="#06989A">◆</font>  Define your password
+<font color="#06989A">│</font>  ▪▪▪<span style="background-color:#FFFFFF"><font color="#FFFFFF">_</font></span>
+<font color="#06989A">└</font></pre>
+
 ## Support functions
 
 ### Intro
+
+This function define the starting point of the interaction with the user.
+
+It has an optional parameter to insert an introduction line.
+
+<Aside type="tip">The parameter can contains ANSI escape sequence. Allowing you to highlight you introduction.</Aside>
 
 ```ts twoslash
 import { intro } from '@clack/prompts';
@@ -153,6 +251,10 @@ intro('Welcome to clack')
 
 ### Outro
 
+This function mark the end of the interaction with the user.
+
+It has an optional parameter to insert a conclusion line.
+
 ```ts twoslash
 import { outro } from '@clack/prompts';
 
@@ -162,7 +264,28 @@ outro('All operations are finished')
 <pre class="cli-preview"><font color="#555753">│</font>
 <font color="#555753">└</font>  All operations are finished</pre>
 
+### Spinner
+```ts twoslash
+import { spinner } from '@clack/prompts';
+
+const spin = spinner();
+spin.start('Loading');
+// Do something
+spin.message('Finishing')
+// Do more things
+spin.stop('Done')
+```
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#AD7FA8">◒</font>  Loading{`...`}</pre>
+
+The second parameter of `spinner.stop` (`code`) allow you to indicate the ending status of the spinner:
+- `0` (or no value) indicate a success and the symbol for a finished task will be used
+- `1` indicate a cancellation and the red square symbol will be used
+- Any other code indicate an error and the yellow triangle symbol will be used
+
 ### Note
+
+A `note` allow you to add more information that need to be more visible to your user.
 
 ```ts twoslash
 import { note } from '@clack/prompts';
@@ -198,6 +321,16 @@ note(
 
 ### Logs
 
+The `log` functions allow you to add information about the current status of the interaction.
+
+It came in different form:
+ - As a non-interactive step result (`log.step`)
+ - As an informative message (`log.info`)
+ - As a simple text (`log.messafe`)
+ - As an error message (`log.error`)
+ - As a succeed step (`log.success`)
+ - As a warning/alert message (`log.warn` and `log.warning`)
+
 ```ts twoslash
 import { log } from '@clack/prompts';
 
@@ -216,7 +349,7 @@ log.warning('Directory is empty, skipping')
 <font color="#3465A4">●</font>  No files to update
 <font color="#555753">│</font>
 <font color="#555753">│</font>  Entering directory &quot;src&quot;
-    <font color="#555753">│</font>
+<font color="#555753">│</font>
 <font color="#CC0000">■</font>  Permission denied on file src/secret.js
 <font color="#555753">│</font>
 <font color="#4E9A06">◆</font>  Installation complete
@@ -235,4 +368,4 @@ npm install @clack/prompts
 
 The prompts package is designed to be intuitive and easy to use. Each prompt function returns a Promise that resolves to the user's input.
 
-For more detailed examples and advanced usage patterns, check out our [examples guide](/docs/guides/examples) and [best practices](/docs/guides/best-practices). 
+For more detailed examples and advanced usage patterns, check out our [examples guide](/docs/guides/examples) and [best practices](/docs/guides/best-practices).
