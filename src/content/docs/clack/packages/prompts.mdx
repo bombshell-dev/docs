@@ -154,24 +154,24 @@ const projectOptions = await groupMultiselect({
         'Testing': [
             { value: 'Jest' },
             { value: 'Playwright' },
-            { value: 'Vitest' }
+            { value: 'Vitest' },
         ],
         'Language': [{
             label: "Javascript",
-            value: 'js'
+            value: 'js',
         }, {
             label: 'TypeScript',
-            value: 'ts'
+            value: 'ts',
         }, {
             label: "CoffeeScript",
-            value: 'coffee'
+            value: 'coffee',
         }],
         'Code quality': [
             { value: 'Prettier' },
             { value: 'ESLint' },
             { value: 'Biome.js' },
-        ]
-    }
+        ],
+    },
 });
 ```
 
@@ -217,7 +217,7 @@ const account = await group({
     }),
     password: () => password({
         message: 'Define your password'
-    })
+    }),
 });
 ```
 
@@ -244,7 +244,7 @@ It accepts an optional string parameter which is displayed as a title for the in
 ```ts twoslash
 import { intro } from '@clack/prompts';
 
-intro('Welcome to clack')
+intro('Welcome to clack');
 ```
 
 <pre class="cli-preview"><font color="#555753">┌</font>  Welcome to clack</pre>
@@ -257,11 +257,26 @@ It accepts an optional string parameter which is displayed as a concluding messa
 ```ts twoslash
 import { outro } from '@clack/prompts';
 
-outro('All operations are finished')
+outro('All operations are finished');
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
-<font color="#555753">└</font>  All operations are finished</pre>
+<font color="#555753">└</font>  All operations are finished
+&nbsp;</pre>
+
+### Cancel
+
+The `cancel` function defines an interruption of an interaction and therefore its end.
+It accepts an optional string parameter which is displayed as a cancellation message.
+
+```ts twoslash
+import { cancel } from '@clack/prompts';
+
+cancel('Installation canceled');
+```
+
+<pre class="cli-preview"><font color="#555753">└</font>  <font color="#CC0000">Installation canceled</font>
+&nbsp;</pre>
 
 ### Spinner
 ```ts twoslash
@@ -270,9 +285,9 @@ import { spinner } from '@clack/prompts';
 const spin = spinner();
 spin.start('Loading');
 // Do something
-spin.message('Finishing')
+spin.message('Finishing');
 // Do more things
-spin.stop('Done')
+spin.stop('Done');
 ```
 <pre class="cli-preview"><font color="#555753">│</font>
 <font color="#AD7FA8">◒</font>  Loading{`...`}</pre>
@@ -335,13 +350,13 @@ Each function renders with specific styling to communicate status.
 ```ts twoslash
 import { log } from '@clack/prompts';
 
-log.message('Entering directory "src"')
-log.info('No files to update')
-log.warn('Directory is empty, skipping')
-log.warning('Directory is empty, skipping')
-log.error('Permission denied on file src/secret.js')
-log.success('Installation complete')
-log.step('Check files')
+log.message('Entering directory "src"');
+log.info('No files to update');
+log.warn('Directory is empty, skipping');
+log.warning('Directory is empty, skipping');
+log.error('Permission denied on file src/secret.js');
+log.success('Installation complete');
+log.step('Check files');
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
