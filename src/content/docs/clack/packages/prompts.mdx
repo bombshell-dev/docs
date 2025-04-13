@@ -193,7 +193,9 @@ const projectOptions = await groupMultiselect({
 
 ### Group
 
-With `group`, you can sequence questions and make them dependent against previous answers and get a final object that contain all results together
+The `group` function provides a convenient API for combining a series of questions.
+Each question receives the `results` of previous answers.
+The `group` function returns an object containing the result of every question.
 
 ```ts twoslash
 import { group, text, password } from '@clack/prompts';
@@ -209,6 +211,7 @@ const account = await group({
         message: 'What is your username?',
         placeholder: results.email?.replace(/@.+$/, '').toLowerCase() ?? '',
         validate: (value) => {
+            // FOR DEMO PURPOSES ONLY! Use a robust validation library in production
             if (value.length < 2) return 'Please enter at least 2 characters'
         }
     }),
@@ -218,28 +221,25 @@ const account = await group({
 });
 ```
 
-<Aside type="caution">The provided Regular Expression is just for demonstration purpose, use a proper email validation in your application.</Aside>
-
 <pre class="cli-preview"><font color="#555753">│</font>
 <font color="#4E9A06">◇</font>  What is your email address?
-<font color="#555753">│</font>  john.doe@example.com
+<font color="#555753">│</font>  user.name@example.com
 <font color="#555753">│</font>
 <font color="#4E9A06">◇</font>  What is your username?
-<font color="#555753">│</font>  john.doe
+<font color="#555753">│</font>  bomb_sh
 <font color="#555753">│</font>
 <font color="#06989A">◆</font>  Define your password
-<font color="#06989A">│</font>  ▪▪▪<span style="background-color:#FFFFFF"><font color="#FFFFFF">_</font></span>
+<font color="#06989A">│</font>  ▪▪▪▪▪▪▪▪▪▪▪▪<span style="background-color:#FFFFFF"><font color="#FFFFFF">_</font></span>
 <font color="#06989A">└</font></pre>
 
 ## Support functions
 
 ### Intro
 
-This function define the starting point of the interaction with the user.
+The `intro` function defines the beginning of an interaction.
+It accepts an optional string parameter which is displayed as a title for the interaction.
 
-It has an optional parameter to insert an introduction line.
-
-<Aside type="tip">The parameter can contains ANSI escape sequence. Allowing you to highlight you introduction.</Aside>
+<Aside type="tip">Feel free to use ANSI escape sequences to add colors and a more branded feel to your intro message!</Aside>
 
 ```ts twoslash
 import { intro } from '@clack/prompts';
@@ -251,9 +251,8 @@ intro('Welcome to clack')
 
 ### Outro
 
-This function mark the end of the interaction with the user.
-
-It has an optional parameter to insert a conclusion line.
+The `outro` function defines the end of an interaction.
+It accepts an optional string parameter which is displayed as a concluding message.
 
 ```ts twoslash
 import { outro } from '@clack/prompts';
@@ -285,7 +284,8 @@ The second parameter of `spinner.stop` (`code`) allow you to indicate the ending
 
 ### Note
 
-A `note` allow you to add more information that need to be more visible to your user.
+The `note` function renders a box around a message to draw a user's attention.
+This is useful for displaying next steps and linking to your documentation towards the end of an interaction.
 
 ```ts twoslash
 import { note } from '@clack/prompts';
@@ -321,15 +321,16 @@ note(
 
 ### Logs
 
-The `log` functions allow you to add information about the current status of the interaction.
+The `log` utilities allow you to add semantic contextual information during an interaction.
+Each function renders with specific styling to communicate status.
 
-It came in different form:
- - As a non-interactive step result (`log.step`)
- - As an informative message (`log.info`)
- - As a simple text (`log.messafe`)
- - As an error message (`log.error`)
- - As a succeed step (`log.success`)
- - As a warning/alert message (`log.warn` and `log.warning`)
+`log` is an object containing the following methods:
+ - `log.message` displays a message without any symbols to communicate state
+ - `log.info` displays a message with a neutral state
+ - `log.warn` (alias `log.warning`) displays a message with a caution state
+ - `log.error` displays a message with a danger state
+ - `log.success` displays a message with a success state
+ - `log.step` displays a message with a neutral, completed state
 
 ```ts twoslash
 import { log } from '@clack/prompts';
