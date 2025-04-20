@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@astrojs/starlight": "^0.32.2",
+    "@bomb.sh/args": "^0.3.1",
     "@clack/core": "^0.4.1",
     "@clack/prompts": "^0.10.0",
     "@types/node": "^22.13.11",

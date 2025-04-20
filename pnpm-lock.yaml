@@ -11,6 +11,9 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.32.2
         version: 0.32.4(astro@5.5.4(@types/node@22.13.11)(rollup@4.36.0)(typescript@5.8.2))
+      '@bomb.sh/args':
+        specifier: ^0.3.1
+        version: 0.3.1
       '@clack/core':
         specifier: ^0.4.1
         version: 0.4.1
@@ -86,6 +89,9 @@ packages:
   '@babel/types@7.26.10':
     resolution: {integrity: sha512-emqcG3vHrpxUKTrxcblR36dcrcoRDvKmnL/dCL6ZsHaShW80qxCAcNhzQZrpeM765VzEos+xOi4s+r4IXzTwdQ==}
     engines: {node: '>=6.9.0'}
+
+  '@bomb.sh/args@0.3.1':
+    resolution: {integrity: sha512-CwxKrfgcorUPP6KfYD59aRdBYWBTsfsxT+GmoLVnKo5Tmyoqbpo0UNcjngRMyU+6tiPbd18RuIYxhgAn44wU/Q==}
 
   '@clack/core@0.4.1':
     resolution: {integrity: sha512-Pxhij4UXg8KSr7rPek6Zowm+5M22rbd2g1nfojHJkxp5YkFqiZ2+YLEM/XGVIzvGOcM0nqjIFxrpDwWRZYWYjA==}
@@ -1890,6 +1896,8 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
+
+  '@bomb.sh/args@0.3.1': {}
 
   '@clack/core@0.4.1':
     dependencies:
