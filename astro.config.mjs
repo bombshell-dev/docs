@@ -101,7 +101,6 @@ export default defineConfig({
 								label: "API",
 								link: "args/api",
 							},
-							{ label: "Guides", autogenerate: { directory: "args/guides" } },
 						],
 					}
 				]),
