@@ -232,6 +232,49 @@ const account = await group({
 <font color="#06989A">│</font>  ▪▪▪▪▪▪▪▪▪▪▪▪<span style="background-color:#FFFFFF"><font color="#FFFFFF">_</font></span>
 <font color="#06989A">└</font></pre>
 
+### Tasks
+
+The `tasks` function provides a convenient API for sequencing several asynchronous actions one after the other.
+
+```ts twoslash
+import { tasks } from "@clack/prompts";
+
+await tasks([
+    {
+        title: 'Downloading package',
+        task: async () => {
+            // Do a fetch
+            return 'Download completed';
+        },
+    },
+    {
+        title: "Un-archiving",
+        task: async (message) => {
+            const parts: Array<string> = [/* ... */];
+            for (let index = 0; index < parts.length; index++) {
+                const type = parts[index];
+                // Update the message to indicate what is done
+                message(`Un-archiving ${type} (${index + 1}/${parts.length})`);
+                // Do the un-archiving task
+            }
+            return 'Un-archiving completed';
+        },
+    },
+    {
+        title: 'Linking',
+        task: async () => {
+            // Do work
+            return 'Package linked';
+        },
+    },
+]);
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#4E9A06">◇</font>  Download completed
+<font color="#555753">│</font>
+<font color="#75507B">◐</font>  Un-archiving lib (2/3)..</pre>
+
 ## Support functions
 
 ### Intro
@@ -373,6 +416,66 @@ log.step('Check files');
 <font color="#4E9A06">◆</font>  Installation complete
 <font color="#555753">│</font>
 <font color="#4E9A06">◇</font>  Check files</pre>
+
+### Stream
+
+The `stream` utilities allow you, like the `log` utilities, to add semantic contextual information during an interaction,
+expect that the message contains an unknown number of lines.
+Each function renders with specific styling to communicate status.
+
+<Aside type="tip">These utilities are useful to print content of [`node:stream`](https://nodejs.org/api/stream.html),
+like [file stream](https://nodejs.org/api/fs.html#fscreatereadstreampath-options)</Aside>
+
+```ts twoslash
+import { stream } from "@clack/prompts";
+import * as fs from "node:fs";
+
+await stream.message(fs.createReadStream('./banner.txt', { encoding: 'utf-8' }));
+await stream.info((async function*() {
+    yield 'Open file...';
+    // Open file
+    yield ' \x1b[32mOK\x1b[39m\n';
+
+    yield 'Parsing file...';
+    // Parse data
+    yield ' \x1b[32mOK\x1b[39m';
+    return;
+})());
+await stream.step([
+    'Job1...',
+    ' \x1b[32mdone\x1b[39m\n',
+    'Job2...',
+    ' \x1b[32mdone\x1b[39m\n',
+    'Job3...',
+    ' \x1b[32mdone\x1b[39m',
+]);
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#555753">│</font>
+<font color="#555753">│</font>  ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣶⣶⣿⣿⣿⣿⣿⣿⣶⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+<font color="#555753">│</font>  ⠀⠀⠀⠀⠀⣠⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+<font color="#555753">│</font>  ⠀⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+<font color="#555753">│</font>  ⠀⠀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+<font color="#555753">│</font>  ⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀
+<font color="#555753">│</font>  ⢰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⣿⣿⣿⡿⠀⠀⠀⠀⣀⠀
+<font color="#555753">│</font>  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⢠⣿⣿⣶⣤⣄⣻⣿⣿⣇⣠⣴⣶⣿⣿⡀
+<font color="#555753">│</font>  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⢾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡧
+<font color="#555753">│</font>  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀⠀⠀⠀⠉⢉⣿⣿⣿⣿⣿⣯⡉⠉⠀⠀⠀
+<font color="#555753">│</font>  ⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠇⠀⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⠟⢻⣿⣿⣿⣦⠀⠀⠀
+<font color="#555753">│</font>  ⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⠀⠀⠀⠀⠐⠿⣿⣿⣿⠏⠀⠀⢻⣿⣿⣿⠷⠀⠀
+<font color="#555753">│</font>  ⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠏⠀⠀⠀⠀⠹⠋⠁⠀⠀⠀
+<font color="#555753">│</font>  ⠀⠀⠀⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+<font color="#555753">│</font>  ⠀⠀⠀⠀⠀⠙⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+<font color="#555753">│</font>  ⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠻⠿⢿⣿⣿⣿⣿⡿⠿⠟⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+<font color="#555753">│</font>
+<font color="#555753">│</font>
+<font color="#3465A4">●</font>  Open file{`...`} <font color="#4E9A06">OK</font>
+<font color="#555753">│</font>  Parsing file{`...`} <font color="#4E9A06">OK</font>
+<font color="#555753">│</font>
+<font color="#4E9A06">◇</font>  Job1{`...`} <font color="#4E9A06">done</font>
+<font color="#555753">│</font>  Job2{`...`} <font color="#4E9A06">done</font>
+<font color="#555753">│</font>  Job3{`...`} <font color="#4E9A06">done</font></pre>
 
 ## Installation
 
