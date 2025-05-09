@@ -128,11 +128,11 @@ const framework = await select({
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
-<font color="#06989A">◆</font>  Pick a framework
-<font color="#06989A">│</font>  <font color="#4E9A06">●</font> Next.js (React framework)
-<font color="#06989A">│</font>  ○ Astro (Content-focused)
-<font color="#06989A">│</font>  ○ SvelteKit (Compile-time framework)
-<font color="#06989A">└</font></pre>
+<font color="#555753">│</font>  Pick a framework
+<font color="#555753">│</font>  <font color="#4E9A06">●</font> Next.js (React framework)
+<font color="#555753">│</font>  ○ Astro (Content-focused)
+<font color="#555753">│</font>  ○ SvelteKit (Compile-time framework)
+<font color="#555753">└</font></pre>
 
 #### Multiple values
 
@@ -235,6 +235,7 @@ const shouldProceed = await confirm({
 ### Group Multiselect
 
 ```ts twoslash
+// @errors: 2353
 import { groupMultiselect } from '@clack/prompts';
 
 const projectOptions = await groupMultiselect({
@@ -264,7 +265,6 @@ const projectOptions = await groupMultiselect({
             { value: 'Biome.js', hint: 'Formatter and linter' },
         ],
     },
-    maxItems: 5, // Maximum number of items to display per group
 });
 ```
 
