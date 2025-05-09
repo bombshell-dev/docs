@@ -1,0 +1,182 @@
+---
+title: Args
+description: Learn about the Args package and its capabilities
+---
+import { Aside } from '@astrojs/starlight/components';
+
+The `@bomb.sh/args` package is a &lt;1kB library for parsing CLI flags. Inspired by Deno's `std/cli` [`parseArgs`](https://github.com/denoland/std/blob/main/cli/parse_args.ts) module.
+
+## Features
+
+🤏 very small
+
+🍃 very simple
+
+🏃 very fast (beats [`node:util`](https://nodejs.org/api/util.html#utilparseargsconfig))
+
+🔏 strongly typed
+
+## Parsing the arguments
+
+```ts twoslash
+import { parse } from "@bomb.sh/args"
+
+const args = parse(process.argv, {
+  default: { a: 1, b: 2, c: "value" },
+  alias: { h: "help" },
+  boolean: ["foo", "bar"],
+  string: ["baz", "qux"],
+  array: ["input"],
+});
+```
+
+- The first parameter is the raw CLI parameters list (in most case, it will be `process.argv`)
+- The second parameter is the (optional) configuration to parse raw CLI parameters
+
+<Aside type="note">
+    In this documentation,
+    the term <var>option</var> indicate a string prefixed by one or two hyphen (`-`),<br />
+    the term <var>argument</var> indicate a string that is not prefixed by hyphen:
+    - `--long`: is an option (long variant), named `long`
+    - `-l`: is an option (short variant), named `l`
+    - `hello-world`: is an argument, its value is `hello-world`
+
+    ---
+    the term <var>flag</var> indicate an option that take two value: `true` or `false`
+</Aside>
+
+### Parse options
+
+#### `default` option
+
+It provides the default value to set if the <var>option</var> is missing
+```ts twoslash
+import { parse } from "@bomb.sh/args"
+
+const args = parse(process.argv, {
+  default: { a: 1, b: 2, c: "value" },
+});
+```
+the variable `args` will be equals to (assuming CLI parameters are `my-command --a=27`):
+```js
+args = {
+    _: [],
+    a: 27,
+    b: 2,
+    c: 'value'
+}
+```
+
+#### `alias` option
+
+It offers an alternative name for an <var>option</var>.<br />
+The object key is the alternative name, the value the name used in the parsing result
+
+```ts twoslash
+import { parse } from "@bomb.sh/args"
+
+const args = parse(process.argv, {
+  alias: { h: 'help' },
+});
+```
+the variable `args` will be equals to (assuming CLI parameters are `my-command -h`):
+```js
+args = {
+    _: [],
+    help: true
+}
+```
+
+#### `boolean` option
+
+Indicate that an <var>option</var> is <var>flag</var>, and so <var>argument</var> after it **is not** its value
+
+```ts twoslash
+import { parse } from "@bomb.sh/args"
+
+const args = parse(process.argv, {
+  boolean: ['get'],
+});
+```
+the variable `args` will be equals to (assuming CLI parameters are `my-command --get http://my-url.com`):
+```js
+args = {
+    _: ['http://my-url.com'],
+    get: true
+}
+```
+
+#### `string` option
+
+Indicate that an <var>option</var> have a value, and so the <var>argument</var> after it is its value (or an empty string is none is available)
+
+```ts twoslash
+import { parse } from "@bomb.sh/args"
+
+const args = parse(process.argv, {
+  string: ['get', 'user'],
+});
+```
+the variable `args` will be equals to (assuming CLI parameters are `my-command --user --get http://my-url.com`):
+```js
+args = {
+    _: [],
+    user: '',
+    get: 'http://my-url.com'
+}
+```
+
+#### `array` option
+
+Indicate that an <var>option</var> have a value and can be repeated several times
+
+```ts twoslash
+import { parse } from "@bomb.sh/args"
+
+const args = parse(process.argv, {
+  array: ['tag'],
+});
+```
+the variable `args` will be equals to (assuming CLI parameters are `my-command --tag app:v1 --tag app:latest`):
+```js
+args = {
+    _: [],
+    tag: ['app:v1', 'app:latest']
+}
+```
+
+### Special <var>option</var>
+
+#### Negation variant
+
+If a boolean <var>option</var> is prefixed by `--no-` it will parse as a `false` <var>flag</var> (without the `no-` prefix)
+
+```ts twoslash
+import { parse } from "@bomb.sh/args"
+
+const args = parse(process.argv);
+```
+the variable `args` will be equals to (assuming CLI parameters are `my-command --no-color`):
+```js
+args = {
+    _: [],
+    color: false
+}
+```
+
+<Aside type="note">
+    If the <var>option</var> is defined as a `string` this behavior is ignored
+    ```ts twoslash
+    import { parse } from "@bomb.sh/args"
+
+    const args = parse(process.argv, { string: ['no-name'] });
+    ```
+    the variable `args` will be equals to (assuming CLI parameters are `my-command --no-color --no-name John`):
+    ```js
+    args = {
+        _: [],
+        'color': false
+        'no-name': 'John'
+    }
+    ```
+</Aside>

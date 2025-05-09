@@ -11,6 +11,9 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.32.2
         version: 0.32.4(astro@5.5.4(@types/node@22.13.11)(rollup@4.36.0)(typescript@5.8.2))
+      '@bomb.sh/args':
+        specifier: ^0.3.1
+        version: 0.3.1
       '@clack/core':
         specifier: ^0.4.2
         version: 0.4.2
@@ -89,6 +92,8 @@ packages:
 
   '@clack/core@0.4.2':
     resolution: {integrity: sha512-NYQfcEy8MWIxrT5Fj8nIVchfRFA26yYKJcvBS7WlUIlw2OmQOY9DhGGXMovyI5J5PpxrCPGkgUi207EBrjpBvg==}
+  '@bomb.sh/args@0.3.1':
+    resolution: {integrity: sha512-CwxKrfgcorUPP6KfYD59aRdBYWBTsfsxT+GmoLVnKo5Tmyoqbpo0UNcjngRMyU+6tiPbd18RuIYxhgAn44wU/Q==}
 
   '@clack/core@1.0.0-alpha.0':
     resolution: {integrity: sha512-Cp/bPW/pMUCkJ7Lr8VFixvFrlnJ4tQPDHqfTNQ51z50qwX1fSIAstQLfel2NquVHqbfjyrUkBsal8OJRBPJVjw==}
@@ -1900,6 +1905,9 @@ snapshots:
       sisteransi: 1.0.5
 
   '@clack/core@1.0.0-alpha.0':
+  
+  '@bomb.sh/args@0.3.1': {}
+
     dependencies:
       picocolors: 1.1.1
       sisteransi: 1.0.5
