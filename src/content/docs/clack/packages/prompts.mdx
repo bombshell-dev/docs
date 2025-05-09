@@ -2,8 +2,8 @@
 title: Prompts
 description: Learn about the prompts package and its capabilities
 ---
-
 import { Aside } from "@astrojs/starlight/components"
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 The `@clack/prompts` package provides a collection of pre-built, high-level prompts that make it easy to create interactive command-line interfaces. It builds on top of the core package to provide a more developer-friendly experience.
 
@@ -14,9 +14,37 @@ The `@clack/prompts` package provides a collection of pre-built, high-level prom
 - **Type-safe**: Full TypeScript support
 - **Customizable**: Easy to extend and modify
 
+## Installation
+
+
+<Tabs>
+	<TabItem label="npm" icon="seti:npm">
+		```bash
+		npm install @clack/prompts
+		```
+	</TabItem>
+	<TabItem label="pnpm" icon="pnpm">
+		```bash
+		pnpm add @clack/prompts
+		```
+	</TabItem>
+	<TabItem label="Yarn" icon="seti:yarn">
+		```bash
+		yarn add @clack/prompts
+		```
+	</TabItem>
+</Tabs>
+
+## Usage
+
+The prompts package is designed to be intuitive and easy to use. Each prompt function returns a Promise that resolves to the user's input.
+
+For more detailed examples and advanced usage patterns, check out our [examples guide](/docs/guides/examples) and [best practices](/docs/guides/best-practices).
+
 ## Available Prompts
 
 ### Text Input
+
 ```ts twoslash
 // @errors: 2339
 import { text } from '@clack/prompts';
@@ -37,6 +65,7 @@ const name = await text({
 <font color="#06989A">└</font></pre>
 
 ### Password Input
+
 ```ts twoslash
 import { password } from '@clack/prompts';
 
@@ -68,18 +97,19 @@ import { select } from '@clack/prompts';
 const framework = await select({
   message: 'Pick a framework',
   options: [
-    { value: 'next', label: 'Next.js' },
-    { value: 'astro', label: 'Astro' },
-    { value: 'svelte', label: 'SvelteKit' },
+    { value: 'next', label: 'Next.js', hint: 'React framework' },
+    { value: 'astro', label: 'Astro', hint: 'Content-focused' },
+    { value: 'svelte', label: 'SvelteKit', hint: 'Compile-time framework' },
   ],
+  maxItems: 5, // Maximum number of items to display at once
 });
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
 <font color="#06989A">◆</font>  Pick a framework
-<font color="#06989A">│</font>  <font color="#4E9A06">●</font> Next.js
-<font color="#06989A">│</font>  ○ Astro
-<font color="#06989A">│</font>  ○ SvelteKit
+<font color="#06989A">│</font>  <font color="#4E9A06">●</font> Next.js (React framework)
+<font color="#06989A">│</font>  ○ Astro (Content-focused)
+<font color="#06989A">│</font>  ○ SvelteKit (Compile-time framework)
 <font color="#06989A">└</font></pre>
 
 #### Complex value
@@ -90,18 +120,18 @@ import { select } from '@clack/prompts';
 const framework = await select({
   message: 'Pick a framework',
   options: [
-    { value: { framework: 'Next', language: 'React' }, label: 'Next.js' },
-    { value: { framework: null, language: 'Astro' }, label: 'Astro' },
-    { value: { framework: 'Sveltekit', language: 'Svelte' }, label: 'SvelteKit' },
+    { value: { framework: 'Next', language: 'React' }, label: 'Next.js', hint: 'React framework' },
+    { value: { framework: null, language: 'Astro' }, label: 'Astro', hint: 'Content-focused' },
+    { value: { framework: 'Sveltekit', language: 'Svelte' }, label: 'SvelteKit', hint: 'Compile-time framework' },
   ],
 });
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
 <font color="#06989A">◆</font>  Pick a framework
-<font color="#06989A">│</font>  <font color="#4E9A06">●</font> Next.js
-<font color="#06989A">│</font>  ○ Astro
-<font color="#06989A">│</font>  ○ SvelteKit
+<font color="#06989A">│</font>  <font color="#4E9A06">●</font> Next.js (React framework)
+<font color="#06989A">│</font>  ○ Astro (Content-focused)
+<font color="#06989A">│</font>  ○ SvelteKit (Compile-time framework)
 <font color="#06989A">└</font></pre>
 
 #### Multiple values
@@ -112,18 +142,77 @@ import { multiselect } from '@clack/prompts';
 const framework = await multiselect({
   message: 'Pick a framework',
   options: [
-    { value: { framework: 'Next', language: 'React' }, label: 'Next.js' },
-    { value: { framework: null, language: 'Astro' }, label: 'Astro' },
-    { value: { framework: 'Sveltekit', language: 'Svelte' }, label: 'SvelteKit' },
+    { value: { framework: 'Next', language: 'React' }, label: 'Next.js', hint: 'React framework' },
+    { value: { framework: null, language: 'Astro' }, label: 'Astro', hint: 'Content-focused' },
+    { value: { framework: 'Sveltekit', language: 'Svelte' }, label: 'SvelteKit', hint: 'Compile-time framework' },
   ],
+  maxItems: 5, // Maximum number of items to display at once
 });
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
 <font color="#06989A">◆</font>  Pick a framework
-<font color="#06989A">│</font>  <font color="#4E9A06">◼</font> Next.js
-<font color="#06989A">│</font>  <font color="#06989A">◻</font> Astro
-<font color="#06989A">│</font>  ◻ SvelteKit
+<font color="#06989A">│</font>  <font color="#4E9A06">◼</font> Next.js (React framework)
+<font color="#06989A">│</font>  <font color="#06989A">◻</font> Astro (Content-focused)
+<font color="#06989A">│</font>  ◻ SvelteKit (Compile-time framework)
+<font color="#06989A">└</font></pre>
+
+### Autocomplete
+
+The `autocomplete` prompt combines text input with a searchable list of options. It's perfect for when you have a large list of options and want to help users find what they're looking for quickly.
+
+```ts twoslash
+import { autocomplete } from '@clack/prompts';
+
+const framework = await autocomplete({
+  message: 'Search for a framework',
+  options: [
+    { value: 'next', label: 'Next.js', hint: 'React framework' },
+    { value: 'astro', label: 'Astro', hint: 'Content-focused' },
+    { value: 'svelte', label: 'SvelteKit', hint: 'Compile-time framework' },
+    { value: 'remix', label: 'Remix', hint: 'Full stack framework' },
+    { value: 'nuxt', label: 'Nuxt', hint: 'Vue framework' },
+  ],
+  placeholder: 'Type to search...',
+  maxItems: 5, // Maximum number of items to display at once
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  Search for a framework
+<font color="#06989A">│</font>  Search: <span style="background-color:#FFFFFF"><font color="#181818">n</font></span>
+<font color="#06989A">│</font>  (2 matches)
+<font color="#06989A">│</font>  ● Next.js (React framework)
+<font color="#06989A">│</font>  ○ Nuxt (Vue framework)
+<font color="#06989A">└</font></pre>
+
+### Autocomplete Multiselect
+
+The `autocompleteMultiselect` combines the search functionality of autocomplete with the ability to select multiple options.
+
+```ts twoslash
+import { autocompleteMultiselect } from '@clack/prompts';
+
+const frameworks = await autocompleteMultiselect({
+  message: 'Select frameworks',
+  options: [
+    { value: 'next', label: 'Next.js', hint: 'React framework' },
+    { value: 'astro', label: 'Astro', hint: 'Content-focused' },
+    { value: 'svelte', label: 'SvelteKit', hint: 'Compile-time framework' },
+    { value: 'remix', label: 'Remix', hint: 'Full stack framework' },
+    { value: 'nuxt', label: 'Nuxt', hint: 'Vue framework' },
+  ],
+  placeholder: 'Type to search...',
+  maxItems: 5, // Maximum number of items to display at once
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  Select frameworks
+<font color="#06989A">│</font>  Search: <span style="background-color:#FFFFFF"><font color="#181818">n</font></span>
+<font color="#06989A">│</font>  (2 matches)
+<font color="#06989A">│</font>  ◼ Next.js (React framework)
+<font color="#06989A">│</font>  ◻ Nuxt (Vue framework)
 <font color="#06989A">└</font></pre>
 
 ### Confirmation
@@ -152,43 +241,47 @@ const projectOptions = await groupMultiselect({
     message: 'Define your project',
     options: {
         'Testing': [
-            { value: 'Jest' },
-            { value: 'Playwright' },
-            { value: 'Vitest' },
+            { value: 'Jest', hint: 'JavaScript testing framework' },
+            { value: 'Playwright', hint: 'End-to-end testing' },
+            { value: 'Vitest', hint: 'Vite-native testing' },
         ],
         'Language': [{
             label: "Javascript",
             value: 'js',
+            hint: 'Dynamic typing'
         }, {
             label: 'TypeScript',
             value: 'ts',
+            hint: 'Static typing'
         }, {
             label: "CoffeeScript",
             value: 'coffee',
+            hint: 'JavaScript with Ruby-like syntax'
         }],
         'Code quality': [
-            { value: 'Prettier' },
-            { value: 'ESLint' },
-            { value: 'Biome.js' },
+            { value: 'Prettier', hint: 'Code formatter' },
+            { value: 'ESLint', hint: 'Linter' },
+            { value: 'Biome.js', hint: 'Formatter and linter' },
         ],
     },
+    maxItems: 5, // Maximum number of items to display per group
 });
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
 <font color="#06989A">◆</font>  Define your project
 <font color="#06989A">│</font>  <font color="#4E9A06">◼</font> Testing
-<font color="#06989A">│</font>  │ <font color="#4E9A06">◼</font> Jest
-<font color="#06989A">│</font>  │ <font color="#4E9A06">◼</font> Playwright
-<font color="#06989A">│</font>  └ <font color="#4E9A06">◼</font> Vitest
+<font color="#06989A">│</font>  │ <font color="#4E9A06">◼</font> Jest (JavaScript testing framework)
+<font color="#06989A">│</font>  │ <font color="#4E9A06">◼</font> Playwright (End-to-end testing)
+<font color="#06989A">│</font>  └ <font color="#4E9A06">◼</font> Vitest (Vite-native testing)
 <font color="#06989A">│</font>  <font color="#06989A">◻</font> Language
-<font color="#06989A">│</font>  │ <font color="#4E9A06">◼</font> Javascript
-<font color="#06989A">│</font>  │ <font color="#06989A">◻</font> TypeScript
-<font color="#06989A">│</font>  └ <font color="#06989A">◻</font> CoffeeScript
+<font color="#06989A">│</font>  │ <font color="#4E9A06">◼</font> Javascript (Dynamic typing)
+<font color="#06989A">│</font>  │ <font color="#06989A">◻</font> TypeScript (Static typing)
+<font color="#06989A">│</font>  └ <font color="#06989A">◻</font> CoffeeScript (JavaScript with Ruby-like syntax)
 <font color="#06989A">│</font>  ◻ Code quality
-<font color="#06989A">│</font>  │ ◻ Prettier
-<font color="#06989A">│</font>  │ ◻ ESLint
-<font color="#06989A">│</font>  └ <font color="#4E9A06">◼</font> Biome.js
+<font color="#06989A">│</font>  │ ◻ Prettier (Code formatter)
+<font color="#06989A">│</font>  │ ◻ ESLint (Linter)
+<font color="#06989A">│</font>  └ <font color="#4E9A06">◼</font> Biome.js (Formatter and linter)
 <font color="#06989A">└</font></pre>
 
 ### Group
@@ -457,7 +550,7 @@ await stream.step([
 <font color="#555753">│</font>  ⠀⠀⠀⠀⠀⣠⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 <font color="#555753">│</font>  ⠀⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 <font color="#555753">│</font>  ⠀⠀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-<font color="#555753">│</font>  ⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀
+<font color="#555753">│</font>  ⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀
 <font color="#555753">│</font>  ⢰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⣿⣿⣿⡿⠀⠀⠀⠀⣀⠀
 <font color="#555753">│</font>  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⢠⣿⣿⣶⣤⣄⣻⣿⣿⣇⣠⣴⣶⣿⣿⡀
 <font color="#555753">│</font>  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⢾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡧
@@ -476,15 +569,3 @@ await stream.step([
 <font color="#4E9A06">◇</font>  Job1{`...`} <font color="#4E9A06">done</font>
 <font color="#555753">│</font>  Job2{`...`} <font color="#4E9A06">done</font>
 <font color="#555753">│</font>  Job3{`...`} <font color="#4E9A06">done</font></pre>
-
-## Installation
-
-```bash
-npm install @clack/prompts
-```
-
-## Usage
-
-The prompts package is designed to be intuitive and easy to use. Each prompt function returns a Promise that resolves to the user's input.
-
-For more detailed examples and advanced usage patterns, check out our [examples guide](/docs/guides/examples) and [best practices](/docs/guides/best-practices).

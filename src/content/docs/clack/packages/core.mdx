@@ -12,32 +12,11 @@ The `@clack/core` package provides the fundamental building blocks for creating 
 - **Type-safe**: Built with TypeScript for better developer experience
 - **Flexible rendering**: Customizable rendering system for prompts
 - **Cancel handling**: Built-in support for handling user cancellation
+- **Event system**: Comprehensive event handling for user interactions
+- **Input validation**: Built-in support for input validation
+- **Abort signal support**: Integration with AbortController for cancellation
 
-## Package Structure
-
-The core package is organized into two main directories:
-
-- `prompts/`: Contains the base prompt implementations
-- `utils/`: Contains utility functions and helpers
-
-## Core Components
-
-### Base Prompt Class
-
-The `Prompt` class serves as the foundation for all prompt types. It provides:
-
-- Custom rendering capabilities
-- Input handling
-- State management
-- Event system
-
-### Available Prompts
-
-1. **TextPrompt**: For text input
-2. **SelectPrompt**: For selection from options
-3. **ConfirmPrompt**: For yes/no confirmations
-
-## Getting Started
+## Installation
 
 To start using the core package, first install it:
 
@@ -62,7 +41,159 @@ To start using the core package, first install it:
 Then import the components you need:
 
 ```ts
-import { TextPrompt, SelectPrompt, ConfirmPrompt } from '@clack/core';
+import { 
+  TextPrompt, 
+  SelectPrompt, 
+  ConfirmPrompt,
+  AutocompletePrompt,
+  PasswordPrompt,
+  MultiSelectPrompt,
+  GroupMultiSelectPrompt,
+  SelectKeyPrompt
+} from '@clack/core';
 ```
 
-For detailed examples and usage patterns, check out our [examples guide](/docs/guides/examples). 
+## Package Structure
+
+The core package is organized into two main directories:
+
+- `prompts/`: Contains the base prompt implementations
+- `utils/`: Contains utility functions and helpers
+
+## Core Components
+
+### Base Prompt Class
+
+The `Prompt` class serves as the foundation for all prompt types. It provides:
+
+- Custom rendering capabilities
+- Input handling
+- State management
+- Event system
+- Validation support
+- Abort signal integration
+
+#### Key Methods
+
+```ts
+class Prompt {
+  // Event handling
+  on<T extends keyof ClackEvents>(event: T, cb: ClackEvents[T]): void;
+  once<T extends keyof ClackEvents>(event: T, cb: ClackEvents[T]): void;
+  emit<T extends keyof ClackEvents>(event: T, ...data: Parameters<ClackEvents[T]>): void;
+
+  // Core functionality
+  prompt(): Promise<string | symbol>;
+  close(): void;
+}
+```
+
+#### Available Events
+
+- `submit`: Triggered when the user submits the prompt
+- `cancel`: Triggered when the user cancels the prompt
+- `value`: Triggered when the value changes
+- `cursor`: Triggered when the cursor position changes
+- `key`: Triggered when a key is pressed
+- `confirm`: Triggered for yes/no confirmations
+- `finalize`: Triggered when the prompt is finalized
+
+### Available Prompts
+
+1. **TextPrompt**: For text input
+   - Supports validation
+   - Placeholder text
+   - Initial value
+
+2. **SelectPrompt**: For selection from options
+   - Multiple selection support
+   - Custom rendering
+   - Option filtering
+
+3. **ConfirmPrompt**: For yes/no confirmations
+   - Yes/No shortcuts
+   - Custom messages
+
+4. **AutocompletePrompt**: For searchable selection
+   - Type-ahead filtering
+   - Custom filtering logic
+   - Multiple selection support
+
+5. **PasswordPrompt**: For secure input
+   - Character masking
+   - Validation support
+
+6. **MultiSelectPrompt**: For multiple selections
+   - Checkbox interface
+   - Selection limits
+   - Custom rendering
+
+7. **GroupMultiSelectPrompt**: For grouped selections
+   - Hierarchical options
+   - Group selection
+   - Custom rendering
+
+8. **SelectKeyPrompt**: For key-based selection
+   - Custom key bindings
+   - Multiple selection support
+
+## Creating Custom Prompts
+
+You can create custom prompts by extending the base `Prompt` class:
+
+```ts
+import Prompt from '@clack/core';
+
+class CustomPrompt extends Prompt {
+  constructor(options: PromptOptions<CustomPrompt>) {
+    super(options);
+  }
+
+  protected _isActionKey(char: string | undefined, key: Key): boolean {
+    // Custom key handling
+    return false;
+  }
+
+  protected _setValue(value: unknown): void {
+    // Custom value handling
+    super._setValue(value);
+  }
+}
+```
+
+## Best Practices
+
+1. **Error Handling**: Always handle the cancel symbol in your prompts
+   ```ts
+   const result = await prompt.prompt();
+   if (result === CANCEL_SYMBOL) {
+     // Handle cancellation
+   }
+   ```
+
+2. **Validation**: Use the built-in validation system
+   ```ts
+   const prompt = new TextPrompt({
+     validate: (value) => {
+       if (!value) return 'Value is required';
+       return undefined;
+     }
+   });
+   ```
+
+3. **Abort Signals**: Use AbortController for cancellation
+   ```ts
+   const controller = new AbortController();
+   const prompt = new TextPrompt({
+     signal: controller.signal
+   });
+   ```
+
+4. **Event Handling**: Use the event system for complex interactions
+   ```ts
+   prompt.on('value', (value) => {
+     // Handle value changes
+   });
+   ```
+
+For detailed examples and usage patterns, check out our [examples guide](/docs/guides/examples).
