@@ -40,12 +40,11 @@ To start using the core package, first install it:
 
 Then import the components you need:
 
-```ts
+```ts twoslash
 import { 
   TextPrompt, 
   SelectPrompt, 
   ConfirmPrompt,
-  AutocompletePrompt,
   PasswordPrompt,
   MultiSelectPrompt,
   GroupMultiSelectPrompt,
@@ -75,12 +74,13 @@ The `Prompt` class serves as the foundation for all prompt types. It provides:
 
 #### Key Methods
 
-```ts
-class Prompt {
+```ts twoslash
+
+interface Prompt {
   // Event handling
-  on<T extends keyof ClackEvents>(event: T, cb: ClackEvents[T]): void;
-  once<T extends keyof ClackEvents>(event: T, cb: ClackEvents[T]): void;
-  emit<T extends keyof ClackEvents>(event: T, ...data: Parameters<ClackEvents[T]>): void;
+  on<T extends string>(event: T, cb: (value: any) => void): void;
+  once<T extends string>(event: T, cb: (value: any) => void): void;
+  emit<T extends string>(event: T, ...data: any[]): void;
 
   // Core functionality
   prompt(): Promise<string | symbol>;
@@ -90,13 +90,32 @@ class Prompt {
 
 #### Available Events
 
-- `submit`: Triggered when the user submits the prompt
-- `cancel`: Triggered when the user cancels the prompt
-- `value`: Triggered when the value changes
-- `cursor`: Triggered when the cursor position changes
-- `key`: Triggered when a key is pressed
-- `confirm`: Triggered for yes/no confirmations
-- `finalize`: Triggered when the prompt is finalized
+The `Prompt` interface provides several events that can be handled:
+
+```ts twoslash
+// @errors: 2304 7006 2353 2345 2459
+import { Prompt } from '@clack/core';
+
+// Example usage
+const p = new Prompt({
+  render: () => 'Enter your name:'
+});
+
+// Handle value changes
+p.on('value', (value?: string) => {
+  console.log('Value changed:', value);
+});
+
+// Handle submission
+p.on('submit', (value?: string) => {
+  console.log('Submitted:', value);
+});
+
+// Handle cancellation
+p.on('cancel', () => {
+  console.log('Operation cancelled');
+});
+```
 
 ### Available Prompts
 
@@ -141,59 +160,18 @@ class Prompt {
 
 You can create custom prompts by extending the base `Prompt` class:
 
-```ts
-import Prompt from '@clack/core';
+```ts twoslash
+import { Prompt } from '@clack/core';
 
+// Example of extending the base Prompt class
 class CustomPrompt extends Prompt {
-  constructor(options: PromptOptions<CustomPrompt>) {
-    super(options);
-  }
-
-  protected _isActionKey(char: string | undefined, key: Key): boolean {
-    // Custom key handling
-    return false;
-  }
-
-  protected _setValue(value: unknown): void {
-    // Custom value handling
-    super._setValue(value);
+  constructor(options: { message: string }) {
+    super({
+      ...options,
+      render: () => `${options.message}\n${this.value || ''}`
+    });
   }
 }
 ```
-
-## Best Practices
-
-1. **Error Handling**: Always handle the cancel symbol in your prompts
-   ```ts
-   const result = await prompt.prompt();
-   if (result === CANCEL_SYMBOL) {
-     // Handle cancellation
-   }
-   ```
-
-2. **Validation**: Use the built-in validation system
-   ```ts
-   const prompt = new TextPrompt({
-     validate: (value) => {
-       if (!value) return 'Value is required';
-       return undefined;
-     }
-   });
-   ```
-
-3. **Abort Signals**: Use AbortController for cancellation
-   ```ts
-   const controller = new AbortController();
-   const prompt = new TextPrompt({
-     signal: controller.signal
-   });
-   ```
-
-4. **Event Handling**: Use the event system for complex interactions
-   ```ts
-   prompt.on('value', (value) => {
-     // Handle value changes
-   });
-   ```
 
 For detailed examples and usage patterns, check out our [examples guide](/docs/guides/examples).

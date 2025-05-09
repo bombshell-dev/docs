@@ -54,7 +54,7 @@ console.log(`You selected ${framework}`);
 ```ts twoslash
 import { autocomplete, isCancel } from '@clack/prompts';
 
-const package = await autocomplete({
+const selectedPackage = await autocomplete({
   message: 'Search for a package:',
   options: [
     { value: 'react', label: 'React', hint: 'A JavaScript library for building user interfaces' },
@@ -67,12 +67,12 @@ const package = await autocomplete({
   maxItems: 5,
 });
 
-if (isCancel(package)) {
+if (isCancel(selectedPackage)) {
   console.log('Operation cancelled');
   process.exit(0);
 }
 
-console.log(`Selected package: ${package}`);
+console.log(`Selected package: ${selectedPackage}`);
 ```
 
 ### Multi-select with Groups
