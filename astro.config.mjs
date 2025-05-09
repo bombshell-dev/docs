@@ -89,6 +89,19 @@ export default defineConfig({
 							},
 							{ label: "Guides", autogenerate: { directory: "clack/guides" } },
 						],
+					},
+					{
+						label: "Args",
+						id: "args",
+						icon: "seti:shell",
+						link: "/args/getting-started",
+						items: [
+							{ label: "Basics", link: "/args/getting-started" },
+							{
+								label: "API",
+								link: "args/api",
+							},
+						],
 					}
 				]),
 			],
