@@ -12,32 +12,11 @@ The `@clack/core` package provides the fundamental building blocks for creating 
 - **Type-safe**: Built with TypeScript for better developer experience
 - **Flexible rendering**: Customizable rendering system for prompts
 - **Cancel handling**: Built-in support for handling user cancellation
+- **Event system**: Comprehensive event handling for user interactions
+- **Input validation**: Built-in support for input validation
+- **Abort signal support**: Integration with AbortController for cancellation
 
-## Package Structure
-
-The core package is organized into two main directories:
-
-- `prompts/`: Contains the base prompt implementations
-- `utils/`: Contains utility functions and helpers
-
-## Core Components
-
-### Base Prompt Class
-
-The `Prompt` class serves as the foundation for all prompt types. It provides:
-
-- Custom rendering capabilities
-- Input handling
-- State management
-- Event system
-
-### Available Prompts
-
-1. **TextPrompt**: For text input
-2. **SelectPrompt**: For selection from options
-3. **ConfirmPrompt**: For yes/no confirmations
-
-## Getting Started
+## Installation
 
 To start using the core package, first install it:
 
@@ -61,8 +40,138 @@ To start using the core package, first install it:
 
 Then import the components you need:
 
-```ts
-import { TextPrompt, SelectPrompt, ConfirmPrompt } from '@clack/core';
+```ts twoslash
+import { 
+  TextPrompt, 
+  SelectPrompt, 
+  ConfirmPrompt,
+  PasswordPrompt,
+  MultiSelectPrompt,
+  GroupMultiSelectPrompt,
+  SelectKeyPrompt
+} from '@clack/core';
 ```
 
-For detailed examples and usage patterns, check out our [examples guide](/docs/guides/examples). 
+## Package Structure
+
+The core package is organized into two main directories:
+
+- `prompts/`: Contains the base prompt implementations
+- `utils/`: Contains utility functions and helpers
+
+## Core Components
+
+### Base Prompt Class
+
+The `Prompt` class serves as the foundation for all prompt types. It provides:
+
+- Custom rendering capabilities
+- Input handling
+- State management
+- Event system
+- Validation support
+- Abort signal integration
+
+#### Key Methods
+
+```ts twoslash
+
+interface Prompt {
+  // Event handling
+  on<T extends string>(event: T, cb: (value: any) => void): void;
+  once<T extends string>(event: T, cb: (value: any) => void): void;
+  emit<T extends string>(event: T, ...data: any[]): void;
+
+  // Core functionality
+  prompt(): Promise<string | symbol>;
+  close(): void;
+}
+```
+
+#### Available Events
+
+The `Prompt` interface provides several events that can be handled:
+
+```ts twoslash
+// @errors: 2304 7006 2353 2345 2459
+import { Prompt } from '@clack/core';
+
+// Example usage
+const p = new Prompt({
+  render: () => 'Enter your name:'
+});
+
+// Handle value changes
+p.on('value', (value?: string) => {
+  console.log('Value changed:', value);
+});
+
+// Handle submission
+p.on('submit', (value?: string) => {
+  console.log('Submitted:', value);
+});
+
+// Handle cancellation
+p.on('cancel', () => {
+  console.log('Operation cancelled');
+});
+```
+
+### Available Prompts
+
+1. **TextPrompt**: For text input
+   - Supports validation
+   - Placeholder text
+   - Initial value
+
+2. **SelectPrompt**: For selection from options
+   - Multiple selection support
+   - Custom rendering
+   - Option filtering
+
+3. **ConfirmPrompt**: For yes/no confirmations
+   - Yes/No shortcuts
+   - Custom messages
+
+4. **AutocompletePrompt**: For searchable selection
+   - Type-ahead filtering
+   - Custom filtering logic
+   - Multiple selection support
+
+5. **PasswordPrompt**: For secure input
+   - Character masking
+   - Validation support
+
+6. **MultiSelectPrompt**: For multiple selections
+   - Checkbox interface
+   - Selection limits
+   - Custom rendering
+
+7. **GroupMultiSelectPrompt**: For grouped selections
+   - Hierarchical options
+   - Group selection
+   - Custom rendering
+
+8. **SelectKeyPrompt**: For key-based selection
+   - Custom key bindings
+   - Multiple selection support
+
+## Creating Custom Prompts
+
+You can create custom prompts by extending the base `Prompt` class:
+
+```ts twoslash
+import { Prompt } from '@clack/core';
+
+// Example of extending the base Prompt class
+class CustomPrompt extends Prompt {
+  constructor(options: { message: string }) {
+    super({
+      ...options,
+      render: () => `${options.message}\n${this.value || ''}`
+    });
+  }
+}
+```
+
+For detailed examples and usage patterns, check out our [examples guide](/docs/guides/examples).

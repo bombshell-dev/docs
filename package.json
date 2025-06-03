@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@astrojs/starlight": "^0.32.2",
+    "@clack/core": "^0.4.2",
+    "@clack/prompts": "1.0.0-alpha.0",
     "@bomb.sh/args": "^0.3.1",
-    "@clack/core": "^0.4.1",
-    "@clack/prompts": "^0.10.0",
     "@types/node": "^22.13.11",
     "astro": "^5.1.5",
     "expressive-code-twoslash": "^0.4.0",

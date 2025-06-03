@@ -122,35 +122,22 @@ if (projectType === 'web') {
 Provide sensible defaults when appropriate:
 
 ```ts twoslash
-import { text } from '@clack/prompts';
-
-const configPath = await text({
-  message: 'Configuration file path:',
-  defaultValue: './config.json',
-  placeholder: 'Enter path to config file',
-});
-```
-
-### 6. Type Safety
-
-Leverage TypeScript for better type safety:
-
-```ts twoslash
-// @errors: 2322 2339
+// @errors: 2353
 import { text, select, isCancel } from '@clack/prompts';
 
-// Define validation functions outside
+// Define types for better type safety
+interface ProjectConfig {
+  name: string;
+  type: 'web' | 'cli';
+  framework?: 'react' | 'vue';
+  port?: number;
+}
+
+// Define validation functions
 function validateProjectName(value: string): string | undefined {
   if (value.length === 0) return 'Name is required';
   if (!/^[a-z0-9-]+$/.test(value)) return 'Name can only contain lowercase letters, numbers, and hyphens';
   return undefined;
-}
-
-// Define types for better type safety
-interface ProjectConfig {
-  name: string | symbol;
-  type: 'web' | 'cli';
-  framework?: string;
 }
 
 // Collect project configuration with type safety
@@ -159,6 +146,11 @@ async function collectProjectConfig(): Promise<ProjectConfig> {
     message: 'Project name:',
     validate: validateProjectName,
   });
+
+  if (isCancel(name)) {
+    console.log('Operation cancelled');
+    process.exit(0);
+  }
 
   const type = await select({
     message: 'Project type:',
@@ -173,10 +165,29 @@ async function collectProjectConfig(): Promise<ProjectConfig> {
     process.exit(0);
   }
 
-  return {
+  const config: ProjectConfig = {
     name,
     type,
   };
+
+  if (type === 'web') {
+    const framework = await select({
+      message: 'Choose a framework:',
+      options: [
+        { value: 'react', label: 'React' },
+        { value: 'vue', label: 'Vue' },
+      ],
+    });
+
+    if (isCancel(framework)) {
+      console.log('Operation cancelled');
+      process.exit(0);
+    }
+
+    config.framework = framework;
+  }
+
+  return config;
 }
 ```
 
@@ -285,4 +296,107 @@ const serverPort = await text({
     return undefined;
   },
 });
+``` 
+
+## Advanced Patterns
+
+### 1. Conditional Prompts
+
+Use conditional logic to show relevant prompts:
+
+```ts twoslash
+// @errors: 2339
+import { text, select, isCancel } from '@clack/prompts';
+
+interface DatabaseConfig {
+  type: 'postgres' | 'mysql' | 'sqlite';
+  host?: string;
+  port?: number;
+}
+
+async function setupDatabase() {
+  const dbType = await select({
+    message: 'Select database type:',
+    options: [
+      { value: 'postgres', label: 'PostgreSQL' },
+      { value: 'mysql', label: 'MySQL' },
+      { value: 'sqlite', label: 'SQLite' },
+    ],
+  });
+
+  if (isCancel(dbType)) {
+    console.log('Operation cancelled');
+    process.exit(0);
+  }
+
+  const config: DatabaseConfig = {
+    type: dbType,
+  };
+
+  // Only ask for host and port if not SQLite
+  if (dbType !== 'sqlite') {
+    const host = await text({
+      message: 'Database host:',
+      defaultValue: 'localhost',
+    });
+
+    if (isCancel(host)) {
+      console.log('Operation cancelled');
+      process.exit(0);
+    }
+
+    const port = await text({
+      message: 'Database port:',
+      defaultValue: dbType === 'postgres' ? '5432' : '3306',
+      validate: (value) => {
+        const num = parseInt(value);
+        if (isNaN(num)) return 'Please enter a valid number';
+        if (num < 1 || num > 65535) return 'Port must be between 1 and 65535';
+        return undefined;
+      },
+    });
+
+    if (isCancel(port)) {
+      console.log('Operation cancelled');
+      process.exit(0);
+    }
+
+    config.host = host;
+    config.port = parseInt(port);
+  }
+
+  return config;
+}
+```
+
+### 2. Reusable Prompt Functions
+
+Create reusable functions for common prompt patterns:
+
+```ts twoslash
+import { text, select, isCancel } from '@clack/prompts';
+
+async function promptForPort(defaultPort: string) {
+  const port = await text({
+    message: 'Enter port number:',
+    defaultValue: defaultPort,
+    validate: (value) => {
+      const num = parseInt(value);
+      if (isNaN(num)) return 'Please enter a valid number';
+      if (num < 1 || num > 65535) return 'Port must be between 1 and 65535';
+      return undefined;
+    },
+  });
+
+  if (isCancel(port)) {
+    console.log('Operation cancelled');
+    process.exit(0);
+  }
+
+  return parseInt(port);
+}
+
+// Use the reusable function
+const serverPort = await promptForPort('3000');
+const dbPort = await promptForPort('5432');
 ``` 
