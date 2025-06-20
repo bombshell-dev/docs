@@ -4,7 +4,8 @@
 	
 	--sl-color-text-heading: var(--heading-fill);
 	--sl-text-h1: var(--sl-text-6xl);
-  --sl-color-accent-low: hsl(311 100% 0% / 0.5);
+  --sl-color-accent-hsl: 311 100% 50%;
+  --sl-color-accent-low: hsl(311 100% 50% / 0.5);
   --sl-color-accent: hsl(311 100% 50% / 0.9);
   --sl-color-accent-high: hsl(311 100% 50% / 1);
 
@@ -16,6 +17,8 @@
   --sl-color-hairline-light: var(--surface-border-fill);
   --sl-color-hairline: var(--surface-border-fill);
   --sl-color-hairline-shade: var(--surface-border-fill);
+
+  --sl-icon-color: var(--color-white-90);
 }
 
 :is(h1, h2, h3, h4, h5, h6) {
@@ -63,6 +66,33 @@ header h1 {
 	font-family: var(--sl-font-heading);
 }
 
+a.site-title {
+  color: white;
+}
+
+starlight-toc nav > ul {
+  --c-start: var(--color-white-50);
+  --c-end: var(--color-white-10);
+  border-left: 1px solid transparent;
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--border-050);
+    background: linear-gradient(to bottom, var(--c-start), var(--c-end));
+  }
+  a {
+    border-left: 2px solid transparent;
+    border-radius: 0;
+  }
+  [aria-current] {
+    border-left-color: var(--sl-color-accent);
+  }
+}
+
 p, 
 li, 
 td, 
@@ -79,4 +109,31 @@ blockquote {
 	font-family: monospace;
 	background-color: #181818;
 	color: white;
+}
+
+.sidebar-pane {
+  a {
+    border: 1px solid transparent;
+  }
+  [aria-current="page"] {
+    --c-start: hsl(var(--sl-color-accent-hsl) / 5%);
+    --c-end: hsl(var(--sl-color-accent-hsl) / 30%);
+    color: var(--sl-color-accent);
+    background: linear-gradient(to right, var(--c-start), var(--c-end));
+    border-color: var(--sl-color-accent);
+
+    &:hover {
+      --c-start: hsl(var(--sl-color-accent-hsl) / 100%);
+      --c-end: hsl(var(--sl-color-accent-hsl) / 50%);
+      border-color: var(--sl-color-accent);
+      color: var(--color-gray-100);
+      background: linear-gradient(to right, var(--c-start), var(--c-end));
+    }
+  }
+}
+
+starlight-menu-button button,
+mobile-starlight-toc nav {
+  top: unset;
+  bottom: 0;
 }
