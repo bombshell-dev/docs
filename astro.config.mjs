@@ -15,14 +15,13 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: "Bombshell",
-			customCss: [
-				// Relative path to your @font-face CSS file.
-				"./src/fonts/font-face.css",
-			],
 			logo: {
 				dark: "./src/assets/dark.svg",
 				light: "./src/assets/light.svg",
 			},
+			customCss: [
+				'./src/styles/tint.css'
+			],
 			components: {
 				Head: "./src/starlightOverrides/Head.astro",
 			},
@@ -37,7 +36,7 @@ export default defineConfig({
 					tag: "link",
 					attrs: {
 						rel: "stylesheet",
-						href: "https://use.typekit.net/bst3mzh.css?v=4",
+						href: "https://use.typekit.net/bst3mzh.css?v=5",
 					},
 				},
 				{
@@ -69,11 +68,11 @@ export default defineConfig({
 					},
 				},
 			],
-			social: {
-				discord: "https://bomb.sh/chat",
-				blueSky: "https://bomb.sh/on/bluesky",
-				github: "https://bomb.sh/on/github",
-			},
+			social: [
+				{ icon: 'discord', label: 'Discord', href: 'https://bomb.sh/chat' },
+				{ icon: 'blueSky', label: 'Bluesky', href: 'https://bomb.sh/on/bluesky' },
+				{ icon: 'github', label: 'GitHub', href: 'https://bomb.sh/on/github' },
+			],
 			plugins: [
 				topics([
 					{

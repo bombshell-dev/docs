@@ -10,12 +10,12 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.32.2",
+    "@astrojs/starlight": "^0.34.4",
+    "@bomb.sh/args": "^0.3.1",
     "@clack/core": "^0.4.2",
     "@clack/prompts": "1.0.0-alpha.0",
-    "@bomb.sh/args": "^0.3.1",
     "@types/node": "^22.13.11",
-    "astro": "^5.1.5",
+    "astro": "^5.10.0",
     "expressive-code-twoslash": "^0.4.0",
     "sharp": "^0.33.5",
     "starlight-sidebar-topics": "^0.6.0"
