@@ -1,0 +1,76 @@
+---
+title: Tab
+description: Shell autocompletions for JavaScript CLI tools
+---
+
+import { CardGrid, Card } from '@astrojs/starlight/components';
+
+Tab is a powerful tool that brings shell autocompletions to JavaScript CLI tools. Inspired by tools like git and their excellent autocompletion experience, Tab makes the same functionality available for any JavaScript CLI project.
+
+## Features
+
+<CardGrid>
+
+  <Card title="Shell Integration" icon="seti:shell">
+    Seamless integration with zsh, bash, fish, and PowerShell. Get native autocompletion experience for your CLI tools.
+  </Card>
+
+  <Card title="Framework Adapters" icon="seti:smarty">
+    Built-in adapters for popular CLI frameworks including CAC, Citty, and Commander.js for easy integration.
+  </Card>
+
+  <Card title="Type-Safe" icon="rocket">
+    Full TypeScript support with type-safe completion handlers and autocomplete suggestions.
+  </Card>
+
+  <Card title="Custom Completions" icon="approve-check">
+    Define custom completion logic for commands and options with dynamic suggestions based on context.
+  </Card>
+
+  <Card title="Universal Support" icon="information">
+    Works with any JavaScript CLI tool, regardless of the underlying framework or architecture.
+  </Card>
+
+  <Card title="Easy Setup" icon="sun">
+    Simple installation and configuration with minimal code changes to add autocompletion to your CLI.
+  </Card>
+
+</CardGrid>
+
+## Quick Start
+
+Add shell autocompletions to your CLI in just a few lines:
+
+```ts
+import { Completion, script } from '@bombsh/tab';
+
+const completion = new Completion();
+
+completion.addCommand('dev', 'Start development server', [false], async () => {
+  return [
+    { value: 'dev', description: 'Start in development mode' },
+    { value: 'prod', description: 'Start in production mode' },
+  ];
+});
+
+completion.addOption('dev', '--port', 'Port number', async () => {
+  return [
+    { value: '3000', description: 'Development port' },
+    { value: '8080', description: 'Production port' },
+  ];
+}, 'p');
+
+// Generate shell completion script
+if (process.argv[2] === '--') {
+  await completion.parse(process.argv.slice(2));
+} else {
+  script(process.argv[2], 'my-cli', process.execPath);
+}
+```
+
+## What's Next?
+
+- [Getting Started](/docs/tab/basics/getting-started/) - Learn how to add autocompletions to your CLI
+- [Framework Adapters](/docs/tab/guides/adapters/) - Use Tab with CAC, Citty, and Commander.js
+- [Best Practices](/docs/tab/guides/best-practices/) - Learn best practices for implementing autocompletions
+- [API Reference](/docs/tab/api/core/) - Detailed API documentation 
