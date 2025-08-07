@@ -149,3 +149,21 @@
     --accent-muted: var(--color-pink-90);
     --accent-highlight: var(--color-pink-100);
 }
+
+:root[data-theme=light] {
+    --surface-border-highlight: var(--color-gray-30);
+    --surface-border-fill: var(--color-gray-20);
+    --surface-fill: var(--color-gray-20);
+    --surface-highlight: var(--container-fill);
+    --container-fill: var(--color-white-100);
+    --surface-inner-fill: var(--color-gray-10);
+    --surface-inner-highlight: var(--color-gray-20);
+    --heading-fill: var(--color-gray-100);
+    --heading-muted: var(--color-gray-70);
+    --heading-highlight: var(--color-gray-90);
+    --separator-fill: var(--color-gray-90);
+    --separator-highlight: var(--color-gray-70);
+    --accent-fill: var(--color-pink-100);
+    --accent-muted: var(--color-pink-50);
+    --accent-highlight: var(--color-pink-100);
+}

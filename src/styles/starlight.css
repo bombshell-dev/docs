@@ -18,7 +18,7 @@
   --sl-color-hairline: var(--surface-border-fill);
   --sl-color-hairline-shade: var(--surface-border-fill);
 
-  --sl-icon-color: var(--color-white-90);
+  --sl-icon-color: var(--heading-fill);
 }
 
 :is(h1, h2, h3, h4, h5, h6) {
@@ -36,9 +36,9 @@
 }
 
 :is(h1) {
-  --c-border: var(--color-white-100);
-  --c-start: var(--color-white-90);
-  --c-end: var(--color-white-50);
+  --c-border: var(--heading-fill);
+  --c-start: var(--heading-fill);
+  --c-end: var(--heading-muted);
   --s-border: 1px;
   -webkit-text-stroke-color: var(--c-border);
   -webkit-text-stroke-width: var(--s-border);
@@ -50,8 +50,8 @@
 }
 
 :is(h2, h3, h4, h5, h6) {
-  --c-start: var(--color-white-100);
-  --c-end: var(--color-white-50);
+  --c-start: var(--heading-fill);
+  --c-end: var(--heading-muted);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -67,12 +67,12 @@ header h1 {
 }
 
 a.site-title {
-  color: white;
+  color: var(--heading-fill);
 }
 
 starlight-toc nav > ul {
-  --c-start: var(--color-white-50);
-  --c-end: var(--color-white-10);
+  --c-start: var(--heading-muted);
+  --c-end: var(--separator-fill);
   border-left: 1px solid transparent;
   position: relative;
   &::before {
@@ -108,7 +108,7 @@ blockquote {
 	line-height: 1.2em;
 	font-family: monospace;
 	background-color: #181818;
-	color: white;
+	color: var(--color-white-100);
 }
 
 .sidebar-pane {
@@ -136,4 +136,36 @@ starlight-menu-button button,
 mobile-starlight-toc nav {
   top: unset;
   bottom: 0;
+}
+
+/* Light theme specific overrides for better readability */
+:root[data-theme=light] {
+  --sl-color-text: var(--color-gray-100);
+  --sl-color-text-muted: var(--color-gray-70);
+  --sl-color-text-accent: var(--color-gray-90);
+  
+  .sl-nav-link,
+  .site-title,
+  .sl-doc-title {
+    color: var(--color-gray-100);
+  }
+  
+  input::placeholder {
+    color: var(--color-gray-50);
+  }
+  
+  --sl-icon-color: var(--color-gray-100);
+  
+  .sl-link-button {
+    background-color: var(--color-gray-100);
+    color: var(--color-white-100);
+    border-color: var(--color-gray-100);
+  }
+  .sl-link-button > svg {
+    fill: var(--color-white-100);
+  }
+
+  .starlight-sidebar-topics-icon{
+    background-color: var(--color-gray-20);
+  }
 }
