@@ -1,0 +1,295 @@
+---
+title: Core API
+description: Complete API reference for the Tab core package
+---
+
+This page provides the complete API reference for the Tab core package, including all classes, methods, types, and interfaces.
+
+## Classes
+
+### Completion
+
+The main class for managing command and option completions.
+
+```ts
+import { Completion } from '@bombsh/tab';
+
+const completion = new Completion();
+```
+
+#### Methods
+
+##### addCommand
+
+Adds a completion handler for a command.
+
+**Parameters:**
+- `name` (string): The command name
+- `description` (string): Command description
+- `args` (boolean[]): Array indicating which arguments are required (false) or optional (true)
+- `handler` (Handler): Function that returns completion suggestions
+- `parent` (string, optional): Parent command name for nested commands
+
+**Returns:** string - The command key
+
+**Example:**
+```ts
+// Command with required argument: "vite <entry>"
+completion.addCommand('dev', 'Start development server', [false], async () => {
+  return [
+    { value: 'src/main.ts', description: 'Main entry point' },
+    { value: 'src/index.ts', description: 'Index entry point' },
+  ];
+});
+
+// Command with optional argument: "vite [entry]"
+completion.addCommand('serve', 'Start the server', [true], async () => {
+  return [
+    { value: 'dist', description: 'Distribution directory' },
+  ];
+});
+
+// Nested command: "vite dev build"
+completion.addCommand('build', 'Build project', [], async () => {
+  return [
+    { value: 'build', description: 'Build command' },
+  ];
+}, 'dev');
+```
+
+##### addOption
+
+Adds a completion handler for an option of a specific command.
+
+**Parameters:**
+- `command` (string): The command name
+- `option` (string): The option name (e.g., '--port')
+- `description` (string): Option description
+- `handler` (Handler): Function that returns completion suggestions
+- `alias` (string, optional): Short flag alias (e.g., 'p' for '--port')
+
+**Returns:** string - The option name
+
+**Example:**
+```ts
+completion.addOption('dev', '--port', 'Port number', async () => {
+  return [
+    { value: '3000', description: 'Development port' },
+    { value: '8080', description: 'Production port' },
+  ];
+}, 'p');
+```
+
+##### parse
+
+Parses command line arguments and outputs completion suggestions to stdout.
+
+**Parameters:**
+- `args` (string[]): Command line arguments
+
+**Example:**
+```ts
+await completion.parse(['--port']);
+// Outputs completion suggestions to stdout
+```
+
+### script
+
+Generates shell completion scripts.
+
+**Parameters:**
+- `shell` (string): Target shell ('zsh', 'bash', 'fish', 'powershell')
+- `name` (string): CLI tool name
+- `execPath` (string): Executable path for the CLI tool
+
+**Example:**
+```ts
+import { script } from '@bombsh/tab';
+
+script('zsh', 'my-cli', '/usr/bin/node /path/to/my-cli');
+```
+
+## Types
+
+### Handler
+
+Function type for completion handlers.
+
+```ts
+type Handler = (
+  previousArgs: string[],
+  toComplete: string,
+  endsWithSpace: boolean
+) => Item[] | Promise<Item[]>;
+```
+
+**Parameters:**
+- `previousArgs` (string[]): Previously typed arguments
+- `toComplete` (string): The text being completed
+- `endsWithSpace` (boolean): Whether the input ends with a space
+
+**Returns:** Item[] | Promise&lt;Item[]&gt;
+
+**Example:**
+```ts
+const handler: Handler = async (previousArgs, toComplete, endsWithSpace) => {
+  // Check if user is typing 'prod' to suggest production
+  if (toComplete.startsWith('prod')) {
+    return [
+      { value: 'production', description: 'Production environment' },
+    ];
+  }
+  
+  return [
+    { value: 'development', description: 'Development environment' },
+    { value: 'staging', description: 'Staging environment' },
+    { value: 'production', description: 'Production environment' },
+  ];
+};
+```
+
+### Item
+
+Object representing a completion suggestion.
+
+```ts
+type Item = {
+  value: string;
+  description: string;
+};
+```
+
+**Properties:**
+- `value` (string): The completion value
+- `description` (string): Description of the completion
+
+**Example:**
+```ts
+const item: Item = {
+  value: '3000',
+  description: 'Development port'
+};
+```
+
+### `Positional`
+
+Type for positional argument configuration.
+
+```ts
+type Positional = {
+  required: boolean;
+  variadic: boolean;
+  completion: Handler;
+};
+```
+
+## Constants
+
+### ShellCompRequestCmd
+
+The name of the hidden command used to request completion results.
+
+```ts
+export const ShellCompRequestCmd: string = '__complete';
+```
+
+### ShellCompNoDescRequestCmd
+
+The name of the hidden command used to request completion results without descriptions.
+
+```ts
+export const ShellCompNoDescRequestCmd: string = '__completeNoDesc';
+```
+
+### ShellCompDirective
+
+Bit map representing different behaviors the shell can be instructed to have.
+
+```ts
+export const ShellCompDirective = {
+  ShellCompDirectiveError: 1 << 0,
+  ShellCompDirectiveNoSpace: 1 << 1,
+  ShellCompDirectiveNoFileComp: 1 << 2,
+  ShellCompDirectiveFilterFileExt: 1 << 3,
+  ShellCompDirectiveFilterDirs: 1 << 4,
+  ShellCompDirectiveKeepOrder: 1 << 5,
+  ShellCompDirectiveDefault: 0,
+};
+```
+
+## Complete Example
+
+Here's a complete example showing all the core API features:
+
+```ts
+#!/usr/bin/env node
+import { Completion, script } from '@bombsh/tab';
+
+const name = 'my-cli';
+const completion = new Completion();
+
+// Add command completions with positional arguments
+completion.addCommand('dev', 'Start development server', [false], async (previousArgs, toComplete, endsWithSpace) => {
+  if (toComplete.startsWith('dev')) {
+    return [
+      { value: 'dev', description: 'Start in development mode' },
+    ];
+  }
+  
+  return [
+    { value: 'dev', description: 'Start in development mode' },
+    { value: 'prod', description: 'Start in production mode' },
+  ];
+});
+
+// Add option completions
+completion.addOption('dev', '--port', 'Port number', async (previousArgs, toComplete, endsWithSpace) => {
+  if (toComplete.startsWith('30')) {
+    return [
+      { value: '3000', description: 'Development port' },
+    ];
+  }
+  
+  return [
+    { value: '3000', description: 'Development port' },
+    { value: '8080', description: 'Production port' },
+  ];
+}, 'p');
+
+// Helper function to quote paths with spaces
+function quoteIfNeeded(path: string) {
+  return path.includes(' ') ? `'${path}'` : path;
+}
+
+// Get the executable path for shell completion
+const execPath = process.execPath;
+const processArgs = process.argv.slice(1);
+const quotedExecPath = quoteIfNeeded(execPath);
+const quotedProcessArgs = processArgs.map(quoteIfNeeded);
+const quotedProcessExecArgs = process.execArgv.map(quoteIfNeeded);
+const x = `${quotedExecPath} ${quotedProcessExecArgs.join(' ')} ${quotedProcessArgs[0]}`;
+
+// Handle completion requests
+if (process.argv[2] === '--') {
+  try {
+    await completion.parse(process.argv.slice(2));
+  } catch (error) {
+    console.error('Completion error:', error.message);
+    process.exit(1);
+  }
+} else {
+  const shell = process.argv[2];
+  if (['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
+    script(shell, name, x);
+  } else {
+    console.error(`Unsupported shell: ${shell}`);
+    process.exit(1);
+  }
+}
+```
+
+## Next Steps
+
+- Learn about [Framework Adapters](/docs/tab/guides/adapters/) for easier integration
+- Check out [Examples](/docs/tab/guides/examples/) for practical use cases
+- Explore [Best Practices](/docs/tab/guides/best-practices/) for effective implementations 

@@ -1,0 +1,169 @@
+---
+title: Getting Started
+description: Learn how to add shell autocompletions to your CLI with Tab
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Tab provides shell autocompletions for JavaScript CLI tools, making your CLI feel as polished as native tools like git. This guide will walk you through adding autocompletions to your CLI tool.
+
+## Installation
+
+Install Tab using your preferred package manager:
+
+<Tabs>
+	<TabItem label="npm" icon="seti:npm">
+		```bash
+		npm install @bombsh/tab
+		```
+	</TabItem>
+	<TabItem label="pnpm" icon="pnpm">
+		```bash
+		pnpm add @bombsh/tab
+		```
+	</TabItem>
+	<TabItem label="Yarn" icon="seti:yarn">
+		```bash
+		yarn add @bombsh/tab
+		```
+	</TabItem>
+</Tabs>
+
+## Basic Usage
+
+Here's a simple example of how to add autocompletions to your CLI:
+
+```ts
+import { Completion, script } from '@bombsh/tab';
+
+const name = 'my-cli';
+const completion = new Completion();
+
+// Add command completions with positional arguments
+completion.addCommand(
+  'start',
+  'Start the application',
+  [false], // Required argument
+  async (previousArgs, toComplete, endsWithSpace) => {
+    return [
+      { value: 'dev', description: 'Start in development mode' },
+      { value: 'prod', description: 'Start in production mode' },
+    ];
+  }
+);
+
+// Add option completions
+completion.addOption(
+  'start',
+  '--port',
+  'Specify the port number',
+  async (previousArgs, toComplete, endsWithSpace) => {
+    return [
+      { value: '3000', description: 'Development port' },
+      { value: '8080', description: 'Production port' },
+    ];
+  },
+  'p' // Short flag alias
+);
+
+// Helper function to quote paths with spaces
+function quoteIfNeeded(path: string) {
+  return path.includes(' ') ? `'${path}'` : path;
+}
+
+// Get the executable path for shell completion
+const execPath = process.execPath;
+const processArgs = process.argv.slice(1);
+const quotedExecPath = quoteIfNeeded(execPath);
+const quotedProcessArgs = processArgs.map(quoteIfNeeded);
+const quotedProcessExecArgs = process.execArgv.map(quoteIfNeeded);
+const x = `${quotedExecPath} ${quotedProcessExecArgs.join(' ')} ${quotedProcessArgs[0]}`;
+
+// Handle completion requests
+if (process.argv[2] === '--') {
+  // Autocompletion logic
+  await completion.parse(process.argv.slice(2));
+} else {
+  // Generate shell completion script
+  script(process.argv[2], name, x);
+}
+```
+
+## Understanding Positional Arguments
+
+The `args` parameter in `addCommand` is an array of booleans that indicates which arguments are required or optional:
+
+```ts
+// Command: "my-cli start <entry>"
+completion.addCommand('start', 'Start the app', [false], handler);
+
+// Command: "my-cli serve [entry]"
+completion.addCommand('serve', 'Serve the app', [true], handler);
+
+// Command: "my-cli build <entry> [output]"
+completion.addCommand('build', 'Build the app', [false, true], handler);
+
+// Command: "my-cli dev [...files]"
+completion.addCommand('dev', 'Dev mode', [true], handler); // Variadic argument
+```
+
+## Shell Setup
+
+After adding Tab to your CLI, users need to set up shell completion. Here are the recommended approaches for different shells:
+
+### Zsh
+
+```bash
+# Generate completion script
+my-cli complete zsh > ~/completion-for-my-cli.zsh
+
+# Add to your .zshrc
+echo 'source ~/completion-for-my-cli.zsh' >> ~/.zshrc
+```
+
+### Bash
+
+```bash
+# Generate completion script
+my-cli complete bash > ~/.bash_completion.d/my-cli
+
+# Add to your .bashrc
+echo 'source ~/.bash_completion.d/my-cli' >> ~/.bashrc
+```
+
+### Fish
+
+```bash
+# Generate completion script
+my-cli complete fish > ~/.config/fish/completions/my-cli.fish
+```
+
+### PowerShell
+
+```powershell
+# Generate completion script
+my-cli complete powershell > $PROFILE.CurrentUserAllHosts
+```
+
+## How It Works
+
+Tab works by adding a `complete` command to your CLI that generates shell-specific completion scripts. When users type `my-cli complete zsh`, Tab generates a completion script that the shell can source.
+
+The completion script communicates with your CLI through the autocompletion server. When users press Tab, the shell calls your CLI with special arguments, and Tab returns the appropriate completions.
+
+### Autocompletion Server
+
+Your CLI becomes an autocompletion server when you add Tab. The server responds to completion requests with suggestions and ends its output with `:{Number}` to indicate the number of completions.
+
+For example:
+```bash
+my-cli complete -- --po
+--port  Specify the port number
+:0
+```
+
+## Next Steps
+
+- Learn about [Framework Adapters](/docs/tab/guides/adapters/) for easier integration with CAC, Citty, and Commander.js
+- Explore [Best Practices](/docs/tab/guides/best-practices/) for implementing effective autocompletions
+- Check out the [API Reference](/docs/tab/api/core/) for detailed documentation 

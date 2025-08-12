@@ -1,0 +1,312 @@
+---
+title: Best Practices
+description: Learn best practices for implementing effective autocompletions with Tab
+---
+
+This guide covers best practices for implementing autocompletions that provide a great user experience and integrate seamlessly with your CLI tool.
+
+## Completion Handler Design
+
+### Keep Handlers Fast
+
+Completion handlers should return results quickly since they're called frequently as users type:
+
+```ts
+// ✅ Good: Fast, synchronous completion
+completion.addOption('dev', '--port', 'Port number', () => {
+  return [
+    { value: '3000', description: 'Development port' },
+    { value: '8080', description: 'Production port' },
+  ];
+});
+
+// ❌ Avoid: Slow, async operations in completion handlers
+completion.addOption('dev', '--file', 'File path', async () => {
+  const files = await fs.readdir('.'); // This can be slow
+  return files.map(f => ({ value: f, description: 'File' }));
+});
+```
+
+### Use Context Appropriately
+
+Leverage the completion context to provide relevant suggestions:
+
+```ts
+completion.addOption('deploy', '--env', 'Environment', async (previousArgs, toComplete, endsWithSpace) => {
+  // Check if user is completing an environment name
+  if (toComplete.startsWith('prod')) {
+    return [
+      { value: 'production', description: 'Production environment' },
+    ];
+  }
+  
+  return [
+    { value: 'development', description: 'Development environment' },
+    { value: 'staging', description: 'Staging environment' },
+    { value: 'production', description: 'Production environment' },
+  ];
+});
+```
+
+### Provide Meaningful Descriptions
+
+Always include descriptions to help users understand what each completion means:
+
+```ts
+// ✅ Good: Clear descriptions
+completion.addCommand('deploy', 'Deploy application', () => {
+  return [
+    { value: 'dev', description: 'Deploy to development environment' },
+    { value: 'staging', description: 'Deploy to staging environment' },
+    { value: 'prod', description: 'Deploy to production environment' },
+  ];
+});
+
+// ❌ Avoid: No descriptions
+completion.addCommand('deploy', 'Deploy application', () => {
+  return [
+    { value: 'dev' },
+    { value: 'staging' },
+    { value: 'prod' },
+  ];
+});
+```
+
+## Shell Integration
+
+### Handle Spaces Correctly
+
+Pay attention to the `endsWithSpace` parameter to provide appropriate completions:
+
+```ts
+completion.addOption('dev', '--config', 'Config file', async (previousArgs, toComplete, endsWithSpace) => {
+  if (endsWithSpace) {
+    // User typed a space, suggest files
+    return [
+      { value: 'config.json', description: 'JSON config file' },
+      { value: 'config.yaml', description: 'YAML config file' },
+    ];
+  } else {
+    // User is typing, filter based on input
+    const suggestions = [
+      { value: 'config.json', description: 'JSON config file' },
+      { value: 'config.yaml', description: 'YAML config file' },
+    ];
+    
+    return suggestions.filter(s => s.value.startsWith(toComplete));
+  }
+});
+```
+
+### Support Multiple Shells
+
+Test your completions across different shells to ensure compatibility:
+
+```ts
+// Generate completion scripts for all supported shells
+if (process.argv[2] === '--') {
+  await completion.parse(process.argv.slice(2), 'start');
+} else {
+  const shell = process.argv[2];
+  if (['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
+    script(shell, 'my-cli', execPath);
+  } else {
+    console.error(`Unsupported shell: ${shell}`);
+    process.exit(1);
+  }
+}
+```
+
+## User Experience
+
+### Progressive Disclosure
+
+Show relevant completions based on what the user has already typed:
+
+```ts
+completion.addCommand('deploy', 'Deploy application', async (previousArgs, toComplete, endsWithSpace) => {
+  // If user typed 'prod', only show production-related options
+  if (toComplete.startsWith('prod')) {
+    return [
+      { value: 'production', description: 'Production environment' },
+    ];
+  }
+  
+  // Show all options otherwise
+  return [
+    { value: 'development', description: 'Development environment' },
+    { value: 'staging', description: 'Staging environment' },
+    { value: 'production', description: 'Production environment' },
+  ];
+});
+```
+
+### Consistent Naming
+
+Use consistent naming patterns across your CLI:
+
+```ts
+// ✅ Good: Consistent naming
+completion.addCommand('deploy', 'Deploy application', () => {
+  return [
+    { value: 'dev', description: 'Deploy to development' },
+    { value: 'staging', description: 'Deploy to staging' },
+    { value: 'prod', description: 'Deploy to production' },
+  ];
+});
+
+completion.addCommand('build', 'Build application', () => {
+  return [
+    { value: 'dev', description: 'Development build' },
+    { value: 'staging', description: 'Staging build' },
+    { value: 'prod', description: 'Production build' },
+  ];
+});
+```
+
+### Error Handling
+
+Handle errors gracefully in completion handlers:
+
+```ts
+completion.addOption('deploy', '--config', 'Config file', async () => {
+  try {
+    const files = await fs.readdir('.');
+    return files
+      .filter(f => f.endsWith('.json') || f.endsWith('.yaml'))
+      .map(f => ({ value: f, description: `Config file: ${f}` }));
+  } catch (error) {
+    // Return empty array instead of throwing
+    console.error('Error reading config files:', error);
+    return [];
+  }
+});
+```
+
+## Performance Considerations
+
+### Cache Expensive Operations
+
+Cache results for expensive operations that don't change frequently:
+
+```ts
+let cachedPorts: Array<{ value: string; description: string }> | null = null;
+
+completion.addOption('dev', '--port', 'Port number', async () => {
+  if (cachedPorts) {
+    return cachedPorts;
+  }
+  
+  // Expensive operation (e.g., reading from config)
+  const ports = await getAvailablePorts();
+  cachedPorts = ports.map(p => ({ 
+    value: p.toString(), 
+    description: `Port ${p}` 
+  }));
+  
+  return cachedPorts;
+});
+```
+
+### Limit Result Sets
+
+Don't overwhelm users with too many completions:
+
+```ts
+completion.addOption('search', '--file', 'File pattern', async (previousArgs, toComplete, endsWithSpace) => {
+  const files = await getMatchingFiles(toComplete);
+  
+  // Limit to 20 results to avoid overwhelming the user
+  return files.slice(0, 20).map(f => ({ 
+    value: f, 
+    description: `File: ${f}` 
+  }));
+});
+```
+
+## Testing
+
+### Test Completion Handlers
+
+Write tests for your completion handlers to ensure they work correctly:
+
+```ts
+import { Completion } from '@bombsh/tab';
+
+describe('CLI Completions', () => {
+  let completion: Completion;
+  
+  beforeEach(() => {
+    completion = new Completion();
+    // Setup your completion handlers
+  });
+  
+  test('should suggest ports for --port option', async () => {
+    const result = await completion.parse(['--port'], 'dev');
+    expect(result).toContainEqual({ value: '3000', description: 'Development port' });
+  });
+  
+  test('should filter suggestions based on input', async () => {
+    const result = await completion.parse(['--port', '30'], 'dev');
+    expect(result).toContainEqual({ value: '3000', description: 'Development port' });
+    expect(result).not.toContainEqual({ value: '8080', description: 'Production port' });
+  });
+});
+```
+
+### Test Shell Integration
+
+Test that your completion scripts work correctly in different shells:
+
+```bash
+# Test zsh completion
+source <(my-cli complete zsh)
+my-cli dev --po<TAB>  # Should suggest --port
+
+# Test bash completion
+source <(my-cli complete bash)
+my-cli dev --po<TAB>  # Should suggest --port
+```
+
+## Common Patterns
+
+### File Completions
+
+```ts
+completion.addOption('build', '--config', 'Config file', async (previousArgs, toComplete, endsWithSpace) => {
+  const files = await fs.readdir('.');
+  return files
+    .filter(f => f.endsWith('.json') || f.endsWith('.yaml'))
+    .map(f => ({ value: f, description: `Config: ${f}` }));
+});
+```
+
+### Environment Completions
+
+```ts
+completion.addOption('deploy', '--env', 'Environment', () => {
+  return [
+    { value: 'development', description: 'Development environment' },
+    { value: 'staging', description: 'Staging environment' },
+    { value: 'production', description: 'Production environment' },
+  ];
+});
+```
+
+### Command Completions
+
+```ts
+completion.addCommand('deploy', 'Deploy application', () => {
+  return [
+    { value: 'dev', description: 'Deploy to development' },
+    { value: 'staging', description: 'Deploy to staging' },
+    { value: 'prod', description: 'Deploy to production' },
+  ];
+});
+```
+
+## Next Steps
+
+- Check out [Examples](/docs/tab/guides/examples/) for more practical use cases
+- Explore the [API Reference](/docs/tab/api/core/) for detailed documentation
+- Learn about [Framework Adapters](/docs/tab/guides/adapters/) for easier integration 
