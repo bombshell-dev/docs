@@ -34,77 +34,108 @@ Install Tab using your preferred package manager:
 Here's a simple example of how to add autocompletions to your CLI:
 
 ```ts
-import { Completion, script } from '@bombsh/tab';
+import { RootCommand } from '@bombsh/tab';
 
-const name = 'my-cli';
-const completion = new Completion();
+const t = new RootCommand();
 
-// Add command completions with positional arguments
-completion.addCommand(
-  'start',
-  'Start the application',
-  [false], // Required argument
-  async (previousArgs, toComplete, endsWithSpace) => {
-    return [
-      { value: 'dev', description: 'Start in development mode' },
-      { value: 'prod', description: 'Start in production mode' },
-    ];
-  }
-);
+// Add global options
+t.option('--config', 'Use specified config file', function(complete) {
+  complete('vite.config.ts', 'Vite config file');
+  complete('vite.config.js', 'Vite config file');
+}, 'c');
 
-// Add option completions
-completion.addOption(
-  'start',
-  '--port',
-  'Specify the port number',
-  async (previousArgs, toComplete, endsWithSpace) => {
-    return [
-      { value: '3000', description: 'Development port' },
-      { value: '8080', description: 'Production port' },
-    ];
-  },
-  'p' // Short flag alias
-);
+// Add commands with completions
+const devCmd = t.command('dev', 'Start development server');
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'Development port');
+  complete('8080', 'Production port');
+}, 'p');
 
-// Helper function to quote paths with spaces
-function quoteIfNeeded(path: string) {
-  return path.includes(' ') ? `'${path}'` : path;
-}
+devCmd.option('--host', 'Hostname', function(complete) {
+  complete('localhost', 'Localhost');
+  complete('0.0.0.0', 'All interfaces');
+}, 'H');
 
-// Get the executable path for shell completion
-const execPath = process.execPath;
-const processArgs = process.argv.slice(1);
-const quotedExecPath = quoteIfNeeded(execPath);
-const quotedProcessArgs = processArgs.map(quoteIfNeeded);
-const quotedProcessExecArgs = process.execArgv.map(quoteIfNeeded);
-const x = `${quotedExecPath} ${quotedProcessExecArgs.join(' ')} ${quotedProcessArgs[0]}`;
+// Add positional arguments
+t.command('copy', 'Copy files')
+  .argument('source', function(complete) {
+    complete('src/', 'Source directory');
+    complete('dist/', 'Distribution directory');
+  })
+  .argument('destination', function(complete) {
+    complete('build/', 'Build output');
+    complete('release/', 'Release directory');
+  });
 
 // Handle completion requests
-if (process.argv[2] === '--') {
-  // Autocompletion logic
-  await completion.parse(process.argv.slice(2));
+if (process.argv[2] === 'complete') {
+  const shell = process.argv[3];
+  if (shell && ['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
+    t.setup('my-cli', process.execPath, shell);
+  } else {
+    // Parse completion arguments (everything after --)
+    const separatorIndex = process.argv.indexOf('--');
+    const completionArgs = separatorIndex !== -1 ? process.argv.slice(separatorIndex + 1) : [];
+    t.parse(completionArgs);
+  }
 } else {
-  // Generate shell completion script
-  script(process.argv[2], name, x);
+  // Regular CLI usage
+  console.log('My CLI Tool');
+  console.log('Use "complete" command for shell completion');
 }
 ```
 
-## Understanding Positional Arguments
+## Understanding the API
 
-The `args` parameter in `addCommand` is an array of booleans that indicates which arguments are required or optional:
+### RootCommand Class
+
+The `RootCommand` class is the main entry point for defining your CLI structure:
 
 ```ts
-// Command: "my-cli start <entry>"
-completion.addCommand('start', 'Start the app', [false], handler);
+const t = new RootCommand();
+```
 
-// Command: "my-cli serve [entry]"
-completion.addCommand('serve', 'Serve the app', [true], handler);
+### Adding Commands
 
-// Command: "my-cli build <entry> [output]"
-completion.addCommand('build', 'Build the app', [false, true], handler);
+Use the `command()` method to add commands with descriptions:
 
-// Command: "my-cli dev [...files]"
-completion.addCommand('dev', 'Dev mode', [true], handler); // Variadic argument
+```ts
+const devCmd = t.command('dev', 'Start development server');
+```
+
+### Adding Options
+
+Add options to commands with completion handlers:
+
+```ts
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'Development port');
+  complete('8080', 'Production port');
+}, 'p'); // Short flag alias
+```
+
+### Adding Arguments
+
+Add positional arguments with completion handlers:
+
+```ts
+t.command('copy', 'Copy files')
+  .argument('source', function(complete) {
+    complete('src/', 'Source directory');
+    complete('dist/', 'Distribution directory');
+  });
+```
+
+### Variadic Arguments
+
+For commands that accept multiple arguments:
+
+```ts
+t.command('lint', 'Lint project')
+  .argument('files', function(complete) {
+    complete('main.ts', 'Main file');
+    complete('src/', 'Source directory');
+  }, true); // true = variadic argument
 ```
 
 ## Shell Setup
@@ -145,6 +176,38 @@ my-cli complete fish > ~/.config/fish/completions/my-cli.fish
 my-cli complete powershell > $PROFILE.CurrentUserAllHosts
 ```
 
+## Package Manager Integration
+
+Tab also provides a standalone CLI tool that enhances package manager completions with automatic CLI discovery:
+
+### Installing the Tab CLI
+
+```bash
+npm install -g @bombsh/tab
+```
+
+### Setting Up Package Manager Completions
+
+```bash
+# For pnpm
+tab pnpm zsh > ~/.zsh_completions/tab-pnpm.zsh
+echo 'source ~/.zsh_completions/tab-pnpm.zsh' >> ~/.zshrc
+
+# For npm
+tab npm zsh > ~/.zsh_completions/tab-npm.zsh
+echo 'source ~/.zsh_completions/tab-npm.zsh' >> ~/.zshrc
+
+# For yarn
+tab yarn zsh > ~/.zsh_completions/tab-yarn.zsh
+echo 'source ~/.zsh_completions/tab-yarn.zsh' >> ~/.zshrc
+
+# For bun
+tab bun zsh > ~/.zsh_completions/tab-bun.zsh
+echo 'source ~/.zsh_completions/tab-bun.zsh' >> ~/.zshrc
+```
+
+This provides enhanced completions for all CLI tools that support Tab completions, automatically detecting and providing completions for tools like Vite, TypeScript, and any other Tab-compatible CLI.
+
 ## How It Works
 
 Tab works by adding a `complete` command to your CLI that generates shell-specific completion scripts. When users type `my-cli complete zsh`, Tab generates a completion script that the shell can source.
@@ -158,12 +221,13 @@ Your CLI becomes an autocompletion server when you add Tab. The server responds 
 For example:
 ```bash
 my-cli complete -- --po
---port  Specify the port number
+--port  Port number
 :0
 ```
 
 ## Next Steps
 
 - Learn about [Framework Adapters](/docs/tab/guides/adapters/) for easier integration with CAC, Citty, and Commander.js
-- Explore [Best Practices](/docs/tab/guides/best-practices/) for implementing effective autocompletions
+- Explore [Package Manager Integration](/docs/tab/guides/package-managers/) for enhanced completions
+- Check out [Best Practices](/docs/tab/guides/best-practices/) for implementing effective autocompletions
 - Check out the [API Reference](/docs/tab/api/core/) for detailed documentation 
