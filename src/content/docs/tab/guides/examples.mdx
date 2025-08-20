@@ -11,59 +11,79 @@ A simple CLI tool with basic autocompletions:
 
 ```ts
 #!/usr/bin/env node
-import { Completion, script } from '@bombsh/tab';
+import { RootCommand } from '@bombsh/tab';
 
-const name = 'my-cli';
-const completion = new Completion();
+const t = new RootCommand();
 
-// Add command completions with positional arguments
-completion.addCommand('dev', 'Start development server', [false], () => {
-  return [
-    { value: 'dev', description: 'Start in development mode' },
-    { value: 'prod', description: 'Start in production mode' },
-  ];
+// Add global options
+t.option('--config', 'Use specified config file', function(complete) {
+  complete('vite.config.ts', 'Vite config file');
+  complete('vite.config.js', 'Vite config file');
+}, 'c');
+
+t.option('--mode', 'Set env mode', function(complete) {
+  complete('development', 'Development mode');
+  complete('production', 'Production mode');
+}, 'm');
+
+// Add root command argument
+t.argument('project', function(complete) {
+  complete('my-app', 'My application');
+  complete('my-lib', 'My library');
 });
 
-completion.addCommand('build', 'Build for production', [false], () => {
-  return [
-    { value: 'build', description: 'Build for production' },
-    { value: 'build:dev', description: 'Build for development' },
-  ];
-});
-
-// Add option completions
-completion.addOption('dev', '--port', 'Port number', () => {
-  return [
-    { value: '3000', description: 'Development port' },
-    { value: '8080', description: 'Production port' },
-  ];
+// Add commands with completions
+const devCmd = t.command('dev', 'Start development server');
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'Development port');
+  complete('8080', 'Production port');
 }, 'p');
 
-completion.addOption('dev', '--host', 'Host address', () => {
-  return [
-    { value: 'localhost', description: 'Local development' },
-    { value: '0.0.0.0', description: 'All interfaces' },
-  ];
+devCmd.option('--host', 'Host address', function(complete) {
+  complete('localhost', 'Local development');
+  complete('0.0.0.0', 'All interfaces');
 }, 'h');
 
-// Helper function to quote paths with spaces
-function quoteIfNeeded(path: string) {
-  return path.includes(' ') ? `'${path}'` : path;
-}
+devCmd.option('--verbose', 'Enable verbose logging', 'v');
 
-// Get the executable path for shell completion
-const execPath = process.execPath;
-const processArgs = process.argv.slice(1);
-const quotedExecPath = quoteIfNeeded(execPath);
-const quotedProcessArgs = processArgs.map(quoteIfNeeded);
-const quotedProcessExecArgs = process.execArgv.map(quoteIfNeeded);
-const x = `${quotedExecPath} ${quotedProcessExecArgs.join(' ')} ${quotedProcessArgs[0]}`;
+// Add build command
+const buildCmd = t.command('build', 'Build for production');
+buildCmd.option('--mode', 'Build mode', function(complete) {
+  complete('development', 'Development build');
+  complete('production', 'Production build');
+});
+
+buildCmd.option('--out-dir', 'Output directory', function(complete) {
+  complete('dist/', 'Distribution directory');
+  complete('build/', 'Build directory');
+});
+
+// Add command with arguments
+t.command('copy', 'Copy files')
+  .argument('source', function(complete) {
+    complete('src/', 'Source directory');
+    complete('dist/', 'Distribution directory');
+  })
+  .argument('destination', function(complete) {
+    complete('build/', 'Build output');
+    complete('release/', 'Release directory');
+  });
 
 // Handle completion requests
-if (process.argv[2] === '--') {
-  await completion.parse(process.argv.slice(2));
+if (process.argv[2] === 'complete') {
+  const shell = process.argv[3];
+  if (shell && ['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
+    t.setup('my-cli', process.execPath, shell);
+  } else {
+    // Parse completion arguments (everything after --)
+    const separatorIndex = process.argv.indexOf('--');
+    const completionArgs = separatorIndex !== -1 ? process.argv.slice(separatorIndex + 1) : [];
+    t.parse(completionArgs);
+  }
 } else {
-  script(process.argv[2], name, x);
+  // Regular CLI usage
+  console.log('My CLI Tool');
+  console.log('Use "complete" command for shell completion');
 }
 ```
 
@@ -101,86 +121,43 @@ cli.command('deploy', 'Deploy application')
     console.log('Deploying...', options);
   });
 
-// Initialize tab completion
-const completion = await tab(cli);
+// Initialize Tab completion
+const completion = tab(cli);
 
 // Configure custom completions
-for (const command of completion.commands.values()) {
-  if (command.name === 'dev') {
-    const portOption = command.options.get('--port');
-    if (portOption) {
-      portOption.handler = async () => {
-        return [
-          { value: '3000', description: 'Development port' },
-          { value: '8080', description: 'Production port' },
-        ];
-      };
-    }
-
-    const hostOption = command.options.get('--host');
-    if (hostOption) {
-      hostOption.handler = async () => {
-        return [
-          { value: 'localhost', description: 'Local development' },
-          { value: '0.0.0.0', description: 'All interfaces' },
-        ];
-      };
-    }
-
-    const configOption = command.options.get('--config');
-    if (configOption) {
-      configOption.handler = async () => {
-        return [
-          { value: 'vite.config.ts', description: 'Vite config' },
-          { value: 'vite.config.js', description: 'Vite config' },
-        ];
-      };
-    }
+const devCommandCompletion = completion.commands.get('dev');
+if (devCommandCompletion) {
+  const portOptionCompletion = devCommandCompletion.options.get('--port');
+  if (portOptionCompletion) {
+    portOptionCompletion.handler = async () => {
+      return [
+        { value: '3000', description: 'Development port' },
+        { value: '8080', description: 'Production port' },
+      ];
+    };
   }
 
-  if (command.name === 'build') {
-    const modeOption = command.options.get('--mode');
-    if (modeOption) {
-      modeOption.handler = async () => {
-        return [
-          { value: 'development', description: 'Development build' },
-          { value: 'production', description: 'Production build' },
-        ];
-      };
-    }
-
-    const outDirOption = command.options.get('--out-dir');
-    if (outDirOption) {
-      outDirOption.handler = async () => {
-        return [
-          { value: 'dist', description: 'Distribution directory' },
-          { value: 'build', description: 'Build directory' },
-        ];
-      };
-    }
+  const configOptionCompletion = devCommandCompletion.options.get('--config');
+  if (configOptionCompletion) {
+    configOptionCompletion.handler = async () => {
+      return [
+        { value: 'vite.config.ts', description: 'Vite config file' },
+        { value: 'vite.config.js', description: 'Vite config file' },
+      ];
+    };
   }
+}
 
-  if (command.name === 'deploy') {
-    const envOption = command.options.get('--env');
-    if (envOption) {
-      envOption.handler = async () => {
-        return [
-          { value: 'staging', description: 'Staging environment' },
-          { value: 'production', description: 'Production environment' },
-        ];
-      };
-    }
-
-    const regionOption = command.options.get('--region');
-    if (regionOption) {
-      regionOption.handler = async () => {
-        return [
-          { value: 'us-east-1', description: 'US East (N. Virginia)' },
-          { value: 'us-west-2', description: 'US West (Oregon)' },
-          { value: 'eu-west-1', description: 'Europe (Ireland)' },
-        ];
-      };
-    }
+const buildCommandCompletion = completion.commands.get('build');
+if (buildCommandCompletion) {
+  const modeOptionCompletion = buildCommandCompletion.options.get('--mode');
+  if (modeOptionCompletion) {
+    modeOptionCompletion.handler = async () => {
+      return [
+        { value: 'development', description: 'Development build' },
+        { value: 'production', description: 'Production build' },
+      ];
+    };
   }
 }
 
@@ -226,9 +203,21 @@ const buildCommand = defineCommand({
   },
 });
 
+const deployCommand = defineCommand({
+  meta: {
+    name: 'deploy',
+    description: 'Deploy application',
+  },
+  args: {
+    env: { type: 'string', description: 'Deployment environment' },
+    region: { type: 'string', description: 'Deployment region' },
+  },
+});
+
 main.subCommands = {
   dev: devCommand,
   build: buildCommand,
+  deploy: deployCommand,
 };
 
 const completion = await tab(main);
@@ -236,55 +225,12 @@ const completion = await tab(main);
 // Configure completions
 const devCommandCompletion = completion.commands.get('dev');
 if (devCommandCompletion) {
-  const portOption = devCommandCompletion.options.get('--port');
-  if (portOption) {
-    portOption.handler = async () => {
+  const portOptionCompletion = devCommandCompletion.options.get('--port');
+  if (portOptionCompletion) {
+    portOptionCompletion.handler = async () => {
       return [
         { value: '3000', description: 'Development port' },
         { value: '8080', description: 'Production port' },
-      ];
-    };
-  }
-
-  const hostOption = devCommandCompletion.options.get('--host');
-  if (hostOption) {
-    hostOption.handler = async () => {
-      return [
-        { value: 'localhost', description: 'Local development' },
-        { value: '0.0.0.0', description: 'All interfaces' },
-      ];
-    };
-  }
-
-  const configOption = devCommandCompletion.options.get('--config');
-  if (configOption) {
-    configOption.handler = async () => {
-      return [
-        { value: 'vite.config.ts', description: 'Vite config' },
-        { value: 'vite.config.js', description: 'Vite config' },
-      ];
-    };
-  }
-}
-
-const buildCommandCompletion = completion.commands.get('build');
-if (buildCommandCompletion) {
-  const modeOption = buildCommandCompletion.options.get('--mode');
-  if (modeOption) {
-    modeOption.handler = async () => {
-      return [
-        { value: 'development', description: 'Development build' },
-        { value: 'production', description: 'Production build' },
-      ];
-    };
-  }
-
-  const outDirOption = buildCommandCompletion.options.get('--out-dir');
-  if (outDirOption) {
-    outDirOption.handler = async () => {
-      return [
-        { value: 'dist', description: 'Distribution directory' },
-        { value: 'build', description: 'Build directory' },
       ];
     };
   }
@@ -294,7 +240,7 @@ const cli = createMain(main);
 cli();
 ```
 
-## Commander Framework Example
+## Commander.js Example
 
 A CLI using Commander.js with Tab integration:
 
@@ -313,8 +259,8 @@ program
 program
   .command('dev')
   .description('Start development server')
-  .option('-p, --port <port>', 'Specify port', '3000')
-  .option('-h, --host <host>', 'Specify host', 'localhost')
+  .option('-p, --port <port>', 'Specify port')
+  .option('-h, --host <host>', 'Specify host')
   .option('-c, --config <file>', 'Config file')
   .action((options) => {
     console.log('Starting dev server...', options);
@@ -323,8 +269,8 @@ program
 program
   .command('build')
   .description('Build for production')
-  .option('-m, --mode <mode>', 'Build mode', 'production')
-  .option('-o, --out-dir <dir>', 'Output directory', 'dist')
+  .option('-m, --mode <mode>', 'Build mode')
+  .option('-o, --out-dir <dir>', 'Output directory')
   .action((options) => {
     console.log('Building...', options);
   });
@@ -338,85 +284,17 @@ program
     console.log('Deploying...', options);
   });
 
-// Initialize tab completion
 const completion = tab(program);
 
-// Configure custom completions
+// Configure completions
 const devCommandCompletion = completion.commands.get('dev');
 if (devCommandCompletion) {
-  const portOption = devCommandCompletion.options.get('--port');
-  if (portOption) {
-    portOption.handler = async () => {
+  const portOptionCompletion = devCommandCompletion.options.get('--port');
+  if (portOptionCompletion) {
+    portOptionCompletion.handler = async () => {
       return [
         { value: '3000', description: 'Development port' },
         { value: '8080', description: 'Production port' },
-      ];
-    };
-  }
-
-  const hostOption = devCommandCompletion.options.get('--host');
-  if (hostOption) {
-    hostOption.handler = async () => {
-      return [
-        { value: 'localhost', description: 'Local development' },
-        { value: '0.0.0.0', description: 'All interfaces' },
-      ];
-    };
-  }
-
-  const configOption = devCommandCompletion.options.get('--config');
-  if (configOption) {
-    configOption.handler = async () => {
-      return [
-        { value: 'vite.config.ts', description: 'Vite config' },
-        { value: 'vite.config.js', description: 'Vite config' },
-      ];
-    };
-  }
-}
-
-const buildCommandCompletion = completion.commands.get('build');
-if (buildCommandCompletion) {
-  const modeOption = buildCommandCompletion.options.get('--mode');
-  if (modeOption) {
-    modeOption.handler = async () => {
-      return [
-        { value: 'development', description: 'Development build' },
-        { value: 'production', description: 'Production build' },
-      ];
-    };
-  }
-
-  const outDirOption = buildCommandCompletion.options.get('--out-dir');
-  if (outDirOption) {
-    outDirOption.handler = async () => {
-      return [
-        { value: 'dist', description: 'Distribution directory' },
-        { value: 'build', description: 'Build directory' },
-      ];
-    };
-  }
-}
-
-const deployCommandCompletion = completion.commands.get('deploy');
-if (deployCommandCompletion) {
-  const envOption = deployCommandCompletion.options.get('--env');
-  if (envOption) {
-    envOption.handler = async () => {
-      return [
-        { value: 'staging', description: 'Staging environment' },
-        { value: 'production', description: 'Production environment' },
-      ];
-    };
-  }
-
-  const regionOption = deployCommandCompletion.options.get('--region');
-  if (regionOption) {
-    regionOption.handler = async () => {
-      return [
-        { value: 'us-east-1', description: 'US East (N. Virginia)' },
-        { value: 'us-west-2', description: 'US West (Oregon)' },
-        { value: 'eu-west-1', description: 'Europe (Ireland)' },
       ];
     };
   }
@@ -429,84 +307,147 @@ program.parse();
 
 ### Dynamic File Completions
 
+Load completions from the file system:
+
 ```ts
 import { readdir } from 'fs/promises';
-import { join } from 'path';
+import { RootCommand } from '@bombsh/tab';
 
-// Dynamic file completion
-configOption.handler = async () => {
-  try {
-    const files = await readdir('.');
-    const configFiles = files.filter(f => 
-      f.endsWith('.json') || f.endsWith('.js') || f.endsWith('.ts')
-    );
-    
-    return configFiles.map(f => ({
-      value: f,
-      description: `Config file: ${f}`
-    }));
-  } catch (error) {
-    return [];
-  }
-};
+const t = new RootCommand();
+
+t.command('build', 'Build project')
+  .option('--config', 'Config file', async function(complete) {
+    try {
+      const files = await readdir('.');
+      const configFiles = files.filter(f => 
+        f.includes('config') && (f.endsWith('.js') || f.endsWith('.ts'))
+      );
+      configFiles.forEach(file => complete(file, `Config file: ${file}`));
+    } catch (error) {
+      // Fallback completions
+      complete('vite.config.ts', 'Vite config file');
+      complete('vite.config.js', 'Vite config file');
+    }
+  });
 ```
 
 ### Context-Aware Completions
 
+Provide different completions based on context:
+
 ```ts
-// Context-aware completion based on previous arguments
-portOption.handler = async (previousArgs, toComplete, endsWithSpace) => {
-  // Check if user is typing a specific port
-  if (toComplete.startsWith('30')) {
-    return [
-      { value: '3000', description: 'Development port' },
-    ];
-  }
-  
-  // Check if user specified a host that affects port suggestions
-  const hostIndex = previousArgs.indexOf('--host');
-  if (hostIndex !== -1 && hostIndex < previousArgs.length - 1) {
-    const host = previousArgs[hostIndex + 1];
-    if (host === '0.0.0.0') {
-      return [
-        { value: '8080', description: 'Production port' },
-        { value: '9000', description: 'Alternative port' },
-      ];
+const t = new RootCommand();
+
+t.command('deploy', 'Deploy application')
+  .option('--env', 'Environment', function(complete) {
+    // Check if user is typing a specific environment
+    if (this.toComplete?.startsWith('prod')) {
+      complete('production', 'Production environment');
+      return;
     }
-  }
-  
-  return [
-    { value: '3000', description: 'Development port' },
-    { value: '8080', description: 'Production port' },
-    { value: '9000', description: 'Alternative port' },
-  ];
-};
+    
+    complete('development', 'Development environment');
+    complete('staging', 'Staging environment');
+    complete('production', 'Production environment');
+  })
+  .option('--region', 'Region', function(complete) {
+    // Provide region completions based on environment
+    const env = this.command?.options?.get('--env')?.value;
+    
+    if (env === 'production') {
+      complete('us-east-1', 'US East (N. Virginia)');
+      complete('us-west-2', 'US West (Oregon)');
+      complete('eu-west-1', 'Europe (Ireland)');
+    } else {
+      complete('us-east-1', 'US East (N. Virginia)');
+      complete('eu-west-1', 'Europe (Ireland)');
+    }
+  });
 ```
 
-### Cached Completions
+### Package.json Script Completions
+
+Dynamically load completions from package.json:
 
 ```ts
-// Cache expensive operations
-let cachedPorts: Item[] | null = null;
+import { readFile } from 'fs/promises';
+import { RootCommand } from '@bombsh/tab';
 
-portOption.handler = async () => {
-  if (cachedPorts) {
-    return cachedPorts;
-  }
-  
-  // Expensive operation to get available ports
-  const ports = await getAvailablePorts();
-  cachedPorts = ports.slice(0, 20).map(port => ({
-    value: port.toString(),
-    description: `Port ${port}`
-  }));
-  
-  return cachedPorts;
-};
+const t = new RootCommand();
+
+t.command('run', 'Run scripts')
+  .argument('script', async function(complete) {
+    try {
+      const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
+      const scripts = Object.keys(packageJson.scripts || {});
+      scripts.forEach(script => complete(script, `Run ${script} script`));
+    } catch (error) {
+      // Fallback completions
+      complete('dev', 'Start development server');
+      complete('build', 'Build for production');
+      complete('test', 'Run tests');
+    }
+  });
+```
+
+### Workspace Completions
+
+Handle monorepo workspace completions:
+
+```ts
+import { readFile, readdir } from 'fs/promises';
+import { RootCommand } from '@bombsh/tab';
+
+const t = new RootCommand();
+
+t.command('workspace', 'Workspace commands')
+  .option('--filter', 'Filter workspaces', async function(complete) {
+    try {
+      const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
+      const workspaces = packageJson.workspaces || [];
+      
+      // Get workspace names
+      const workspaceNames = [];
+      for (const workspace of workspaces) {
+        if (workspace.includes('*')) {
+          // Handle glob patterns
+          const dir = workspace.replace('/*', '');
+          const items = await readdir(dir);
+          workspaceNames.push(...items);
+        } else {
+          workspaceNames.push(workspace);
+        }
+      }
+      
+      workspaceNames.forEach(name => complete(name, `Workspace: ${name}`));
+    } catch (error) {
+      // Fallback completions
+      complete('packages/*', 'All packages');
+      complete('apps/*', 'All applications');
+    }
+  });
+```
+
+## Testing Completions
+
+Test your completions manually:
+
+```bash
+# Test command completions
+my-cli complete -- "dev"
+
+# Test option completions
+my-cli complete -- "dev --port"
+
+# Test argument completions
+my-cli complete -- "copy src/"
+
+# Generate shell completion script
+my-cli complete zsh
 ```
 
 ## Next Steps
 
-- Learn about [Best Practices](/docs/tab/guides/best-practices/) for effective autocompletions
-- Explore the [API Reference](/docs/tab/api/core/) for advanced usage
-- Check out the [Framework Adapters](/docs/tab/guides/adapters/) for easier integration 
+- Learn about [Framework Adapters](/docs/tab/guides/adapters/) for easier integration
+- Check out [Best Practices](/docs/tab/guides/best-practices/) for effective autocompletions
+- Explore the [API Reference](/docs/tab/api/core/) for advanced usage 

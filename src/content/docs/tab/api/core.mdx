@@ -7,77 +7,74 @@ This page provides the complete API reference for the Tab core package, includin
 
 ## Classes
 
-### Completion
+### RootCommand
 
-The main class for managing command and option completions.
+The main class for managing command and option completions. This is the primary entry point for defining your CLI structure.
 
 ```ts
-import { Completion } from '@bombsh/tab';
+import { RootCommand } from '@bombsh/tab';
 
-const completion = new Completion();
+const t = new RootCommand();
 ```
 
 #### Methods
 
-##### addCommand
+##### command
 
-Adds a completion handler for a command.
+Adds a command with optional description and returns a Command instance for further configuration.
 
 **Parameters:**
 - `name` (string): The command name
-- `description` (string): Command description
-- `args` (boolean[]): Array indicating which arguments are required (false) or optional (true)
-- `handler` (Handler): Function that returns completion suggestions
-- `parent` (string, optional): Parent command name for nested commands
+- `description` (string, optional): Command description
 
-**Returns:** string - The command key
+**Returns:** Command - A Command instance for chaining
 
 **Example:**
 ```ts
-// Command with required argument: "vite <entry>"
-completion.addCommand('dev', 'Start development server', [false], async () => {
-  return [
-    { value: 'src/main.ts', description: 'Main entry point' },
-    { value: 'src/index.ts', description: 'Index entry point' },
-  ];
-});
+// Simple command
+const devCmd = t.command('dev', 'Start development server');
 
-// Command with optional argument: "vite [entry]"
-completion.addCommand('serve', 'Start the server', [true], async () => {
-  return [
-    { value: 'dist', description: 'Distribution directory' },
-  ];
-});
-
-// Nested command: "vite dev build"
-completion.addCommand('build', 'Build project', [], async () => {
-  return [
-    { value: 'build', description: 'Build command' },
-  ];
-}, 'dev');
+// Nested command
+const buildCmd = t.command('dev build', 'Build project');
 ```
 
-##### addOption
+##### option
 
-Adds a completion handler for an option of a specific command.
+Adds a global option to the root command.
 
 **Parameters:**
-- `command` (string): The command name
-- `option` (string): The option name (e.g., '--port')
+- `name` (string): The option name (e.g., '--config')
 - `description` (string): Option description
-- `handler` (Handler): Function that returns completion suggestions
-- `alias` (string, optional): Short flag alias (e.g., 'p' for '--port')
+- `handler` (OptionHandler, optional): Function that provides completion suggestions
+- `alias` (string, optional): Short flag alias (e.g., 'c' for '--config')
 
-**Returns:** string - The option name
+**Returns:** RootCommand - For method chaining
 
 **Example:**
 ```ts
-completion.addOption('dev', '--port', 'Port number', async () => {
-  return [
-    { value: '3000', description: 'Development port' },
-    { value: '8080', description: 'Production port' },
-  ];
-}, 'p');
+t.option('--config', 'Use specified config file', function(complete) {
+  complete('vite.config.ts', 'Vite config file');
+  complete('vite.config.js', 'Vite config file');
+}, 'c');
+```
+
+##### argument
+
+Adds a positional argument to the root command.
+
+**Parameters:**
+- `name` (string): The argument name
+- `handler` (ArgumentHandler, optional): Function that provides completion suggestions
+- `variadic` (boolean, optional): Whether this is a variadic argument (default: false)
+
+**Returns:** RootCommand - For method chaining
+
+**Example:**
+```ts
+t.argument('project', function(complete) {
+  complete('my-app', 'My application');
+  complete('my-lib', 'My library');
+});
 ```
 
 ##### parse
@@ -89,117 +86,170 @@ Parses command line arguments and outputs completion suggestions to stdout.
 
 **Example:**
 ```ts
-await completion.parse(['--port']);
-// Outputs completion suggestions to stdout
+const separatorIndex = process.argv.indexOf('--');
+const completionArgs = separatorIndex !== -1 ? process.argv.slice(separatorIndex + 1) : [];
+t.parse(completionArgs);
 ```
 
-### script
+##### setup
 
 Generates shell completion scripts.
 
 **Parameters:**
-- `shell` (string): Target shell ('zsh', 'bash', 'fish', 'powershell')
 - `name` (string): CLI tool name
-- `execPath` (string): Executable path for the CLI tool
+- `executable` (string): Executable path for the CLI tool
+- `shell` (string): Target shell ('zsh', 'bash', 'fish', 'powershell')
 
 **Example:**
 ```ts
-import { script } from '@bombsh/tab';
+t.setup('my-cli', process.execPath, 'zsh');
+```
 
-script('zsh', 'my-cli', '/usr/bin/node /path/to/my-cli');
+### Command
+
+Represents a command with its options and arguments.
+
+```ts
+const cmd = t.command('dev', 'Start development server');
+```
+
+#### Methods
+
+##### option
+
+Adds an option to this command.
+
+**Parameters:**
+- `name` (string): The option name (e.g., '--port')
+- `description` (string): Option description
+- `handler` (OptionHandler, optional): Function that provides completion suggestions
+- `alias` (string, optional): Short flag alias (e.g., 'p' for '--port')
+
+**Returns:** Command - For method chaining
+
+**Example:**
+```ts
+cmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'Development port');
+  complete('8080', 'Production port');
+}, 'p');
+```
+
+##### argument
+
+Adds a positional argument to this command.
+
+**Parameters:**
+- `name` (string): The argument name
+- `handler` (ArgumentHandler, optional): Function that provides completion suggestions
+- `variadic` (boolean, optional): Whether this is a variadic argument (default: false)
+
+**Returns:** Command - For method chaining
+
+**Example:**
+```ts
+cmd.argument('entry', function(complete) {
+  complete('src/main.ts', 'Main entry point');
+  complete('src/index.ts', 'Index entry point');
+});
 ```
 
 ## Types
 
-### Handler
+### OptionHandler
 
-Function type for completion handlers.
+Function type for option completion handlers.
 
 ```ts
-type Handler = (
-  previousArgs: string[],
-  toComplete: string,
-  endsWithSpace: boolean
-) => Item[] | Promise<Item[]>;
+type OptionHandler = (
+  this: Option,
+  complete: Complete,
+  options: OptionsMap
+) => void;
 ```
 
 **Parameters:**
-- `previousArgs` (string[]): Previously typed arguments
-- `toComplete` (string): The text being completed
-- `endsWithSpace` (boolean): Whether the input ends with a space
-
-**Returns:** Item[] | Promise&lt;Item[]&gt;
+- `this`: The Option instance
+- `complete`: Function to call with completion suggestions
+- `options`: Map of all options for this command
 
 **Example:**
 ```ts
-const handler: Handler = async (previousArgs, toComplete, endsWithSpace) => {
-  // Check if user is typing 'prod' to suggest production
-  if (toComplete.startsWith('prod')) {
-    return [
-      { value: 'production', description: 'Production environment' },
-    ];
-  }
-  
-  return [
-    { value: 'development', description: 'Development environment' },
-    { value: 'staging', description: 'Staging environment' },
-    { value: 'production', description: 'Production environment' },
-  ];
+const handler: OptionHandler = function(complete) {
+  complete('3000', 'Development port');
+  complete('8080', 'Production port');
 };
 ```
 
-### Item
+### ArgumentHandler
 
-Object representing a completion suggestion.
+Function type for argument completion handlers.
 
 ```ts
-type Item = {
-  value: string;
-  description: string;
+type ArgumentHandler = (
+  this: Argument,
+  complete: Complete,
+  options: OptionsMap
+) => void;
+```
+
+**Parameters:**
+- `this`: The Argument instance
+- `complete`: Function to call with completion suggestions
+- `options`: Map of all options for this command
+
+**Example:**
+```ts
+const handler: ArgumentHandler = function(complete) {
+  complete('src/main.ts', 'Main entry point');
+  complete('src/index.ts', 'Index entry point');
 };
 ```
 
-**Properties:**
+### Complete
+
+Function type for providing completion suggestions.
+
+```ts
+type Complete = (value: string, description: string) => void;
+```
+
+**Parameters:**
 - `value` (string): The completion value
 - `description` (string): Description of the completion
 
 **Example:**
 ```ts
-const item: Item = {
+function(complete) {
+  complete('3000', 'Development port');
+  complete('8080', 'Production port');
+}
+```
+
+### Completion
+
+Object representing a completion suggestion.
+
+```ts
+type Completion = {
+  value: string;
+  description?: string;
+};
+```
+
+**Properties:**
+- `value` (string): The completion value
+- `description` (string, optional): Description of the completion
+
+**Example:**
+```ts
+const completion: Completion = {
   value: '3000',
   description: 'Development port'
 };
 ```
 
-### `Positional`
-
-Type for positional argument configuration.
-
-```ts
-type Positional = {
-  required: boolean;
-  variadic: boolean;
-  completion: Handler;
-};
-```
-
 ## Constants
-
-### ShellCompRequestCmd
-
-The name of the hidden command used to request completion results.
-
-```ts
-export const ShellCompRequestCmd: string = '__complete';
-```
-
-### ShellCompNoDescRequestCmd
-
-The name of the hidden command used to request completion results without descriptions.
-
-```ts
-export const ShellCompNoDescRequestCmd: string = '__completeNoDesc';
-```
 
 ### ShellCompDirective
 
@@ -213,6 +263,7 @@ export const ShellCompDirective = {
   ShellCompDirectiveFilterFileExt: 1 << 3,
   ShellCompDirectiveFilterDirs: 1 << 4,
   ShellCompDirectiveKeepOrder: 1 << 5,
+  shellCompDirectiveMaxValue: 1 << 6,
   ShellCompDirectiveDefault: 0,
 };
 ```
@@ -223,69 +274,125 @@ Here's a complete example showing all the core API features:
 
 ```ts
 #!/usr/bin/env node
-import { Completion, script } from '@bombsh/tab';
+import { RootCommand } from '@bombsh/tab';
 
-const name = 'my-cli';
-const completion = new Completion();
+const t = new RootCommand();
 
-// Add command completions with positional arguments
-completion.addCommand('dev', 'Start development server', [false], async (previousArgs, toComplete, endsWithSpace) => {
-  if (toComplete.startsWith('dev')) {
-    return [
-      { value: 'dev', description: 'Start in development mode' },
-    ];
-  }
-  
-  return [
-    { value: 'dev', description: 'Start in development mode' },
-    { value: 'prod', description: 'Start in production mode' },
-  ];
+// Add global options
+t.option('--config', 'Use specified config file', function(complete) {
+  complete('vite.config.ts', 'Vite config file');
+  complete('vite.config.js', 'Vite config file');
+}, 'c');
+
+t.option('--mode', 'Set env mode', function(complete) {
+  complete('development', 'Development mode');
+  complete('production', 'Production mode');
+}, 'm');
+
+// Add root command argument
+t.argument('project', function(complete) {
+  complete('my-app', 'My application');
+  complete('my-lib', 'My library');
 });
 
-// Add option completions
-completion.addOption('dev', '--port', 'Port number', async (previousArgs, toComplete, endsWithSpace) => {
-  if (toComplete.startsWith('30')) {
-    return [
-      { value: '3000', description: 'Development port' },
-    ];
-  }
-  
-  return [
-    { value: '3000', description: 'Development port' },
-    { value: '8080', description: 'Production port' },
-  ];
+// Add commands with completions
+const devCmd = t.command('dev', 'Start development server');
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'Development port');
+  complete('8080', 'Production port');
 }, 'p');
 
-// Helper function to quote paths with spaces
-function quoteIfNeeded(path: string) {
-  return path.includes(' ') ? `'${path}'` : path;
-}
+devCmd.option('--host', 'Hostname', function(complete) {
+  complete('localhost', 'Localhost');
+  complete('0.0.0.0', 'All interfaces');
+}, 'H');
 
-// Get the executable path for shell completion
-const execPath = process.execPath;
-const processArgs = process.argv.slice(1);
-const quotedExecPath = quoteIfNeeded(execPath);
-const quotedProcessArgs = processArgs.map(quoteIfNeeded);
-const quotedProcessExecArgs = process.execArgv.map(quoteIfNeeded);
-const x = `${quotedExecPath} ${quotedProcessExecArgs.join(' ')} ${quotedProcessArgs[0]}`;
+devCmd.option('--verbose', 'Enable verbose logging', 'v');
+
+// Add nested commands
+t.command('dev build', 'Build project');
+t.command('dev start', 'Start development server');
+
+// Add command with arguments
+t.command('copy', 'Copy files')
+  .argument('source', function(complete) {
+    complete('src/', 'Source directory');
+    complete('dist/', 'Distribution directory');
+  })
+  .argument('destination', function(complete) {
+    complete('build/', 'Build output');
+    complete('release/', 'Release directory');
+  });
+
+// Add command with variadic arguments
+t.command('lint', 'Lint project')
+  .argument('files', function(complete) {
+    complete('main.ts', 'Main file');
+    complete('src/', 'Source directory');
+  }, true); // true = variadic argument
 
 // Handle completion requests
-if (process.argv[2] === '--') {
-  try {
-    await completion.parse(process.argv.slice(2));
-  } catch (error) {
-    console.error('Completion error:', error.message);
-    process.exit(1);
+if (process.argv[2] === 'complete') {
+  const shell = process.argv[3];
+  if (shell && ['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
+    t.setup('my-cli', process.execPath, shell);
+  } else {
+    // Parse completion arguments (everything after --)
+    const separatorIndex = process.argv.indexOf('--');
+    const completionArgs = separatorIndex !== -1 ? process.argv.slice(separatorIndex + 1) : [];
+    t.parse(completionArgs);
   }
 } else {
-  const shell = process.argv[2];
-  if (['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
-    script(shell, name, x);
-  } else {
-    console.error(`Unsupported shell: ${shell}`);
-    process.exit(1);
-  }
+  // Regular CLI usage
+  console.log('My CLI Tool');
+  console.log('Use "complete" command for shell completion');
 }
+```
+
+## Advanced Usage
+
+### Context-Aware Completions
+
+Make your completions responsive to what the user is typing:
+
+```ts
+devCmd.option('--port', 'Port number', function(complete) {
+  // Check if user is typing a specific port
+  if (this.toComplete?.startsWith('30')) {
+    complete('3000', 'Development port');
+    return;
+  }
+  
+  complete('3000', 'Development port');
+  complete('8080', 'Production port');
+  complete('9000', 'Alternative port');
+}, 'p');
+```
+
+### Dynamic Completions
+
+Load completions from external sources:
+
+```ts
+devCmd.option('--config', 'Config file', async function(complete) {
+  try {
+    const files = await fs.readdir('.');
+    const configFiles = files.filter(f => f.includes('config'));
+    configFiles.forEach(file => complete(file, `Config file: ${file}`));
+  } catch (error) {
+    // Fallback completions
+    complete('vite.config.ts', 'Vite config file');
+  }
+});
+```
+
+### Boolean Options
+
+For boolean flags, you don't need a handler:
+
+```ts
+devCmd.option('--verbose', 'Enable verbose logging', 'v');
+devCmd.option('--quiet', 'Suppress output');
 ```
 
 ## Next Steps

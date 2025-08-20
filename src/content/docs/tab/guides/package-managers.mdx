@@ -1,0 +1,261 @@
+---
+title: Package Manager Integration
+description: Enhanced completions for npm, pnpm, yarn, and bun with automatic CLI discovery
+---
+
+Tab provides a standalone CLI tool that enhances package manager completions with automatic discovery of CLI tools that support Tab completions. This guide focuses on the advanced features and unique capabilities of Tab's package manager integration.
+
+## Quick Setup
+
+For basic setup instructions, see the [Getting Started](/docs/tab/basics/getting-started/) guide. Here's the minimal setup:
+
+```bash
+# Install and configure
+npm install -g @bombsh/tab
+tab pnpm zsh > ~/.zsh_completions/tab-pnpm.zsh
+echo 'source ~/.zsh_completions/tab-pnpm.zsh' >> ~/.zshrc
+```
+
+## Advanced Features
+
+### Automatic CLI Discovery
+
+Tab automatically detects and provides completions for CLI tools in your project:
+
+```bash
+# Tab automatically discovers and provides completions for:
+pnpm vite dev --port  # ← Vite completions
+pnpm tsc --target     # ← TypeScript completions  
+pnpm eslint --ext     # ← ESLint completions
+pnpm jest --config    # ← Jest completions
+```
+
+The discovery process:
+1. **Scans** `node_modules/.bin/` for available CLI tools
+2. **Tests** each tool for Tab compatibility (has a `complete` command)
+3. **Provides** completions automatically for compatible tools
+
+### Tab-Compatible CLIs
+
+A CLI tool is "Tab-compatible" if it follows the Tab protocol:
+
+```bash
+# Test compatibility
+my-cli complete -- --help
+
+# Expected output:
+--help  Show help information
+:0
+```
+
+### Dynamic Script Completions
+
+Tab reads your `package.json` to provide intelligent completions:
+
+```bash
+# Automatically suggests scripts from package.json
+pnpm run <TAB>  # Shows: dev, build, test, lint, etc.
+
+# Suggests dependencies for add/remove commands
+pnpm add <TAB>  # Shows installed packages
+pnpm remove <TAB>  # Shows installed packages
+```
+
+### Workspace Support
+
+Enhanced completions for monorepo setups:
+
+```bash
+# Workspace filtering
+pnpm --filter my-app run build
+pnpm --filter "packages/*" run test
+pnpm --filter "!packages/docs" run lint
+
+# Tab provides workspace-aware completions for:
+# - Workspace names
+# - Workspace patterns
+# - Workspace-specific scripts
+```
+
+### Context-Aware Completions
+
+Completions adapt based on your project context:
+
+```bash
+# In a TypeScript project
+pnpm tsc --target <TAB>  # Shows: es2020, es2021, es2022, etc.
+
+# In a Vite project  
+pnpm vite build --mode <TAB>  # Shows: development, production, etc.
+
+# In a React project
+pnpm create-react-app <TAB>  # Shows: my-app, my-component, etc.
+```
+
+## Package Manager Specific Features
+
+### pnpm Enhancements
+
+```bash
+# Enhanced workspace commands
+pnpm workspace <TAB>  # Shows workspace commands
+pnpm --filter <TAB>   # Shows workspace names and patterns
+
+# Advanced install options
+pnpm add --save-dev <TAB>  # Shows dependency types
+pnpm install --frozen-lockfile  # Shows install options
+```
+
+### npm Enhancements
+
+```bash
+# Config management
+npm config get <TAB>  # Shows config keys
+npm config set <TAB>  # Shows config keys
+
+# Package management
+npm install --save-dev <TAB>  # Shows dependency types
+npm run <TAB>  # Shows scripts with descriptions
+```
+
+### yarn Enhancements
+
+```bash
+# Workspace operations
+yarn workspace <TAB>  # Shows workspace commands
+yarn workspaces <TAB>  # Shows workspace operations
+
+# Cache management
+yarn cache <TAB>  # Shows cache operations
+yarn cache list  # Shows cached packages
+```
+
+### bun Enhancements
+
+```bash
+# Runtime commands
+bun run <TAB>  # Shows scripts
+bun x <TAB>    # Shows available binaries
+
+# Development features
+bun dev <TAB>  # Shows dev commands
+bun test <TAB> # Shows test options
+```
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# Debug mode for troubleshooting
+export DEBUG=1
+
+# Custom timeout for slow completions
+export TAB_COMPLETION_TIMEOUT=3000
+
+# Disable automatic discovery (fallback to basic completions)
+export TAB_DISABLE_DISCOVERY=1
+```
+
+### Performance Optimization
+
+For large projects, you can optimize performance:
+
+```bash
+# Increase timeout for projects with many dependencies
+export TAB_COMPLETION_TIMEOUT=5000
+
+# Cache completions (experimental)
+export TAB_CACHE_COMPLETIONS=1
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Completions are slow
+```bash
+# Increase timeout
+export TAB_COMPLETION_TIMEOUT=3000
+
+# Check for slow CLI tools
+DEBUG=1 tab pnpm complete -- --help
+```
+
+#### Some CLIs don't show completions
+```bash
+# Test CLI compatibility
+my-cli complete -- --help
+
+# Check if CLI follows Tab protocol
+# Should output completions ending with :{number}
+```
+
+#### Workspace completions not working
+```bash
+# Verify workspace configuration
+cat package.json | grep workspaces
+
+# Check workspace structure
+ls packages/  # Should show workspace directories
+```
+
+### Debug Mode
+
+Enable detailed logging:
+
+```bash
+# Full debug output
+DEBUG=1 tab pnpm complete -- --help
+
+# Check discovery process
+DEBUG=1 tab pnpm complete -- vite dev
+```
+
+## Advanced Usage
+
+### Custom Completion Handlers
+
+For advanced users, you can extend Tab's completion handlers by modifying the source:
+
+```bash
+# The completion handlers are in:
+# tab/bin/completion-handlers.ts
+# tab/bin/package-manager-completion.ts
+```
+
+### Integration with Other Tools
+
+Tab works alongside other completion tools:
+
+```bash
+# Use with existing pnpm completions
+source <(pnpm completion)
+
+# Tab enhances existing completions
+# rather than replacing them
+```
+
+## Best Practices
+
+### 1. Use Consistent Package Manager
+Stick to one package manager per project for the best experience.
+
+### 2. Keep CLI Tools Updated
+Regularly update your CLI tools to ensure Tab compatibility.
+
+### 3. Test in Your Projects
+```bash
+# Test completions in your specific projects
+tab pnpm complete -- --help
+pnpm vite complete -- --help
+```
+
+### 4. Share with Team
+Share your Tab setup to ensure consistent experience across your team.
+
+## Next Steps
+
+- Learn about [Framework Adapters](/docs/tab/guides/adapters/) for building Tab-compatible CLIs
+- Check out [Best Practices](/docs/tab/guides/best-practices/) for effective autocompletions
+- Explore the [API Reference](/docs/tab/api/core/) for building your own CLI tools

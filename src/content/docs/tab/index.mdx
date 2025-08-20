@@ -19,16 +19,16 @@ Tab is a powerful tool that brings shell autocompletions to JavaScript CLI tools
     Built-in adapters for popular CLI frameworks including CAC, Citty, and Commander.js for easy integration.
   </Card>
 
+  <Card title="Package Manager Support" icon="seti:npm">
+    Built-in completions for npm, pnpm, yarn, and bun with automatic CLI discovery and completion detection.
+  </Card>
+
   <Card title="Type-Safe" icon="rocket">
     Full TypeScript support with type-safe completion handlers and autocomplete suggestions.
   </Card>
 
   <Card title="Custom Completions" icon="approve-check">
     Define custom completion logic for commands and options with dynamic suggestions based on context.
-  </Card>
-
-  <Card title="Universal Support" icon="information">
-    Works with any JavaScript CLI tool, regardless of the underlying framework or architecture.
   </Card>
 
   <Card title="Easy Setup" icon="sun">
@@ -39,38 +39,55 @@ Tab is a powerful tool that brings shell autocompletions to JavaScript CLI tools
 
 ## Quick Start
 
+### For CLI Tool Authors
+
 Add shell autocompletions to your CLI in just a few lines:
 
 ```ts
-import { Completion, script } from '@bombsh/tab';
+import { RootCommand, script } from '@bombsh/tab';
 
-const completion = new Completion();
+const t = new RootCommand();
 
-completion.addCommand('dev', 'Start development server', [false], async () => {
-  return [
-    { value: 'dev', description: 'Start in development mode' },
-    { value: 'prod', description: 'Start in production mode' },
-  ];
-});
+// Add commands with completions
+t.command('dev', 'Start development server')
+  .option('--port', 'Port number', function(complete) {
+    complete('3000', 'Development port');
+    complete('8080', 'Production port');
+  }, 'p');
 
-completion.addOption('dev', '--port', 'Port number', async () => {
-  return [
-    { value: '3000', description: 'Development port' },
-    { value: '8080', description: 'Production port' },
-  ];
-}, 'p');
-
-// Generate shell completion script
-if (process.argv[2] === '--') {
-  await completion.parse(process.argv.slice(2));
-} else {
-  script(process.argv[2], 'my-cli', process.execPath);
+// Handle completion requests
+if (process.argv[2] === 'complete') {
+  const shell = process.argv[3];
+  if (shell && ['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
+    t.setup('my-cli', process.execPath, shell);
+  } else {
+    const separatorIndex = process.argv.indexOf('--');
+    const completionArgs = separatorIndex !== -1 ? process.argv.slice(separatorIndex + 1) : [];
+    t.parse(completionArgs);
+  }
 }
+```
+
+### For End Users
+
+Get enhanced package manager completions with automatic CLI discovery:
+
+```bash
+# Install tab CLI
+npm install -g @bombsh/tab
+
+# Generate completions for your preferred package manager
+tab pnpm zsh > ~/.zsh_completions/tab-pnpm.zsh
+echo 'source ~/.zsh_completions/tab-pnpm.zsh' >> ~/.zshrc
+
+# Now you get enhanced completions for all CLI tools!
+pnpm vite dev --port  # ← Tab completion works here
 ```
 
 ## What's Next?
 
 - [Getting Started](/docs/tab/basics/getting-started/) - Learn how to add autocompletions to your CLI
 - [Framework Adapters](/docs/tab/guides/adapters/) - Use Tab with CAC, Citty, and Commander.js
+- [Package Manager Integration](/docs/tab/guides/package-managers/) - Enhanced completions for npm, pnpm, yarn, and bun
 - [Best Practices](/docs/tab/guides/best-practices/) - Learn best practices for implementing autocompletions
 - [API Reference](/docs/tab/api/core/) - Detailed API documentation 

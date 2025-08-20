@@ -3,310 +3,483 @@ title: Best Practices
 description: Learn best practices for implementing effective autocompletions with Tab
 ---
 
-This guide covers best practices for implementing autocompletions that provide a great user experience and integrate seamlessly with your CLI tool.
+This guide covers best practices for implementing effective autocompletions with Tab, including performance optimization, user experience considerations, and common patterns.
 
-## Completion Handler Design
+## General Best Practices
 
-### Keep Handlers Fast
+### 1. Provide Meaningful Descriptions
 
-Completion handlers should return results quickly since they're called frequently as users type:
+Always include descriptive text for your completions to help users understand what each option does:
 
 ```ts
-// ✅ Good: Fast, synchronous completion
-completion.addOption('dev', '--port', 'Port number', () => {
-  return [
-    { value: '3000', description: 'Development port' },
-    { value: '8080', description: 'Production port' },
-  ];
-});
+// Good
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'Development port (default)');
+  complete('8080', 'Production port');
+  complete('9000', 'Alternative port');
+}, 'p');
 
-// ❌ Avoid: Slow, async operations in completion handlers
-completion.addOption('dev', '--file', 'File path', async () => {
-  const files = await fs.readdir('.'); // This can be slow
-  return files.map(f => ({ value: f, description: 'File' }));
-});
+// Avoid
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', '');
+  complete('8080', '');
+}, 'p');
 ```
 
-### Use Context Appropriately
+### 2. Use Context-Aware Completions
 
-Leverage the completion context to provide relevant suggestions:
+Make your completions responsive to what the user is typing:
 
 ```ts
-completion.addOption('deploy', '--env', 'Environment', async (previousArgs, toComplete, endsWithSpace) => {
-  // Check if user is completing an environment name
-  if (toComplete.startsWith('prod')) {
-    return [
-      { value: 'production', description: 'Production environment' },
-    ];
+devCmd.option('--mode', 'Build mode', function(complete) {
+  // If user is typing 'dev', suggest development
+  if (this.toComplete?.startsWith('dev')) {
+    complete('development', 'Development mode');
+    return;
   }
   
-  return [
-    { value: 'development', description: 'Development environment' },
-    { value: 'staging', description: 'Staging environment' },
-    { value: 'production', description: 'Production environment' },
-  ];
+  // If user is typing 'prod', suggest production
+  if (this.toComplete?.startsWith('prod')) {
+    complete('production', 'Production mode');
+    return;
+  }
+  
+  // Default suggestions
+  complete('development', 'Development mode');
+  complete('production', 'Production mode');
+  complete('staging', 'Staging mode');
 });
 ```
 
-### Provide Meaningful Descriptions
+### 3. Handle Errors Gracefully
 
-Always include descriptions to help users understand what each completion means:
-
-```ts
-// ✅ Good: Clear descriptions
-completion.addCommand('deploy', 'Deploy application', () => {
-  return [
-    { value: 'dev', description: 'Deploy to development environment' },
-    { value: 'staging', description: 'Deploy to staging environment' },
-    { value: 'prod', description: 'Deploy to production environment' },
-  ];
-});
-
-// ❌ Avoid: No descriptions
-completion.addCommand('deploy', 'Deploy application', () => {
-  return [
-    { value: 'dev' },
-    { value: 'staging' },
-    { value: 'prod' },
-  ];
-});
-```
-
-## Shell Integration
-
-### Handle Spaces Correctly
-
-Pay attention to the `endsWithSpace` parameter to provide appropriate completions:
+Always handle errors in your completion handlers to prevent crashes:
 
 ```ts
-completion.addOption('dev', '--config', 'Config file', async (previousArgs, toComplete, endsWithSpace) => {
-  if (endsWithSpace) {
-    // User typed a space, suggest files
-    return [
-      { value: 'config.json', description: 'JSON config file' },
-      { value: 'config.yaml', description: 'YAML config file' },
-    ];
-  } else {
-    // User is typing, filter based on input
-    const suggestions = [
-      { value: 'config.json', description: 'JSON config file' },
-      { value: 'config.yaml', description: 'YAML config file' },
-    ];
-    
-    return suggestions.filter(s => s.value.startsWith(toComplete));
+devCmd.option('--config', 'Config file', async function(complete) {
+  try {
+    const files = await fs.readdir('.');
+    const configFiles = files.filter(f => f.includes('config'));
+    configFiles.forEach(file => complete(file, `Config file: ${file}`));
+  } catch (error) {
+    // Provide fallback completions instead of failing
+    complete('vite.config.ts', 'Vite config file');
+    complete('vite.config.js', 'Vite config file');
   }
 });
 ```
 
-### Support Multiple Shells
+### 4. Optimize Performance
 
-Test your completions across different shells to ensure compatibility:
+Cache expensive operations and limit results to maintain responsiveness:
 
 ```ts
-// Generate completion scripts for all supported shells
-if (process.argv[2] === '--') {
-  await completion.parse(process.argv.slice(2), 'start');
-} else {
-  const shell = process.argv[2];
-  if (['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
-    script(shell, 'my-cli', execPath);
+let cachedScripts: string[] | null = null;
+
+t.command('run', 'Run scripts')
+  .argument('script', async function(complete) {
+    if (cachedScripts) {
+      cachedScripts.forEach(script => complete(script, `Run ${script} script`));
+      return;
+    }
+    
+    try {
+      const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
+      const scripts = Object.keys(packageJson.scripts || {});
+      cachedScripts = scripts.slice(0, 20); // Limit to 20 scripts
+      cachedScripts.forEach(script => complete(script, `Run ${script} script`));
+    } catch (error) {
+      // Fallback completions
+      complete('dev', 'Start development server');
+      complete('build', 'Build for production');
+    }
+  });
+```
+
+## Command Structure Best Practices
+
+### 1. Use Consistent Naming
+
+Follow consistent naming conventions for commands and options:
+
+```ts
+// Good - consistent with common CLI patterns
+t.command('dev', 'Start development server');
+t.command('build', 'Build for production');
+t.command('deploy', 'Deploy application');
+
+// Avoid - inconsistent naming
+t.command('start-dev', 'Start development server');
+t.command('build-prod', 'Build for production');
+t.command('deploy-app', 'Deploy application');
+```
+
+### 2. Group Related Commands
+
+Organize related commands logically:
+
+```ts
+// Development commands
+t.command('dev', 'Start development server');
+t.command('dev build', 'Build in development mode');
+t.command('dev test', 'Run tests in development mode');
+
+// Production commands
+t.command('build', 'Build for production');
+t.command('deploy', 'Deploy to production');
+t.command('deploy staging', 'Deploy to staging');
+```
+
+### 3. Use Short Aliases Sparingly
+
+Provide short aliases only for commonly used options:
+
+```ts
+// Good - short aliases for common options
+devCmd.option('--port', 'Port number', handler, 'p');
+devCmd.option('--host', 'Host address', handler, 'h');
+devCmd.option('--verbose', 'Enable verbose logging', 'v');
+
+// Avoid - too many short aliases
+devCmd.option('--config', 'Config file', handler, 'c');
+devCmd.option('--mode', 'Build mode', handler, 'm');
+devCmd.option('--output', 'Output directory', handler, 'o');
+devCmd.option('--source', 'Source directory', handler, 's');
+```
+
+## Option Design Best Practices
+
+### 1. Use Boolean Flags Appropriately
+
+Use boolean flags for simple on/off options:
+
+```ts
+// Good - boolean flags for simple options
+devCmd.option('--verbose', 'Enable verbose logging', 'v');
+devCmd.option('--quiet', 'Suppress output', 'q');
+devCmd.option('--watch', 'Watch for changes', 'w');
+
+// Good - value options for complex data
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'Development port');
+  complete('8080', 'Production port');
+}, 'p');
+```
+
+### 2. Provide Sensible Defaults
+
+When possible, provide sensible default values in your suggestions:
+
+```ts
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'Development port (default)');
+  complete('8080', 'Production port');
+  complete('9000', 'Alternative port');
+}, 'p');
+```
+
+### 3. Use Descriptive Option Names
+
+Choose option names that clearly indicate their purpose:
+
+```ts
+// Good - descriptive names
+devCmd.option('--output-dir', 'Output directory', handler);
+devCmd.option('--source-map', 'Generate source maps', handler);
+
+// Avoid - ambiguous names
+devCmd.option('--output', 'Output directory', handler);
+devCmd.option('--map', 'Generate source maps', handler);
+```
+
+## Argument Design Best Practices
+
+### 1. Use Variadic Arguments for File Lists
+
+Use variadic arguments when users might want to specify multiple files:
+
+```ts
+// Good - variadic argument for multiple files
+t.command('lint', 'Lint files')
+  .argument('files', function(complete) {
+    complete('src/', 'Source directory');
+    complete('tests/', 'Tests directory');
+    complete('*.ts', 'TypeScript files');
+  }, true); // true = variadic argument
+```
+
+### 2. Provide Contextual Suggestions
+
+Make argument suggestions contextual to the command:
+
+```ts
+t.command('copy', 'Copy files')
+  .argument('source', function(complete) {
+    // Suggest source locations
+    complete('src/', 'Source directory');
+    complete('dist/', 'Distribution directory');
+    complete('public/', 'Public assets');
+  })
+  .argument('destination', function(complete) {
+    // Suggest destination locations
+    complete('build/', 'Build output');
+    complete('release/', 'Release directory');
+    complete('backup/', 'Backup location');
+  });
+```
+
+## Package Manager Integration Best Practices
+
+### 1. Test CLI Compatibility
+
+When building CLI tools, test that they work with Tab's package manager integration:
+
+```bash
+# Test if your CLI supports Tab completions
+my-cli complete -- --help
+
+# Expected output format:
+--help  Show help information
+:0
+```
+
+### 2. Follow the Tab Protocol
+
+Ensure your CLI follows the Tab completion protocol:
+
+```ts
+// In your CLI entry point
+if (process.argv[2] === 'complete') {
+  const shell = process.argv[3];
+  if (shell && ['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
+    t.setup('my-cli', process.execPath, shell);
   } else {
-    console.error(`Unsupported shell: ${shell}`);
-    process.exit(1);
+    const separatorIndex = process.argv.indexOf('--');
+    const completionArgs = separatorIndex !== -1 ? process.argv.slice(separatorIndex + 1) : [];
+    t.parse(completionArgs);
   }
 }
 ```
 
-## User Experience
+### 3. Provide Comprehensive Completions
 
-### Progressive Disclosure
-
-Show relevant completions based on what the user has already typed:
+For package manager integration, provide completions for all major commands:
 
 ```ts
-completion.addCommand('deploy', 'Deploy application', async (previousArgs, toComplete, endsWithSpace) => {
-  // If user typed 'prod', only show production-related options
-  if (toComplete.startsWith('prod')) {
-    return [
-      { value: 'production', description: 'Production environment' },
-    ];
+// Example: Comprehensive pnpm completions
+const addCmd = t.command('add', 'Install packages');
+addCmd.option('--save-dev', 'Save to devDependencies', 'D');
+addCmd.option('--save-optional', 'Save to optionalDependencies', 'O');
+addCmd.option('--global', 'Install globally', 'g');
+
+const runCmd = t.command('run', 'Run scripts');
+runCmd.argument('script', async function(complete) {
+  try {
+    const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
+    const scripts = Object.keys(packageJson.scripts || {});
+    scripts.forEach(script => complete(script, `Run ${script} script`));
+  } catch (error) {
+    // Fallback completions
+    complete('dev', 'Start development server');
+    complete('build', 'Build for production');
   }
-  
-  // Show all options otherwise
-  return [
-    { value: 'development', description: 'Development environment' },
-    { value: 'staging', description: 'Staging environment' },
-    { value: 'production', description: 'Production environment' },
-  ];
-});
+}, true);
 ```
 
-### Consistent Naming
+## Performance Best Practices
 
-Use consistent naming patterns across your CLI:
+### 1. Cache Expensive Operations
+
+Cache results of expensive operations to improve responsiveness:
 
 ```ts
-// ✅ Good: Consistent naming
-completion.addCommand('deploy', 'Deploy application', () => {
-  return [
-    { value: 'dev', description: 'Deploy to development' },
-    { value: 'staging', description: 'Deploy to staging' },
-    { value: 'prod', description: 'Deploy to production' },
-  ];
-});
+let cachedDependencies: string[] | null = null;
 
-completion.addCommand('build', 'Build application', () => {
-  return [
-    { value: 'dev', description: 'Development build' },
-    { value: 'staging', description: 'Staging build' },
-    { value: 'prod', description: 'Production build' },
-  ];
-});
+t.command('remove', 'Remove packages')
+  .argument('package', async function(complete) {
+    if (cachedDependencies) {
+      cachedDependencies.forEach(dep => complete(dep, 'Installed package'));
+      return;
+    }
+    
+    try {
+      const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
+      const deps = {
+        ...packageJson.dependencies,
+        ...packageJson.devDependencies,
+      };
+      cachedDependencies = Object.keys(deps);
+      cachedDependencies.forEach(dep => complete(dep, 'Installed package'));
+    } catch (error) {
+      // Fallback completions
+      complete('react', 'React library');
+      complete('typescript', 'TypeScript compiler');
+    }
+  });
 ```
 
-### Error Handling
+### 2. Limit Result Sets
 
-Handle errors gracefully in completion handlers:
+Limit the number of completions to maintain performance:
 
 ```ts
-completion.addOption('deploy', '--config', 'Config file', async () => {
+devCmd.option('--config', 'Config file', async function(complete) {
   try {
     const files = await fs.readdir('.');
-    return files
-      .filter(f => f.endsWith('.json') || f.endsWith('.yaml'))
-      .map(f => ({ value: f, description: `Config file: ${f}` }));
+    const configFiles = files.filter(f => f.includes('config'));
+    // Limit to 10 results for performance
+    configFiles.slice(0, 10).forEach(file => complete(file, `Config file: ${file}`));
   } catch (error) {
-    // Return empty array instead of throwing
-    console.error('Error reading config files:', error);
-    return [];
+    complete('vite.config.ts', 'Vite config file');
   }
 });
 ```
 
-## Performance Considerations
+### 3. Use Async Operations Sparingly
 
-### Cache Expensive Operations
-
-Cache results for expensive operations that don't change frequently:
+Only use async operations when necessary:
 
 ```ts
-let cachedPorts: Array<{ value: string; description: string }> | null = null;
+// Good - sync operations for simple completions
+devCmd.option('--mode', 'Build mode', function(complete) {
+  complete('development', 'Development mode');
+  complete('production', 'Production mode');
+  complete('staging', 'Staging mode');
+});
 
-completion.addOption('dev', '--port', 'Port number', async () => {
-  if (cachedPorts) {
-    return cachedPorts;
+// Good - async operations for dynamic data
+devCmd.option('--config', 'Config file', async function(complete) {
+  const files = await fs.readdir('.');
+  const configFiles = files.filter(f => f.includes('config'));
+  configFiles.forEach(file => complete(file, `Config file: ${file}`));
+});
+```
+
+## User Experience Best Practices
+
+### 1. Provide Progressive Disclosure
+
+Start with common options and provide more specific ones as users type:
+
+```ts
+devCmd.option('--mode', 'Build mode', function(complete) {
+  if (this.toComplete?.startsWith('dev')) {
+    complete('development', 'Development mode');
+    return;
   }
   
-  // Expensive operation (e.g., reading from config)
-  const ports = await getAvailablePorts();
-  cachedPorts = ports.map(p => ({ 
-    value: p.toString(), 
-    description: `Port ${p}` 
-  }));
+  if (this.toComplete?.startsWith('prod')) {
+    complete('production', 'Production mode');
+    return;
+  }
   
-  return cachedPorts;
+  // Show all options initially
+  complete('development', 'Development mode');
+  complete('production', 'Production mode');
+  complete('staging', 'Staging mode');
+  complete('test', 'Test mode');
 });
 ```
 
-### Limit Result Sets
+### 2. Use Consistent Descriptions
 
-Don't overwhelm users with too many completions:
+Maintain consistent description formatting:
 
 ```ts
-completion.addOption('search', '--file', 'File pattern', async (previousArgs, toComplete, endsWithSpace) => {
-  const files = await getMatchingFiles(toComplete);
-  
-  // Limit to 20 results to avoid overwhelming the user
-  return files.slice(0, 20).map(f => ({ 
-    value: f, 
-    description: `File: ${f}` 
-  }));
-});
+// Good - consistent formatting
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'Development port (default)');
+  complete('8080', 'Production port');
+  complete('9000', 'Alternative port');
+}, 'p');
+
+// Avoid - inconsistent formatting
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'dev port');
+  complete('8080', 'Production port');
+  complete('9000', 'alt port');
+}, 'p');
 ```
 
-## Testing
+### 3. Provide Helpful Defaults
 
-### Test Completion Handlers
-
-Write tests for your completion handlers to ensure they work correctly:
+Include default values in descriptions when helpful:
 
 ```ts
-import { Completion } from '@bombsh/tab';
+devCmd.option('--port', 'Port number', function(complete) {
+  complete('3000', 'Development port (default)');
+  complete('8080', 'Production port');
+}, 'p');
 
-describe('CLI Completions', () => {
-  let completion: Completion;
-  
-  beforeEach(() => {
-    completion = new Completion();
-    // Setup your completion handlers
-  });
-  
-  test('should suggest ports for --port option', async () => {
-    const result = await completion.parse(['--port'], 'dev');
-    expect(result).toContainEqual({ value: '3000', description: 'Development port' });
-  });
-  
-  test('should filter suggestions based on input', async () => {
-    const result = await completion.parse(['--port', '30'], 'dev');
-    expect(result).toContainEqual({ value: '3000', description: 'Development port' });
-    expect(result).not.toContainEqual({ value: '8080', description: 'Production port' });
-  });
-});
+devCmd.option('--host', 'Host address', function(complete) {
+  complete('localhost', 'Localhost (default)');
+  complete('0.0.0.0', 'All interfaces');
+}, 'h');
 ```
 
-### Test Shell Integration
+## Testing Best Practices
 
-Test that your completion scripts work correctly in different shells:
+### 1. Test Completions Manually
+
+Regularly test your completions to ensure they work correctly:
 
 ```bash
-# Test zsh completion
-source <(my-cli complete zsh)
-my-cli dev --po<TAB>  # Should suggest --port
+# Test command completions
+my-cli complete -- "dev"
 
-# Test bash completion
-source <(my-cli complete bash)
-my-cli dev --po<TAB>  # Should suggest --port
+# Test option completions
+my-cli complete -- "dev --port"
+
+# Test argument completions
+my-cli complete -- "copy src/"
+
+# Test with package managers
+pnpm my-cli complete -- "dev --port"
 ```
 
-## Common Patterns
+### 2. Test Error Scenarios
 
-### File Completions
+Test how your completions handle error conditions:
 
 ```ts
-completion.addOption('build', '--config', 'Config file', async (previousArgs, toComplete, endsWithSpace) => {
-  const files = await fs.readdir('.');
-  return files
-    .filter(f => f.endsWith('.json') || f.endsWith('.yaml'))
-    .map(f => ({ value: f, description: `Config: ${f}` }));
+// Test with missing files
+devCmd.option('--config', 'Config file', async function(complete) {
+  try {
+    const files = await fs.readdir('.');
+    const configFiles = files.filter(f => f.includes('config'));
+    configFiles.forEach(file => complete(file, `Config file: ${file}`));
+  } catch (error) {
+    // Ensure fallback completions work
+    complete('vite.config.ts', 'Vite config file');
+    complete('vite.config.js', 'Vite config file');
+  }
 });
 ```
 
-### Environment Completions
+### 3. Test Performance
+
+Monitor completion performance, especially for async operations:
 
 ```ts
-completion.addOption('deploy', '--env', 'Environment', () => {
-  return [
-    { value: 'development', description: 'Development environment' },
-    { value: 'staging', description: 'Staging environment' },
-    { value: 'production', description: 'Production environment' },
-  ];
-});
-```
-
-### Command Completions
-
-```ts
-completion.addCommand('deploy', 'Deploy application', () => {
-  return [
-    { value: 'dev', description: 'Deploy to development' },
-    { value: 'staging', description: 'Deploy to staging' },
-    { value: 'prod', description: 'Deploy to production' },
-  ];
+// Add timing for performance monitoring
+devCmd.option('--config', 'Config file', async function(complete) {
+  const start = Date.now();
+  try {
+    const files = await fs.readdir('.');
+    const configFiles = files.filter(f => f.includes('config'));
+    configFiles.forEach(file => complete(file, `Config file: ${file}`));
+  } catch (error) {
+    complete('vite.config.ts', 'Vite config file');
+  }
+  const duration = Date.now() - start;
+  if (duration > 100) {
+    console.warn(`Slow completion: ${duration}ms`);
+  }
 });
 ```
 
 ## Next Steps
 
-- Check out [Examples](/docs/tab/guides/examples/) for more practical use cases
-- Explore the [API Reference](/docs/tab/api/core/) for detailed documentation
-- Learn about [Framework Adapters](/docs/tab/guides/adapters/) for easier integration 
+- Check out [Examples](/docs/tab/guides/examples/) for practical use cases
+- Explore the [API Reference](/docs/tab/api/core/) for advanced usage
+- Learn about [Package Manager Integration](/docs/tab/guides/package-managers/) for enhanced completions 

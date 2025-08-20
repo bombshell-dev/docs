@@ -18,18 +18,14 @@ const cli = cac('my-cli');
 cli.command('dev', 'Start dev server').option('--port <port>', 'Specify port');
 cli.command('build', 'Build for production').option('--mode <mode>', 'Build mode');
 
-const completion = await tab(cli);
+const completion = tab(cli);
 
 // Get the dev command completion handler
 const devCommandCompletion = completion.commands.get('dev');
 
 // Get and configure the port option completion handler
 const portOptionCompletion = devCommandCompletion.options.get('--port');
-portOptionCompletion.handler = async (
-  previousArgs,
-  toComplete,
-  endsWithSpace
-) => {
+portOptionCompletion.handler = async () => {
   return [
     { value: '3000', description: 'Development port' },
     { value: '8080', description: 'Production port' },
@@ -290,6 +286,46 @@ portOptionCompletion.handler = async () => {
   
   return cachedPorts;
 };
+```
+
+### 4. Framework-Specific Considerations
+
+#### CAC
+
+- CAC automatically handles option parsing, so your completion handlers should focus on providing relevant suggestions
+- Use the option name as defined in your CAC command (e.g., `--port <port>` becomes `--port`)
+
+#### Citty
+
+- Citty's type system provides better type safety for completions
+- Arguments defined in the `args` object are automatically converted to options
+- Subcommands are processed recursively
+
+#### Commander.js
+
+- Commander.js supports both short and long option aliases
+- The adapter automatically handles both forms
+- Commands can have multiple aliases
+
+## Integration with Shell Setup
+
+After setting up your adapter, you still need to handle shell completion setup:
+
+```ts
+// Add this to your CLI entry point
+if (process.argv[2] === 'complete') {
+  const shell = process.argv[3];
+  if (shell && ['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
+    // Generate shell completion script
+    const script = generateCompletionScript(shell, 'my-cli', process.execPath);
+    console.log(script);
+  } else {
+    // Handle completion requests
+    const separatorIndex = process.argv.indexOf('--');
+    const completionArgs = separatorIndex !== -1 ? process.argv.slice(separatorIndex + 1) : [];
+    await completion.parse(completionArgs);
+  }
+}
 ```
 
 ## Next Steps
