@@ -11,7 +11,7 @@ The CAC adapter automatically detects commands and options from your CAC instanc
 
 ```ts
 import cac from 'cac';
-import tab from '@bombsh/tab/cac';
+import tab from '@bomb.sh/tab/cac';
 
 const cli = cac('my-cli');
 
@@ -60,7 +60,7 @@ The Citty adapter works with Citty's command definitions and provides a similar 
 
 ```ts
 import { defineCommand, createMain } from 'citty';
-import tab from '@bombsh/tab/citty';
+import tab from '@bomb.sh/tab/citty';
 
 const main = defineCommand({
   meta: {
@@ -130,7 +130,7 @@ The Commander adapter works with Commander.js and provides completion handlers f
 
 ```ts
 import { Command } from 'commander';
-import tab from '@bombsh/tab/commander';
+import tab from '@bomb.sh/tab/commander';
 
 const program = new Command();
 
@@ -182,7 +182,7 @@ The Commander adapter:
 All adapters support a configuration object to customize completion behavior:
 
 ```ts
-import { CompletionConfig } from '@bombsh/tab';
+import { CompletionConfig } from '@bomb.sh/tab';
 
 const config: CompletionConfig = {
   handler: async (previousArgs, toComplete, endsWithSpace) => {

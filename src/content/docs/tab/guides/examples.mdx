@@ -11,7 +11,7 @@ A simple CLI tool with basic autocompletions:
 
 ```ts
 #!/usr/bin/env node
-import { RootCommand } from '@bombsh/tab';
+import { RootCommand } from '@bomb.sh/tab';
 
 const t = new RootCommand();
 
@@ -94,7 +94,7 @@ A more complex CLI using CAC with Tab integration:
 ```ts
 #!/usr/bin/env node
 import cac from 'cac';
-import tab from '@bombsh/tab/cac';
+import tab from '@bomb.sh/tab/cac';
 
 const cli = cac('my-cli');
 
@@ -171,7 +171,7 @@ A CLI using Citty with Tab integration:
 ```ts
 #!/usr/bin/env node
 import { defineCommand, createMain } from 'citty';
-import tab from '@bombsh/tab/citty';
+import tab from '@bomb.sh/tab/citty';
 
 const main = defineCommand({
   meta: {
@@ -247,7 +247,7 @@ A CLI using Commander.js with Tab integration:
 ```ts
 #!/usr/bin/env node
 import { Command } from 'commander';
-import tab from '@bombsh/tab/commander';
+import tab from '@bomb.sh/tab/commander';
 
 const program = new Command();
 
@@ -311,7 +311,7 @@ Load completions from the file system:
 
 ```ts
 import { readdir } from 'fs/promises';
-import { RootCommand } from '@bombsh/tab';
+import { RootCommand } from '@bomb.sh/tab';
 
 const t = new RootCommand();
 
@@ -371,7 +371,7 @@ Dynamically load completions from package.json:
 
 ```ts
 import { readFile } from 'fs/promises';
-import { RootCommand } from '@bombsh/tab';
+import { RootCommand } from '@bomb.sh/tab';
 
 const t = new RootCommand();
 
@@ -396,7 +396,7 @@ Handle monorepo workspace completions:
 
 ```ts
 import { readFile, readdir } from 'fs/promises';
-import { RootCommand } from '@bombsh/tab';
+import { RootCommand } from '@bomb.sh/tab';
 
 const t = new RootCommand();
 
