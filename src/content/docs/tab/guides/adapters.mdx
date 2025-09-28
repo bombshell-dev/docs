@@ -15,31 +15,27 @@ import tab from '@bomb.sh/tab/cac';
 
 const cli = cac('my-cli');
 
-cli.command('dev', 'Start dev server').option('--port <port>', 'Specify port');
-cli.command('build', 'Build for production').option('--mode <mode>', 'Build mode');
+cli.command('dev', 'Start dev server').option('port <port>', 'Specify port');
+cli.command('build', 'Build for production').option('mode <mode>', 'Build mode');
 
-const completion = tab(cli);
+const completion = await tab(cli);
 
 // Get the dev command completion handler
 const devCommandCompletion = completion.commands.get('dev');
 
 // Get and configure the port option completion handler
-const portOptionCompletion = devCommandCompletion.options.get('--port');
-portOptionCompletion.handler = async () => {
-  return [
-    { value: '3000', description: 'Development port' },
-    { value: '8080', description: 'Production port' },
-  ];
+const portOptionCompletion = devCommandCompletion.options.get('port');
+portOptionCompletion.handler = (complete) => {
+  complete('3000', 'Development port');
+  complete('8080', 'Production port');
 };
 
 // Configure build mode completions
 const buildCommandCompletion = completion.commands.get('build');
-const modeOptionCompletion = buildCommandCompletion.options.get('--mode');
-modeOptionCompletion.handler = async () => {
-  return [
-    { value: 'development', description: 'Development build' },
-    { value: 'production', description: 'Production build' },
-  ];
+const modeOptionCompletion = buildCommandCompletion.options.get('mode');
+modeOptionCompletion.handler = (complete) => {
+  complete('development', 'Development build');
+  complete('production', 'Production build');
 };
 
 cli.parse();
@@ -100,13 +96,11 @@ const completion = await tab(main);
 // Configure completions
 const devCommandCompletion = completion.commands.get('dev');
 if (devCommandCompletion) {
-  const portOptionCompletion = devCommandCompletion.options.get('--port');
+  const portOptionCompletion = devCommandCompletion.options.get('port');
   if (portOptionCompletion) {
-    portOptionCompletion.handler = async () => {
-      return [
-        { value: '3000', description: 'Development port' },
-        { value: '8080', description: 'Production port' },
-      ];
+    portOptionCompletion.handler = (complete) => {
+      complete('3000', 'Development port');
+      complete('8080', 'Production port');
     };
   }
 }
@@ -154,13 +148,11 @@ const completion = tab(program);
 // Configure completions
 const devCommandCompletion = completion.commands.get('dev');
 if (devCommandCompletion) {
-  const portOptionCompletion = devCommandCompletion.options.get('--port');
+  const portOptionCompletion = devCommandCompletion.options.get('port');
   if (portOptionCompletion) {
-    portOptionCompletion.handler = async () => {
-      return [
-        { value: '3000', description: 'Development port' },
-        { value: '8080', description: 'Production port' },
-      ];
+    portOptionCompletion.handler = (complete) => {
+      complete('3000', 'Development port');
+      complete('8080', 'Production port');
     };
   }
 }

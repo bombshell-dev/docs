@@ -50,7 +50,7 @@ const t = new RootCommand();
 
 // Add commands with completions
 t.command('dev', 'Start development server')
-  .option('--port', 'Port number', function(complete) {
+  .option('port', 'Port number', function(complete) {
     complete('3000', 'Development port');
     complete('8080', 'Production port');
   }, 'p');
