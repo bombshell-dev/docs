@@ -43,7 +43,7 @@ const buildCmd = t.command('dev build', 'Build project');
 Adds a global option to the root command.
 
 **Parameters:**
-- `name` (string): The option name (e.g., '--config')
+- `name` (string): The option name (e.g., 'config' for '--config')
 - `description` (string): Option description
 - `handler` (OptionHandler, optional): Function that provides completion suggestions
 - `alias` (string, optional): Short flag alias (e.g., 'c' for '--config')
@@ -52,7 +52,7 @@ Adds a global option to the root command.
 
 **Example:**
 ```ts
-t.option('--config', 'Use specified config file', function(complete) {
+t.option('config', 'Use specified config file', function(complete) {
   complete('vite.config.ts', 'Vite config file');
   complete('vite.config.js', 'Vite config file');
 }, 'c');
@@ -120,7 +120,7 @@ const cmd = t.command('dev', 'Start development server');
 Adds an option to this command.
 
 **Parameters:**
-- `name` (string): The option name (e.g., '--port')
+- `name` (string): The option name (e.g., 'p' for '--port')
 - `description` (string): Option description
 - `handler` (OptionHandler, optional): Function that provides completion suggestions
 - `alias` (string, optional): Short flag alias (e.g., 'p' for '--port')
@@ -129,7 +129,7 @@ Adds an option to this command.
 
 **Example:**
 ```ts
-cmd.option('--port', 'Port number', function(complete) {
+cmd.option('port', 'Port number', function(complete) {
   complete('3000', 'Development port');
   complete('8080', 'Production port');
 }, 'p');
@@ -279,12 +279,12 @@ import { RootCommand } from '@bomb.sh/tab';
 const t = new RootCommand();
 
 // Add global options
-t.option('--config', 'Use specified config file', function(complete) {
+t.option('config', 'Use specified config file', function(complete) {
   complete('vite.config.ts', 'Vite config file');
   complete('vite.config.js', 'Vite config file');
 }, 'c');
 
-t.option('--mode', 'Set env mode', function(complete) {
+t.option('mode', 'Set env mode', function(complete) {
   complete('development', 'Development mode');
   complete('production', 'Production mode');
 }, 'm');
@@ -297,17 +297,17 @@ t.argument('project', function(complete) {
 
 // Add commands with completions
 const devCmd = t.command('dev', 'Start development server');
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', 'Development port');
   complete('8080', 'Production port');
 }, 'p');
 
-devCmd.option('--host', 'Hostname', function(complete) {
+devCmd.option('host', 'Hostname', function(complete) {
   complete('localhost', 'Localhost');
   complete('0.0.0.0', 'All interfaces');
 }, 'H');
 
-devCmd.option('--verbose', 'Enable verbose logging', 'v');
+devCmd.option('verbose', 'Enable verbose logging', 'v');
 
 // Add nested commands
 t.command('dev build', 'Build project');
@@ -356,7 +356,7 @@ if (process.argv[2] === 'complete') {
 Make your completions responsive to what the user is typing:
 
 ```ts
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   // Check if user is typing a specific port
   if (this.toComplete?.startsWith('30')) {
     complete('3000', 'Development port');
@@ -374,7 +374,7 @@ devCmd.option('--port', 'Port number', function(complete) {
 Load completions from external sources:
 
 ```ts
-devCmd.option('--config', 'Config file', async function(complete) {
+devCmd.option('config', 'Config file', async function(complete) {
   try {
     const files = await fs.readdir('.');
     const configFiles = files.filter(f => f.includes('config'));
@@ -391,8 +391,8 @@ devCmd.option('--config', 'Config file', async function(complete) {
 For boolean flags, you don't need a handler:
 
 ```ts
-devCmd.option('--verbose', 'Enable verbose logging', 'v');
-devCmd.option('--quiet', 'Suppress output');
+devCmd.option('verbose', 'Enable verbose logging', 'v');
+devCmd.option('quiet', 'Suppress output');
 ```
 
 ## Next Steps

@@ -39,19 +39,19 @@ import { RootCommand } from '@bomb.sh/tab';
 const t = new RootCommand();
 
 // Add global options
-t.option('--config', 'Use specified config file', function(complete) {
+t.option('config', 'Use specified config file', function(complete) {
   complete('vite.config.ts', 'Vite config file');
   complete('vite.config.js', 'Vite config file');
 }, 'c');
 
 // Add commands with completions
 const devCmd = t.command('dev', 'Start development server');
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', 'Development port');
   complete('8080', 'Production port');
 }, 'p');
 
-devCmd.option('--host', 'Hostname', function(complete) {
+devCmd.option('host', 'Hostname', function(complete) {
   complete('localhost', 'Localhost');
   complete('0.0.0.0', 'All interfaces');
 }, 'H');
@@ -108,7 +108,7 @@ const devCmd = t.command('dev', 'Start development server');
 Add options to commands with completion handlers:
 
 ```ts
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', 'Development port');
   complete('8080', 'Production port');
 }, 'p'); // Short flag alias

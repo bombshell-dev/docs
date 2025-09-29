@@ -16,12 +16,12 @@ import { RootCommand } from '@bomb.sh/tab';
 const t = new RootCommand();
 
 // Add global options
-t.option('--config', 'Use specified config file', function(complete) {
+t.option('config', 'Use specified config file', function(complete) {
   complete('vite.config.ts', 'Vite config file');
   complete('vite.config.js', 'Vite config file');
 }, 'c');
 
-t.option('--mode', 'Set env mode', function(complete) {
+t.option('mode', 'Set env mode', function(complete) {
   complete('development', 'Development mode');
   complete('production', 'Production mode');
 }, 'm');
@@ -34,26 +34,26 @@ t.argument('project', function(complete) {
 
 // Add commands with completions
 const devCmd = t.command('dev', 'Start development server');
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', 'Development port');
   complete('8080', 'Production port');
 }, 'p');
 
-devCmd.option('--host', 'Host address', function(complete) {
+devCmd.option('host', 'Host address', function(complete) {
   complete('localhost', 'Local development');
   complete('0.0.0.0', 'All interfaces');
 }, 'h');
 
-devCmd.option('--verbose', 'Enable verbose logging', 'v');
+devCmd.option('verbose', 'Enable verbose logging', 'v');
 
 // Add build command
 const buildCmd = t.command('build', 'Build for production');
-buildCmd.option('--mode', 'Build mode', function(complete) {
+buildCmd.option('mode', 'Build mode', function(complete) {
   complete('development', 'Development build');
   complete('production', 'Production build');
 });
 
-buildCmd.option('--out-dir', 'Output directory', function(complete) {
+buildCmd.option('out-dir', 'Output directory', function(complete) {
   complete('dist/', 'Distribution directory');
   complete('build/', 'Build directory');
 });
@@ -122,41 +122,35 @@ cli.command('deploy', 'Deploy application')
   });
 
 // Initialize Tab completion
-const completion = tab(cli);
+const completion = await tab(cli);
 
 // Configure custom completions
 const devCommandCompletion = completion.commands.get('dev');
 if (devCommandCompletion) {
-  const portOptionCompletion = devCommandCompletion.options.get('--port');
+  const portOptionCompletion = devCommandCompletion.options.get('port');
   if (portOptionCompletion) {
-    portOptionCompletion.handler = async () => {
-      return [
-        { value: '3000', description: 'Development port' },
-        { value: '8080', description: 'Production port' },
-      ];
+    portOptionCompletion.handler = (complete) => {
+      complete('3000', 'Development port');
+      complete('8080', 'Production port');
     };
   }
 
-  const configOptionCompletion = devCommandCompletion.options.get('--config');
+  const configOptionCompletion = devCommandCompletion.options.get('config');
   if (configOptionCompletion) {
-    configOptionCompletion.handler = async () => {
-      return [
-        { value: 'vite.config.ts', description: 'Vite config file' },
-        { value: 'vite.config.js', description: 'Vite config file' },
-      ];
+    configOptionCompletion.handler = (complete) => {
+      complete('vite.config.ts', 'Vite config file');
+      complete('vite.config.js', 'Vite config file');
     };
   }
 }
 
 const buildCommandCompletion = completion.commands.get('build');
 if (buildCommandCompletion) {
-  const modeOptionCompletion = buildCommandCompletion.options.get('--mode');
+  const modeOptionCompletion = buildCommandCompletion.options.get('mode');
   if (modeOptionCompletion) {
-    modeOptionCompletion.handler = async () => {
-      return [
-        { value: 'development', description: 'Development build' },
-        { value: 'production', description: 'Production build' },
-      ];
+    modeOptionCompletion.handler = (complete) => {
+      complete('development', 'Development build');
+      complete('production', 'Production build');
     };
   }
 }
@@ -225,13 +219,11 @@ const completion = await tab(main);
 // Configure completions
 const devCommandCompletion = completion.commands.get('dev');
 if (devCommandCompletion) {
-  const portOptionCompletion = devCommandCompletion.options.get('--port');
+  const portOptionCompletion = devCommandCompletion.options.get('port');
   if (portOptionCompletion) {
-    portOptionCompletion.handler = async () => {
-      return [
-        { value: '3000', description: 'Development port' },
-        { value: '8080', description: 'Production port' },
-      ];
+    portOptionCompletion.handler = (complete) => {
+      complete('3000', 'Development port');
+      complete('8080', 'Production port');
     };
   }
 }
@@ -289,13 +281,11 @@ const completion = tab(program);
 // Configure completions
 const devCommandCompletion = completion.commands.get('dev');
 if (devCommandCompletion) {
-  const portOptionCompletion = devCommandCompletion.options.get('--port');
+  const portOptionCompletion = devCommandCompletion.options.get('port');
   if (portOptionCompletion) {
-    portOptionCompletion.handler = async () => {
-      return [
-        { value: '3000', description: 'Development port' },
-        { value: '8080', description: 'Production port' },
-      ];
+    portOptionCompletion.handler = (complete) => {
+      complete('3000', 'Development port');
+      complete('8080', 'Production port');
     };
   }
 }
@@ -316,7 +306,7 @@ import { RootCommand } from '@bomb.sh/tab';
 const t = new RootCommand();
 
 t.command('build', 'Build project')
-  .option('--config', 'Config file', async function(complete) {
+  .option('config', 'Config file', async function(complete) {
     try {
       const files = await readdir('.');
       const configFiles = files.filter(f => 
@@ -339,7 +329,7 @@ Provide different completions based on context:
 const t = new RootCommand();
 
 t.command('deploy', 'Deploy application')
-  .option('--env', 'Environment', function(complete) {
+  .option('env', 'Environment', function(complete) {
     // Check if user is typing a specific environment
     if (this.toComplete?.startsWith('prod')) {
       complete('production', 'Production environment');
@@ -350,7 +340,7 @@ t.command('deploy', 'Deploy application')
     complete('staging', 'Staging environment');
     complete('production', 'Production environment');
   })
-  .option('--region', 'Region', function(complete) {
+  .option('region', 'Region', function(complete) {
     // Provide region completions based on environment
     const env = this.command?.options?.get('--env')?.value;
     
@@ -401,7 +391,7 @@ import { RootCommand } from '@bomb.sh/tab';
 const t = new RootCommand();
 
 t.command('workspace', 'Workspace commands')
-  .option('--filter', 'Filter workspaces', async function(complete) {
+  .option('filter', 'Filter workspaces', async function(complete) {
     try {
       const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
       const workspaces = packageJson.workspaces || [];

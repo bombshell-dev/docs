@@ -13,14 +13,14 @@ Always include descriptive text for your completions to help users understand wh
 
 ```ts
 // Good
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', 'Development port (default)');
   complete('8080', 'Production port');
   complete('9000', 'Alternative port');
 }, 'p');
 
 // Avoid
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', '');
   complete('8080', '');
 }, 'p');
@@ -31,7 +31,7 @@ devCmd.option('--port', 'Port number', function(complete) {
 Make your completions responsive to what the user is typing:
 
 ```ts
-devCmd.option('--mode', 'Build mode', function(complete) {
+devCmd.option('mode', 'Build mode', function(complete) {
   // If user is typing 'dev', suggest development
   if (this.toComplete?.startsWith('dev')) {
     complete('development', 'Development mode');
@@ -56,7 +56,7 @@ devCmd.option('--mode', 'Build mode', function(complete) {
 Always handle errors in your completion handlers to prevent crashes:
 
 ```ts
-devCmd.option('--config', 'Config file', async function(complete) {
+devCmd.option('config', 'Config file', async function(complete) {
   try {
     const files = await fs.readdir('.');
     const configFiles = files.filter(f => f.includes('config'));
@@ -136,15 +136,15 @@ Provide short aliases only for commonly used options:
 
 ```ts
 // Good - short aliases for common options
-devCmd.option('--port', 'Port number', handler, 'p');
-devCmd.option('--host', 'Host address', handler, 'h');
-devCmd.option('--verbose', 'Enable verbose logging', 'v');
+devCmd.option('port', 'Port number', handler, 'p');
+devCmd.option('host', 'Host address', handler, 'h');
+devCmd.option('verbose', 'Enable verbose logging', 'v');
 
 // Avoid - too many short aliases
-devCmd.option('--config', 'Config file', handler, 'c');
-devCmd.option('--mode', 'Build mode', handler, 'm');
-devCmd.option('--output', 'Output directory', handler, 'o');
-devCmd.option('--source', 'Source directory', handler, 's');
+devCmd.option('config', 'Config file', handler, 'c');
+devCmd.option('mode', 'Build mode', handler, 'm');
+devCmd.option('output', 'Output directory', handler, 'o');
+devCmd.option('source', 'Source directory', handler, 's');
 ```
 
 ## Option Design Best Practices
@@ -155,12 +155,12 @@ Use boolean flags for simple on/off options:
 
 ```ts
 // Good - boolean flags for simple options
-devCmd.option('--verbose', 'Enable verbose logging', 'v');
-devCmd.option('--quiet', 'Suppress output', 'q');
-devCmd.option('--watch', 'Watch for changes', 'w');
+devCmd.option('verbose', 'Enable verbose logging', 'v');
+devCmd.option('quiet', 'Suppress output', 'q');
+devCmd.option('watch', 'Watch for changes', 'w');
 
 // Good - value options for complex data
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', 'Development port');
   complete('8080', 'Production port');
 }, 'p');
@@ -171,7 +171,7 @@ devCmd.option('--port', 'Port number', function(complete) {
 When possible, provide sensible default values in your suggestions:
 
 ```ts
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', 'Development port (default)');
   complete('8080', 'Production port');
   complete('9000', 'Alternative port');
@@ -184,12 +184,12 @@ Choose option names that clearly indicate their purpose:
 
 ```ts
 // Good - descriptive names
-devCmd.option('--output-dir', 'Output directory', handler);
-devCmd.option('--source-map', 'Generate source maps', handler);
+devCmd.option('output-dir', 'Output directory', handler);
+devCmd.option('source-map', 'Generate source maps', handler);
 
 // Avoid - ambiguous names
-devCmd.option('--output', 'Output directory', handler);
-devCmd.option('--map', 'Generate source maps', handler);
+devCmd.option('output', 'Output directory', handler);
+devCmd.option('map', 'Generate source maps', handler);
 ```
 
 ## Argument Design Best Practices
@@ -268,9 +268,9 @@ For package manager integration, provide completions for all major commands:
 ```ts
 // Example: Comprehensive pnpm completions
 const addCmd = t.command('add', 'Install packages');
-addCmd.option('--save-dev', 'Save to devDependencies', 'D');
-addCmd.option('--save-optional', 'Save to optionalDependencies', 'O');
-addCmd.option('--global', 'Install globally', 'g');
+addCmd.option('save-dev', 'Save to devDependencies', 'D');
+addCmd.option('save-optional', 'Save to optionalDependencies', 'O');
+addCmd.option('global', 'Install globally', 'g');
 
 const runCmd = t.command('run', 'Run scripts');
 runCmd.argument('script', async function(complete) {
@@ -323,7 +323,7 @@ t.command('remove', 'Remove packages')
 Limit the number of completions to maintain performance:
 
 ```ts
-devCmd.option('--config', 'Config file', async function(complete) {
+devCmd.option('config', 'Config file', async function(complete) {
   try {
     const files = await fs.readdir('.');
     const configFiles = files.filter(f => f.includes('config'));
@@ -341,14 +341,14 @@ Only use async operations when necessary:
 
 ```ts
 // Good - sync operations for simple completions
-devCmd.option('--mode', 'Build mode', function(complete) {
+devCmd.option('mode', 'Build mode', function(complete) {
   complete('development', 'Development mode');
   complete('production', 'Production mode');
   complete('staging', 'Staging mode');
 });
 
 // Good - async operations for dynamic data
-devCmd.option('--config', 'Config file', async function(complete) {
+devCmd.option('config', 'Config file', async function(complete) {
   const files = await fs.readdir('.');
   const configFiles = files.filter(f => f.includes('config'));
   configFiles.forEach(file => complete(file, `Config file: ${file}`));
@@ -362,7 +362,7 @@ devCmd.option('--config', 'Config file', async function(complete) {
 Start with common options and provide more specific ones as users type:
 
 ```ts
-devCmd.option('--mode', 'Build mode', function(complete) {
+devCmd.option('mode', 'Build mode', function(complete) {
   if (this.toComplete?.startsWith('dev')) {
     complete('development', 'Development mode');
     return;
@@ -387,14 +387,14 @@ Maintain consistent description formatting:
 
 ```ts
 // Good - consistent formatting
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', 'Development port (default)');
   complete('8080', 'Production port');
   complete('9000', 'Alternative port');
 }, 'p');
 
 // Avoid - inconsistent formatting
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', 'dev port');
   complete('8080', 'Production port');
   complete('9000', 'alt port');
@@ -406,12 +406,12 @@ devCmd.option('--port', 'Port number', function(complete) {
 Include default values in descriptions when helpful:
 
 ```ts
-devCmd.option('--port', 'Port number', function(complete) {
+devCmd.option('port', 'Port number', function(complete) {
   complete('3000', 'Development port (default)');
   complete('8080', 'Production port');
 }, 'p');
 
-devCmd.option('--host', 'Host address', function(complete) {
+devCmd.option('host', 'Host address', function(complete) {
   complete('localhost', 'Localhost (default)');
   complete('0.0.0.0', 'All interfaces');
 }, 'h');
@@ -443,7 +443,7 @@ Test how your completions handle error conditions:
 
 ```ts
 // Test with missing files
-devCmd.option('--config', 'Config file', async function(complete) {
+devCmd.option('config', 'Config file', async function(complete) {
   try {
     const files = await fs.readdir('.');
     const configFiles = files.filter(f => f.includes('config'));
@@ -462,7 +462,7 @@ Monitor completion performance, especially for async operations:
 
 ```ts
 // Add timing for performance monitoring
-devCmd.option('--config', 'Config file', async function(complete) {
+devCmd.option('config', 'Config file', async function(complete) {
   const start = Date.now();
   try {
     const files = await fs.readdir('.');
