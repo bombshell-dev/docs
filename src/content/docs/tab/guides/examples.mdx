@@ -100,23 +100,23 @@ const cli = cac('my-cli');
 
 // Define commands
 cli.command('dev', 'Start development server')
-  .option('port <port>', 'Specify port', { default: 3000 })
-  .option('host <host>', 'Specify host', { default: 'localhost' })
-  .option('config <file>', 'Config file')
+  .option('--port <port>', 'Specify port', { default: 3000 })
+  .option('--host <host>', 'Specify host', { default: 'localhost' })
+  .option('--config <file>', 'Config file')
   .action((options) => {
     console.log('Starting dev server...', options);
   });
 
 cli.command('build', 'Build for production')
-  .option('mode <mode>', 'Build mode', { default: 'production' })
-  .option('out-dir <dir>', 'Output directory')
+  .option('--mode <mode>', 'Build mode', { default: 'production' })
+  .option('--out-dir <dir>', 'Output directory')
   .action((options) => {
     console.log('Building...', options);
   });
 
 cli.command('deploy', 'Deploy application')
-  .option('env <environment>', 'Deployment environment')
-  .option('region <region>', 'Deployment region')
+  .option('--env <environment>', 'Deployment environment')
+  .option('--region <region>', 'Deployment region')
   .action((options) => {
     console.log('Deploying...', options);
   });
