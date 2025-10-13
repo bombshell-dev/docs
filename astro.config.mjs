@@ -107,11 +107,6 @@ export default defineConfig({
 						id: "tab",
 						icon: "right-caret",
 						link: "/tab",
-						items: [
-							{ label: "Basics", autogenerate: { directory: "tab/basics" } },
-							{ label: "API", autogenerate: { directory: "tab/api" } },
-							{ label: "Guides", autogenerate: { directory: "tab/guides" } },
-						]
 					},
 				]),
 			],
