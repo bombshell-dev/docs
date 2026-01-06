@@ -142,7 +142,7 @@ async function setupProject() {
   const name = await text({
     message: 'Project name:',
     validate: (value) => {
-      if (value.length === 0) return 'Name is required';
+      if (!value || value.length === 0) return 'Name is required';
       if (!/^[a-z0-9-]+$/.test(value)) return 'Name can only contain lowercase letters, numbers, and hyphens';
       return undefined;
     },
@@ -248,6 +248,7 @@ async function setupConfig(): Promise<Config | null> {
     message: 'Enter port number:',
     placeholder: '3000',
     validate: (value) => {
+      if (!value) return 'Please enter a value';
       const num = parseInt(value);
       if (isNaN(num)) return 'Please enter a valid number';
       if (num < 1 || num > 65535) return 'Port must be between 1 and 65535';
@@ -570,7 +571,7 @@ async function collectUserData(): Promise<UserData | null> {
   const name = await text({
     message: 'Full name:',
     validate: (value) => {
-      if (value.length < 2) return 'Name must be at least 2 characters';
+      if (!value || value.length < 2) return 'Name must be at least 2 characters';
       if (!/^[a-zA-Z\s]*$/.test(value)) return 'Name can only contain letters and spaces';
       return undefined;
     },
@@ -585,6 +586,7 @@ async function collectUserData(): Promise<UserData | null> {
   const email = await text({
     message: 'Email address:',
     validate: (value) => {
+      if (!value) return 'Email is required';
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(value)) return 'Please enter a valid email address';
       return undefined;
@@ -600,6 +602,7 @@ async function collectUserData(): Promise<UserData | null> {
   const ageInput = await text({
     message: 'Age:',
     validate: (value) => {
+      if (!value) return 'Age is required';
       const num = parseInt(value);
       if (isNaN(num)) return 'Please enter a valid number';
       if (num < 18 || num > 100) return 'Age must be between 18 and 100';
@@ -712,6 +715,219 @@ async function collectUserData(): Promise<UserData | null> {
       language,
     },
   };
+}
+```
+
+## New Features Examples
+
+### Path Selection
+
+The `path` prompt provides file system navigation with autocomplete:
+
+```ts twoslash
+import { path, isCancel } from '@clack/prompts';
+
+async function selectConfigFile() {
+  const configPath = await path({
+    message: 'Select a configuration file:',
+    root: process.cwd(),
+    validate: (value) => {
+      if (!value?.endsWith('.json') && !value?.endsWith('.yaml')) {
+        return 'Please select a .json or .yaml file';
+      }
+      return undefined;
+    },
+  });
+
+  if (isCancel(configPath)) {
+    console.log('Operation cancelled');
+    process.exit(0);
+  }
+
+  console.log(`Selected config: ${configPath}`);
+}
+```
+
+### Progress Bar
+
+Display progress for long-running operations:
+
+```ts twoslash
+import { progress, intro, outro } from '@clack/prompts';
+
+async function downloadFiles() {
+  intro('File Downloader');
+
+  const files = ['package.json', 'README.md', 'src/index.ts', 'tsconfig.json', 'LICENSE'];
+  
+  const prog = progress({
+    style: 'heavy',
+    max: files.length,
+    size: 30,
+  });
+
+  prog.start('Downloading files');
+
+  for (let i = 0; i < files.length; i++) {
+    // Simulate download
+    await new Promise(resolve => setTimeout(resolve, 500));
+    prog.advance(1, `Downloaded ${files[i]}`);
+  }
+
+  prog.stop('All files downloaded');
+  outro('Download complete!');
+}
+```
+
+### Spinner with Cancellation Handling
+
+Handle graceful cancellation with the new spinner API:
+
+```ts twoslash
+import { spinner, confirm, isCancel } from '@clack/prompts';
+
+async function longRunningTask() {
+  const shouldStart = await confirm({
+    message: 'Start the long-running task?',
+  });
+
+  if (isCancel(shouldStart) || !shouldStart) {
+    console.log('Task not started');
+    return;
+  }
+
+  const spin = spinner({
+    onCancel: () => {
+      console.log('\nCleaning up resources...');
+    },
+    cancelMessage: 'Task was cancelled by user',
+    errorMessage: 'Task failed unexpectedly',
+  });
+
+  spin.start('Processing data');
+
+  try {
+    // Simulate work in stages
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    spin.message('Analyzing results');
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    spin.message('Generating report');
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Check if cancelled during processing
+    if (spin.isCancelled) {
+      return;
+    }
+
+    spin.stop('Task completed successfully');
+  } catch (error) {
+    spin.error('An error occurred during processing');
+  }
+}
+```
+
+### Task Log with Groups
+
+Organize complex operations into groups:
+
+```ts twoslash
+// @errors: 2345
+import { taskLog, intro, outro } from '@clack/prompts';
+
+async function buildProject() {
+  intro('Project Builder');
+
+  const log = taskLog({
+    title: 'Building project',
+    limit: 5,  // Show last 5 lines per section
+  });
+
+  // TypeScript compilation group
+  const tsGroup = log.group('TypeScript Compilation');
+  tsGroup.message('Checking types...');
+  await new Promise(resolve => setTimeout(resolve, 500));
+  tsGroup.message('Compiling src/index.ts');
+  await new Promise(resolve => setTimeout(resolve, 300));
+  tsGroup.message('Compiling src/utils.ts');
+  await new Promise(resolve => setTimeout(resolve, 300));
+  tsGroup.success('TypeScript compiled successfully');
+
+  // Bundling group
+  const bundleGroup = log.group('Bundling');
+  bundleGroup.message('Reading entry points...');
+  await new Promise(resolve => setTimeout(resolve, 400));
+  bundleGroup.message('Resolving dependencies...');
+  await new Promise(resolve => setTimeout(resolve, 600));
+  bundleGroup.message('Creating bundle...');
+  await new Promise(resolve => setTimeout(resolve, 500));
+  bundleGroup.message('Minifying output...');
+  await new Promise(resolve => setTimeout(resolve, 400));
+  bundleGroup.success('Bundle created: dist/index.js (45kb)');
+
+  // Final success
+  log.success('Build completed in 2.5s');
+  
+  outro('Ready to deploy!');
+}
+```
+
+### Programmatic Cancellation with AbortController
+
+Cancel prompts after a timeout or from external events:
+
+```ts twoslash
+import { text, select, isCancel } from '@clack/prompts';
+
+async function timedPrompt() {
+  // Auto-cancel after 30 seconds
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const name = await text({
+      message: 'Quick! Enter your name (30 second limit):',
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (isCancel(name)) {
+      console.log('Time ran out or cancelled');
+      return;
+    }
+
+    console.log(`Hello, ${name}!`);
+  } catch (error) {
+    console.log('Prompt was aborted');
+  }
+}
+
+// Racing prompts - first response wins
+async function racePrompts() {
+  const controller = new AbortController();
+
+  const result = await Promise.race([
+    // Option 1: Manual selection
+    select({
+      message: 'Choose a framework:',
+      options: [
+        { value: 'react', label: 'React' },
+        { value: 'vue', label: 'Vue' },
+      ],
+      signal: controller.signal,
+    }),
+    // Option 2: Auto-detect (simulated)
+    new Promise<string>(resolve => {
+      setTimeout(() => {
+        resolve('detected-framework');
+        controller.abort();
+      }, 5000);
+    }),
+  ]);
+
+  console.log(`Using: ${String(result)}`);
 }
 ```
 

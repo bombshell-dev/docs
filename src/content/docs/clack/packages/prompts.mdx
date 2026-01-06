@@ -2,8 +2,7 @@
 title: Prompts
 description: Learn about the prompts package and its capabilities
 ---
-import { Aside } from "@astrojs/starlight/components"
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
 The `@clack/prompts` package provides a collection of pre-built, high-level prompts that make it easy to create interactive command-line interfaces. It builds on top of the core package to provide a more developer-friendly experience.
 
@@ -13,6 +12,8 @@ The `@clack/prompts` package provides a collection of pre-built, high-level prom
 - **Consistent styling**: Unified look and feel across all prompts
 - **Type-safe**: Full TypeScript support
 - **Customizable**: Easy to extend and modify
+- **AbortController support**: Cancel prompts programmatically
+- **Custom I/O streams**: Use custom input/output streams
 
 ## Installation
 
@@ -39,21 +40,74 @@ The `@clack/prompts` package provides a collection of pre-built, high-level prom
 
 The prompts package is designed to be intuitive and easy to use. Each prompt function returns a Promise that resolves to the user's input.
 
-For more detailed examples and advanced usage patterns, check out our [examples guide](/docs/guides/examples) and [best practices](/docs/guides/best-practices).
+For more detailed examples and advanced usage patterns, check out our [examples guide](/docs/clack/guides/examples) and [best practices](/docs/clack/guides/best-practices).
+
+## Common Options
+
+All prompts share these common options:
+
+### Guide Lines
+
+The `withGuide` option controls whether the default Clack border/guide lines are displayed. You can disable them globally or per-prompt:
+
+```ts twoslash
+import { text, updateSettings } from '@clack/prompts';
+
+// Disable globally
+updateSettings({ withGuide: false });
+
+// Or per-prompt
+const name = await text({
+  message: 'What is your name?',
+  withGuide: false,  // Disable guide lines for this prompt
+});
+```
+
+### AbortController Support
+
+All prompts accept a `signal` option for programmatic cancellation:
+
+```ts twoslash
+import { confirm } from '@clack/prompts';
+
+// Auto-cancel after 10 seconds
+const shouldContinue = await confirm({
+  message: 'This will self-destruct in 10 seconds',
+  signal: AbortSignal.timeout(10000),
+});
+```
+
+### Custom I/O Streams
+
+You can provide custom input and output streams for all prompts:
+
+```ts twoslash
+import { Writable, Readable } from 'node:stream';
+import { text } from '@clack/prompts';
+
+declare const customInput: Readable;
+declare const customOutput: Writable;
+
+const name = await text({
+  message: 'What is your name?',
+  input: customInput,
+  output: customOutput,
+});
+```
 
 ## Available Prompts
 
 ### Text Input
 
 ```ts twoslash
-// @errors: 2339
+// @errors: 2339 18048
 import { text } from '@clack/prompts';
 
 const name = await text({
   message: 'What is your name?',
   placeholder: 'John Doe',
   validate: (value) => {
-    if (value.length < 2) return 'Name must be at least 2 characters';
+    if (!value || value.length < 2) return 'Name must be at least 2 characters';
     return undefined;
   },
 });
@@ -72,8 +126,9 @@ import { password } from '@clack/prompts';
 const secret = await password({
   message: 'What is your password?',
   mask: '*',
+  clearOnError: true,  // Clear input when validation fails
   validate: (value) => {
-    if (value.length < 8) return 'Your password must be at least 8 characters';
+    if (!value || value.length < 8) return 'Your password must be at least 8 characters';
     if (!/[A-Z]/.test(value)) return 'Your password must be least contain 1 uppercase letter';
     if (!/[0-9]/.test(value)) return 'Your password must be least contain 1 number';
     if (!/[*?!@&]/.test(value)) return 'Your password must be least contain 1 special characters (*?!@&)';
@@ -86,6 +141,11 @@ const secret = await password({
 <font color="#06989A">◆</font>  What is your password?
 <font color="#06989A">│</font>  *****<span style="background-color:#FFFFFF"><font color="#FFFFFF">_</font></span>
 <font color="#06989A">└</font></pre>
+
+Options:
+- `message`: The prompt message to display
+- `mask`: Character used to mask input (default: `'▪'`)
+- `clearOnError`: When `true`, clears the input field when validation fails (useful for security)
 
 ### Selection
 
@@ -133,6 +193,34 @@ const framework = await select({
 <font color="#555753">│</font>  ○ Astro (Content-focused)
 <font color="#555753">│</font>  ○ SvelteKit (Compile-time framework)
 <font color="#555753">└</font></pre>
+
+#### Disabled options
+
+You can disable specific options to prevent selection:
+
+```ts twoslash
+import { select } from '@clack/prompts';
+
+const database = await select({
+  message: 'Select a database',
+  options: [
+    { value: 'postgres', label: 'PostgreSQL', hint: 'Recommended' },
+    { value: 'mysql', label: 'MySQL' },
+    { value: 'mongodb', label: 'MongoDB', disabled: true, hint: 'Coming soon' },
+    { value: 'sqlite', label: 'SQLite' },
+  ],
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  Select a database
+<font color="#06989A">│</font>  <font color="#4E9A06">●</font> PostgreSQL (Recommended)
+<font color="#06989A">│</font>  ○ MySQL
+<font color="#06989A">│</font>  <font color="#555753">○ <s>MongoDB</s> (Coming soon)</font>
+<font color="#06989A">│</font>  ○ SQLite
+<font color="#06989A">└</font></pre>
+
+Disabled options are displayed with strikethrough styling and cannot be selected.
 
 #### Multiple values
 
@@ -214,6 +302,36 @@ const frameworks = await autocompleteMultiselect({
 <font color="#06989A">│</font>  ◼ Next.js (React framework)
 <font color="#06989A">│</font>  ◻ Nuxt (Vue framework)
 <font color="#06989A">└</font></pre>
+
+### Path Selection
+
+The `path` prompt provides an autocomplete-based file and directory path selection. It automatically suggests files and directories as the user types.
+
+```ts twoslash
+import { path } from '@clack/prompts';
+
+const selectedPath = await path({
+  message: 'Select a file:',
+  root: process.cwd(), // Starting directory
+  directory: false, // Set to true to only show directories
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  Select a file:
+<font color="#06989A">│</font>  Search: <span style="background-color:#FFFFFF"><font color="#181818">/</font></span>Users/project/
+<font color="#06989A">│</font>  (3 matches)
+<font color="#06989A">│</font>  ● /Users/project/src
+<font color="#06989A">│</font>  ○ /Users/project/package.json
+<font color="#06989A">│</font>  ○ /Users/project/tsconfig.json
+<font color="#06989A">└</font></pre>
+
+Options:
+- `message`: The prompt message to display
+- `root`: The starting directory for path suggestions (defaults to current working directory)
+- `directory`: When `true`, only directories are shown (defaults to `false`)
+- `initialValue`: Pre-fill the path input with an initial value
+- `validate`: Custom validation function for the selected path
 
 ### Confirmation
 
@@ -305,7 +423,7 @@ const account = await group({
     email: () => text({
         message: 'What is your email address?',
         validate: (value) => {
-            if (!/^[a-z0-9_.-]+@[a-z0-9_.-]+\.[a-z]{2,}$/i.test(value)) return 'Please enter a valid email'
+            if (!value || !/^[a-z0-9_.-]+@[a-z0-9_.-]+\.[a-z]{2,}$/i.test(value)) return 'Please enter a valid email'
         }
     }),
     username: ({results}) => text({
@@ -313,7 +431,7 @@ const account = await group({
         placeholder: results.email?.replace(/@.+$/, '').toLowerCase() ?? '',
         validate: (value) => {
             // FOR DEMO PURPOSES ONLY! Use a robust validation library in production
-            if (value.length < 2) return 'Please enter at least 2 characters'
+            if (!value || value.length < 2) return 'Please enter at least 2 characters'
         }
     }),
     password: () => password({
@@ -440,12 +558,53 @@ spin.stop('Done');
 <pre class="cli-preview"><font color="#555753">│</font>
 <font color="#AD7FA8">◒</font>  Loading{`...`}</pre>
 
-You can customize the spinner's messages either per instance or globally:
+#### Spinner Methods
+
+The spinner provides multiple methods to indicate different completion states:
+
+```ts twoslash
+import { spinner } from '@clack/prompts';
+
+const spin = spinner();
+spin.start('Processing');
+
+// Success - shows green checkmark
+spin.stop('Completed successfully');
+
+// Or cancel - shows red square
+// spin.cancel('Operation cancelled');
+
+// Or error - shows yellow triangle
+// spin.error('An error occurred');
+
+// Or clear - stops without showing any message
+// spin.clear();
+```
+
+You can also check if the spinner was cancelled via SIGINT (Ctrl+C):
+
+```ts twoslash
+import { spinner } from '@clack/prompts';
+
+const spin = spinner({
+  onCancel: () => {
+    console.log('User pressed Ctrl+C');
+  }
+});
+
+spin.start('Long running task');
+// ... after some work
+if (spin.isCancelled) {
+  // Handle cancellation
+}
+```
+
+#### Customization Options
 
 ```ts twoslash
 import { spinner, updateSettings } from '@clack/prompts';
 
-// Global customization
+// Global customization for i18n
 updateSettings({
   messages: {
     cancel: "Operation cancelled",
@@ -455,8 +614,12 @@ updateSettings({
 
 // Per-instance customization
 const spin = spinner({
+  indicator: 'timer',        // 'dots' (default) or 'timer' for elapsed time display
   cancelMessage: "Process cancelled",
   errorMessage: "Process failed",
+  frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],  // Custom animation frames
+  delay: 80,                 // Animation delay in ms
+  styleFrame: (frame) => `\x1b[35m${frame}\x1b[0m`,  // Custom frame styling
 });
 
 spin.start('Loading');
@@ -464,46 +627,66 @@ spin.start('Loading');
 spin.stop('Done');
 ```
 
-The second parameter of `spinner.stop` (`code`) allow you to indicate the ending status of the spinner:
-- `0` (or no value) indicate a success and the symbol for a finished task will be used
-- `1` indicate a cancellation and the red square symbol will be used
-- Any other code indicate an error and the yellow triangle symbol will be used
-
-You can also use custom frames for the spinner:
-
-```ts twoslash
-import { spinner } from '@clack/prompts';
-
-const spin = spinner({
-  frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
-});
-spin.start('Loading');
-// Do something
-spin.stop('Done');
-```
+The `indicator` option supports two modes:
+- `'dots'`: Animated dots that cycle (default)
+- `'timer'`: Shows elapsed time like `[5s]` or `[1m 30s]`
 
 ### Progress
 
-The `progress` prompt displays a progress bar for long-running operations.
+The `progress` function displays a progress bar for long-running operations with multiple visual styles.
 
 ```ts twoslash
-// @errors: 2339
 import { progress } from '@clack/prompts';
 
-const prog = progress();
+const prog = progress({
+  style: 'heavy',  // 'light', 'heavy', or 'block'
+  max: 100,        // Maximum value (default: 100)
+  size: 40,        // Width of the progress bar (default: 40)
+});
+
 prog.start('Processing files');
-// Update progress
-prog.message('Halfway there');
-// Update again
-prog.message('Complete');
+
+// Advance the progress bar
+prog.advance(10);  // Advance by 10 steps
+prog.advance(25, 'Processing images...');  // Advance with a message update
+
+// Update just the message
+prog.message('Almost done...');
+
+// Complete the progress
 prog.stop('All files processed');
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
-<font color="#06989A">◆</font>  Processing files
-<font color="#555753">│</font>  [████████████████████████████████████] 100%
-<font color="#555753">│</font>  Complete
-<font color="#4E9A06">◆</font>  All files processed</pre>
+<font color="#AD7FA8">━━━━━━━━━━━━━━━━━━━━</font><font color="#555753">━━━━━━━━━━━━━━━━━━━━</font> Processing images...</pre>
+
+The progress bar supports three visual styles:
+- `'light'`: Uses thin lines (`─`)
+- `'heavy'`: Uses thick lines (`━`) - default
+- `'block'`: Uses solid blocks (`█`)
+
+Additional methods:
+- `advance(step?, msg?)`: Advance the progress bar by `step` (default: 1) and optionally update the message
+- `message(msg)`: Update the displayed message without advancing
+- `stop(msg?)`: Complete the progress bar with a success message
+- `cancel(msg?)`: Stop with a cancellation indicator
+- `error(msg?)`: Stop with an error indicator
+- `clear()`: Stop and clear the progress bar without a message
+
+You can also use the timer indicator mode for time-based feedback:
+
+```ts twoslash
+import { progress } from '@clack/prompts';
+
+const prog = progress({
+  indicator: 'timer',  // Shows elapsed time instead of animated dots
+  style: 'block',
+  max: 50,
+});
+
+prog.start('Downloading');
+// Progress shows: ████████████░░░░░░░░ Downloading [5s]
+```
 
 ### Note
 
@@ -551,6 +734,37 @@ note(
 <font color="#555753">│</font>                                <font color="#555753">│</font>
 <font color="#555753">├────────────────────────────────╯</font></pre>
 
+### Box
+
+The `box` function renders a customizable box around text content. It's similar to `note` but offers more styling options.
+
+```ts twoslash
+import { box } from '@clack/prompts';
+
+box('This is the content of the box', 'Box Title', {
+  contentAlign: 'center',
+  titleAlign: 'center',
+  width: 'auto',
+  rounded: true,
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>  <font color="#555753">╭──────────Box Title───────────╮</font>
+<font color="#555753">│</font>  <font color="#555753">│</font>                              <font color="#555753">│</font>
+<font color="#555753">│</font>  <font color="#555753">│</font>  This is the content of the  <font color="#555753">│</font>
+<font color="#555753">│</font>  <font color="#555753">│</font>            box               <font color="#555753">│</font>
+<font color="#555753">│</font>  <font color="#555753">│</font>                              <font color="#555753">│</font>
+<font color="#555753">│</font>  <font color="#555753">╰──────────────────────────────╯</font></pre>
+
+Options:
+- `contentAlign`: Alignment of the content (`'left'`, `'center'`, or `'right'`)
+- `titleAlign`: Alignment of the title (`'left'`, `'center'`, or `'right'`)
+- `width`: Box width - use `'auto'` to fit content or a number for fixed width
+- `titlePadding`: Padding around the title
+- `contentPadding`: Padding around the content
+- `rounded`: Use rounded corners when `true` (default), square corners when `false`
+- `formatBorder`: Custom function to style the border characters
+
 ### Task Log
 
 The `taskLog` prompt provides a way to display log output that is cleared on success. This is useful for showing progress or status updates that should be removed once the task is complete.
@@ -560,7 +774,9 @@ The `taskLog` prompt provides a way to display log output that is cleared on suc
 import { taskLog } from '@clack/prompts';
 
 const log = taskLog({
-  title: 'Installing dependencies'
+  title: 'Installing dependencies',
+  limit: 10,        // Limit visible log lines (optional)
+  retainLog: false, // Keep full log history (optional)
 });
 log.message('Fetching package information...');
 // Do some work
@@ -574,6 +790,36 @@ log.success('Installation complete');
 <font color="#555753">│</font>  Fetching package information...
 <font color="#555753">│</font>  Installing packages...
 <font color="#4E9A06">◆</font>  Installation complete</pre>
+
+#### Task Log Groups
+
+Task logs support named groups, which allow you to organize logs into separate sections with their own headers and completion states:
+
+```ts twoslash
+// @errors: 2345
+import { taskLog } from '@clack/prompts';
+
+const log = taskLog({
+  title: 'Building project'
+});
+
+// Create a group for TypeScript compilation
+const tsGroup = log.group('Compiling TypeScript');
+tsGroup.message('Processing src/index.ts...');
+tsGroup.message('Processing src/utils.ts...');
+tsGroup.success('TypeScript compiled');
+
+// Create another group for bundling
+const bundleGroup = log.group('Bundling');
+bundleGroup.message('Creating bundle...');
+bundleGroup.message('Minifying...');
+bundleGroup.success('Bundle created');
+
+// Complete the overall task
+log.success('Build complete');
+```
+
+Each group has its own `message()`, `success()`, and `error()` methods, allowing independent tracking of subtasks within a larger operation.
 
 ### Logs
 

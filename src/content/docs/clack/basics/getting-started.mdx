@@ -3,7 +3,7 @@ title: Getting Started
 description: Learn how to get started with Clack
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
 Clack is a modern, flexible and powerful CLI library that helps you build beautiful command-line interfaces with ease. It provides a set of high-level components and low-level primitives that make it simple to create interactive command-line applications.
 
@@ -17,6 +17,7 @@ Clack is a modern, flexible and powerful CLI library that helps you build beauti
 - 🎭 Form validation
 - 🎯 Error handling
 - 🎨 Consistent styling
+- 📦 ESM-first distribution
 
 ## Installation
 
@@ -87,11 +88,19 @@ async function main() {
 Clack provides several high-level components that make it easy to build interactive CLIs:
 
 - `text()` - For text input with validation
+- `password()` - For secure password input with masking
 - `select()` - For selection menus
 - `confirm()` - For yes/no confirmations
 - `multiselect()` - For multiple selections
+- `groupMultiselect()` - For grouped multiple selections
+- `autocomplete()` - For searchable selection menus
+- `path()` - For file/directory path selection with autocomplete
 - `note()` - For displaying information
+- `box()` - For boxed text display
 - `spinner()` - For loading states
+- `progress()` - For progress bar display
+- `tasks()` - For sequential task execution
+- `taskLog()` - For log output that clears on success
 
 ### Low-Level Primitives
 
@@ -102,7 +111,7 @@ import { TextPrompt, isCancel } from '@clack/core';
 
 const p = new TextPrompt({
   render() {
-    return `What's your name?\n${this.valueWithCursor}`;
+    return `What's your name?\n${this.value ?? ''}`;
   },
 });
 
@@ -129,7 +138,8 @@ import { text } from '@clack/prompts';
 // TypeScript will ensure the validation function returns the correct type
 const age = await text({
   message: 'Enter your age:',
-  validate: (value: string) => {
+  validate: (value) => {
+    if (!value) return 'Please enter a value';
     const num = parseInt(value);
     if (isNaN(num)) return 'Please enter a valid number';
     if (num < 0 || num > 120) return 'Age must be between 0 and 120';
