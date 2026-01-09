@@ -1,0 +1,91 @@
+---
+import Terminal from "./Terminal.astro";
+
+interface Props {
+  file: string;
+}
+const { file } = Astro.props;
+---
+
+<web-container name={file}>
+  <div data-content><slot /></div>
+  <Terminal />
+</web-container>
+
+<script>
+  import type { Terminal } from "@xterm/xterm";
+  import { WebContainer } from "@webcontainer/api";
+  let host: WebContainer;
+
+  host = await WebContainer.boot();
+  const snapshotResponse = await fetch(`/docs/snapshot`);
+  const snapshot = await snapshotResponse.arrayBuffer();
+  await host.mount(snapshot, { mountPoint: "/" });
+
+  customElements.define(
+    "web-container",
+    class extends HTMLElement {
+      get fileContent() {
+        return this.querySelector("[data-content]")!.textContent;
+      }
+      get name() {
+        return this.getAttribute("name")!;
+      }
+      get terminal(): Terminal | undefined {
+        return (this.querySelector("docs-terminal") as any)?.instance;
+      }
+      async connectedCallback() {
+        await host.fs.mkdir(`/examples/${this.name}`, { recursive: true });
+        await host.fs.writeFile(
+          `/examples/${this.name}/index.js`,
+          this.fileContent,
+          { encoding: "utf-8" }
+        );
+        await this.render();
+      }
+
+      async render() {
+        const { terminal } = this;
+        terminal?.reset();
+        const main = async () => {
+          const jshReady = Promise.withResolvers();
+          let process;
+          let isJSHReady = false;
+
+          // we set an infinite loop so that when the user runs the `exit` command, we restart
+          while (true) {
+            process = await host.spawn("jsh", {
+              terminal: { rows: terminal?.rows!, cols: terminal?.cols! },
+            });
+            process.output.pipeTo(
+              new WritableStream({
+                write(data) {
+                  if (data.includes("❯") && !isJSHReady) {
+                    isJSHReady = true;
+                    jshReady.resolve(undefined);
+                  }
+                  terminal?.write(data);
+                },
+              })
+            );
+            const shellWriter = process.input.getWriter();
+            await jshReady.promise;
+            await shellWriter.write(
+              `cd examples/${this.name} && clear && node index.js\n`
+            );
+            // write the terminal input to the process
+            const terminalWriter = terminal?.onData((data) => {
+              shellWriter.write(data);
+            });
+            // wait for the process to finish
+            await process.exit;
+            terminal?.clear();
+            terminalWriter?.dispose();
+          }
+        }
+
+        main();
+      }
+    }
+  );
+</script>

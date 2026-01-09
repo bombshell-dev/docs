@@ -3,11 +3,27 @@ title: Examples
 description: Learn through practical examples of using Clack
 ---
 
+import { WebContainer } from '../../../../components/WebContainer/WebContainer.astro';
+
 This guide provides practical examples of using Clack in different scenarios.
 
 ## Basic Examples
 
+### Container
+
+```ts
+import { text, isCancel } from '@clack/prompts';
+
+const name = await text({
+  message: "What is your name?",
+  placeholder: "Jane Doe"
+})
+```
+
 ### Simple Text Input
+
+<WebContainer name="simple-text">
+
 
 ```ts twoslash
 import { text, isCancel } from '@clack/prompts';
@@ -26,6 +42,9 @@ if (isCancel(name)) {
 
 console.log(`Hello, ${name}!`);
 ```
+
+
+</WebContainer>
 
 ### Selection Menu
 

@@ -2,6 +2,7 @@
 dist/
 # generated types
 .astro/
+public/snapshot
 
 # dependencies
 node_modules/
