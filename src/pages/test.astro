@@ -1,0 +1,15 @@
+---
+import WebContainer from '../components/WebContainer/WebContainer.astro';
+
+const code = `import { text } from "@clack/prompts";
+
+const name = await text({
+  message: "What is your name?",
+  placeholder: "Jane Doe"
+})
+`
+---
+
+<h1>Hello test!</h1>
+
+<WebContainer file="nice" set:text={code} />

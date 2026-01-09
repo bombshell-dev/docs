@@ -1,0 +1,103 @@
+---
+import Terminal from "./Terminal.astro";
+
+interface Props {
+  file: string;
+}
+const { file } = Astro.props;
+---
+
+<web-container name={file}>
+  <pre data-content><code><slot /></code></pre>
+  <Terminal />
+</web-container>
+
+<script>
+  import type { Terminal } from "@xterm/xterm";
+  import { WebContainer } from "@webcontainer/api";
+  let host: WebContainer;
+
+  host = await WebContainer.boot({ workdirName: 'demo' });
+  const snapshotResponse = await fetch(`/docs/snapshot`);
+  const snapshot = await snapshotResponse.arrayBuffer();
+  await host.mount(snapshot, { mountPoint: "/" });
+
+  customElements.define(
+    "web-container",
+    class extends HTMLElement {
+      get dir() {
+          return `${this.name}/`
+      }
+      get file() {
+        return `${this.dir}index.js`;
+      }
+      get fileContent() {
+        const text = this.querySelector("[data-content]")!.textContent;
+        return `import { intro, outro } from "@clack/prompts";console.clear();intro("\\x1b[46m\\x1b[30m ${this.name} \\x1b[0m");\n${text};process.on('exit', () => console.log('EOF'));`;
+      }
+      get name() {
+        return this.getAttribute("name")!;
+      }
+      get terminal(): Terminal | undefined {
+        return (this.querySelector("docs-terminal") as any)?.instance;
+      }
+      async connectedCallback() {
+        await host.fs.mkdir(this.dir, { recursive: true });
+        await host.fs.writeFile(
+          this.file,
+          this.fileContent,
+          { encoding: "utf-8" }
+        );
+        await this.render();
+      }
+
+      async render() {
+        const { terminal, name, render } = this;
+        terminal?.reset();
+        const main = async () => {
+          // we set an infinite loop so that when the user runs the `exit` command, we restart
+          while (true) {
+            const jsh = Promise.withResolvers();
+            let isJSHReady = false;
+            const process = await host.spawn("jsh", {
+              cwd: name,
+              terminal: { rows: terminal?.rows!, cols: terminal?.cols! },
+            });
+            process.output.pipeTo(
+              new WritableStream({
+                write(data) {
+                  if (data.includes("❯") && !isJSHReady) {
+                    isJSHReady = true;
+                    jsh.resolve(undefined);
+                  }
+                  if (data.includes("❯") || data.includes('~/demo')) {
+                    return;
+                  }
+                  if (data.includes("EOF")) {
+                    process.kill();
+                    render();
+                    return;
+                  }
+                  terminal?.write(data);
+                }
+              })
+            );
+            const shell = process.input.getWriter();
+            await jsh.promise;
+            await shell.write(`node index.js\n`);
+            // write the terminal input to the process
+            const terminalWriter = terminal?.onData((data) => {
+              shell.write(data);
+            });
+            // wait for the process to finish
+            await process.exit;
+            terminal?.clear();
+            terminalWriter?.dispose();
+          }
+        }
+
+        main();
+      }
+    }
+  );
+</script>
