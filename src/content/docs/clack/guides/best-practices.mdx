@@ -39,7 +39,8 @@ Implement proper validation for user inputs:
 import { text } from '@clack/prompts';
 
 // Define validation function outside for reusability
-function validateAge(value: string): string | undefined {
+function validateAge(value: string | undefined): string | undefined {
+  if (!value) return 'Please enter a value';
   const num = parseInt(value);
   if (isNaN(num)) return 'Please enter a valid number';
   if (num < 0 || num > 120) return 'Age must be between 0 and 120';
@@ -134,8 +135,8 @@ interface ProjectConfig {
 }
 
 // Define validation functions
-function validateProjectName(value: string): string | undefined {
-  if (value.length === 0) return 'Name is required';
+function validateProjectName(value: string | undefined): string | undefined {
+  if (!value || value.length === 0) return 'Name is required';
   if (!/^[a-z0-9-]+$/.test(value)) return 'Name can only contain lowercase letters, numbers, and hyphens';
   return undefined;
 }
@@ -289,7 +290,8 @@ import { text } from '@clack/prompts';
 
 const serverPort = await text({
   message: 'Enter port number:',
-  validate: (value: string) => {
+  validate: (value) => {
+    if (!value) return 'Please enter a value';
     const num = parseInt(value);
     if (isNaN(num)) return 'Please enter a valid number';
     if (num < 1 || num > 65535) return 'Port must be between 1 and 65535';
@@ -349,6 +351,7 @@ async function setupDatabase() {
       message: 'Database port:',
       defaultValue: dbType === 'postgres' ? '5432' : '3306',
       validate: (value) => {
+        if (!value) return 'Please enter a value';
         const num = parseInt(value);
         if (isNaN(num)) return 'Please enter a valid number';
         if (num < 1 || num > 65535) return 'Port must be between 1 and 65535';
@@ -381,6 +384,7 @@ async function promptForPort(defaultPort: string) {
     message: 'Enter port number:',
     defaultValue: defaultPort,
     validate: (value) => {
+      if (!value) return 'Please enter a value';
       const num = parseInt(value);
       if (isNaN(num)) return 'Please enter a valid number';
       if (num < 1 || num > 65535) return 'Port must be between 1 and 65535';

@@ -10,15 +10,15 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.34.4",
+    "@astrojs/starlight": "^0.37.1",
     "@bomb.sh/args": "^0.3.1",
-    "@clack/core": "^0.4.2",
-    "@clack/prompts": "1.0.0-alpha.0",
-    "@types/node": "^22.13.11",
-    "astro": "^5.10.0",
-    "expressive-code-twoslash": "^0.4.0",
+    "@clack/core": "^1.0.0-alpha.7",
+    "@clack/prompts": "1.0.0-alpha.9",
+    "@types/node": "^22.19.3",
+    "astro": "^5.16.6",
+    "expressive-code-twoslash": "^0.5.3",
     "sharp": "^0.33.5",
-    "starlight-sidebar-topics": "^0.6.0"
+    "starlight-sidebar-topics": "^0.6.2"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

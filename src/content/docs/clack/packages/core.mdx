@@ -15,6 +15,8 @@ The `@clack/core` package provides the fundamental building blocks for creating 
 - **Event system**: Comprehensive event handling for user interactions
 - **Input validation**: Built-in support for input validation
 - **Abort signal support**: Integration with AbortController for cancellation
+- **Custom I/O streams**: Support for custom input/output streams
+- **Configurable guide lines**: Toggle the default Clack border with `withGuide`
 
 ## Installation
 
@@ -42,15 +44,34 @@ Then import the components you need:
 
 ```ts twoslash
 import { 
+  // Prompt classes
   TextPrompt, 
   SelectPrompt, 
   ConfirmPrompt,
   PasswordPrompt,
   MultiSelectPrompt,
   GroupMultiSelectPrompt,
-  SelectKeyPrompt
+  SelectKeyPrompt,
+  AutocompletePrompt,
+
+  // Utilities
+  isCancel,
+  updateSettings,
+  settings,
+
+  // Types
+  type ClackSettings,
+  type PromptOptions,
+  type ConfirmOptions,
+  type PasswordOptions,
+  type MultiSelectOptions,
+  type GroupMultiSelectOptions,
+  type SelectKeyOptions,
+  type AutocompleteOptions,
 } from '@clack/core';
 ```
+
+The package exports both the prompt classes and their corresponding options types (e.g., `ConfirmOptions`, `PasswordOptions`) for TypeScript users.
 
 ## Package Structure
 
@@ -74,8 +95,7 @@ The `Prompt` class serves as the foundation for all prompt types. It provides:
 
 #### Key Methods
 
-```ts twoslash
-
+```ts
 interface Prompt {
   // Event handling
   on<T extends string>(event: T, cb: (value: any) => void): void;
@@ -93,7 +113,8 @@ interface Prompt {
 The `Prompt` interface provides several events that can be handled:
 
 ```ts twoslash
-// @errors: 2304 7006 2353 2345 2459
+// @errors: 2304 2314 2345 7006 2353 2459
+// @noErrors
 import { Prompt } from '@clack/core';
 
 // Example usage
@@ -123,11 +144,13 @@ p.on('cancel', () => {
    - Supports validation
    - Placeholder text
    - Initial value
+   - Separate `userInput` and `value` tracking
 
 2. **SelectPrompt**: For selection from options
-   - Multiple selection support
    - Custom rendering
    - Option filtering
+   - Disabled options support
+   - Text wrapping support
 
 3. **ConfirmPrompt**: For yes/no confirmations
    - Yes/No shortcuts
@@ -136,42 +159,97 @@ p.on('cancel', () => {
 4. **AutocompletePrompt**: For searchable selection
    - Type-ahead filtering
    - Custom filtering logic
-   - Multiple selection support
+   - Multiple selection support (`multiple: true`)
+   - Dynamic options (function or array)
 
 5. **PasswordPrompt**: For secure input
    - Character masking
    - Validation support
+   - `clearOnError` option to reset on validation failure
 
 6. **MultiSelectPrompt**: For multiple selections
    - Checkbox interface
    - Selection limits
    - Custom rendering
+   - Disabled options support
+   - Invert selection support
 
 7. **GroupMultiSelectPrompt**: For grouped selections
    - Hierarchical options
-   - Group selection
+   - Group selection (`selectableGroups` option)
    - Custom rendering
+   - Group spacing control
 
 8. **SelectKeyPrompt**: For key-based selection
    - Custom key bindings
    - Multiple selection support
+
+## Global Settings
+
+The core package provides global settings that affect all prompts:
+
+```ts twoslash
+import { updateSettings, settings } from '@clack/core';
+
+// Update global settings
+updateSettings({
+  // Custom key aliases for navigation
+  aliases: {
+    w: 'up',
+    a: 'left',
+    s: 'down',
+    d: 'right',
+  },
+  // Disable guide lines globally
+  withGuide: false,
+  // Custom messages for i18n
+  messages: {
+    cancel: 'Operación cancelada',
+    error: 'Se produjo un error',
+  },
+});
+
+// Access current settings
+console.log(settings.messages.cancel);
+```
+
+### Key Aliases
+
+Default keybindings include Vim-style navigation:
+
+| Key | Action |
+|-----|--------|
+| `k` | up |
+| `j` | down |
+| `h` | left |
+| `l` | right |
+| `Escape` | cancel |
+
+You can add custom aliases but cannot disable the default keybindings.
+
+### Guide Lines
+
+The `withGuide` setting controls the display of Clack's signature border lines. Set to `false` to render prompts without the decorative guide.
 
 ## Creating Custom Prompts
 
 You can create custom prompts by extending the base `Prompt` class:
 
 ```ts twoslash
+// @errors: 2339
 import { Prompt } from '@clack/core';
 
 // Example of extending the base Prompt class
-class CustomPrompt extends Prompt {
+class CustomPrompt extends Prompt<string> {
   constructor(options: { message: string }) {
     super({
       ...options,
-      render: () => `${options.message}\n${this.value || ''}`
+      render() {
+        return `${options.message}\n${this.value ?? ''}`;
+      }
     });
   }
 }
 ```
 
-For detailed examples and usage patterns, check out our [examples guide](/docs/guides/examples).
+For detailed examples and usage patterns, check out our [examples guide](/docs/clack/guides/examples).
