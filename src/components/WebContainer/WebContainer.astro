@@ -8,7 +8,7 @@ const { file } = Astro.props;
 ---
 
 <web-container name={file}>
-  <div data-content><slot /></div>
+  <pre data-content><code><slot /></code></pre>
   <Terminal />
 </web-container>
 
@@ -17,7 +17,7 @@ const { file } = Astro.props;
   import { WebContainer } from "@webcontainer/api";
   let host: WebContainer;
 
-  host = await WebContainer.boot();
+  host = await WebContainer.boot({ workdirName: 'demo' });
   const snapshotResponse = await fetch(`/docs/snapshot`);
   const snapshot = await snapshotResponse.arrayBuffer();
   await host.mount(snapshot, { mountPoint: "/" });
@@ -25,8 +25,15 @@ const { file } = Astro.props;
   customElements.define(
     "web-container",
     class extends HTMLElement {
+      get dir() {
+          return `${this.name}/`
+      }
+      get file() {
+        return `${this.dir}index.js`;
+      }
       get fileContent() {
-        return this.querySelector("[data-content]")!.textContent;
+        const text = this.querySelector("[data-content]")!.textContent;
+        return `import { intro, outro } from "@clack/prompts";console.clear();intro("\\x1b[46m\\x1b[30m ${this.name} \\x1b[0m");\n${text};process.on('exit', () => console.log('EOF'));`;
       }
       get name() {
         return this.getAttribute("name")!;
@@ -35,9 +42,9 @@ const { file } = Astro.props;
         return (this.querySelector("docs-terminal") as any)?.instance;
       }
       async connectedCallback() {
-        await host.fs.mkdir(`/examples/${this.name}`, { recursive: true });
+        await host.fs.mkdir(this.dir, { recursive: true });
         await host.fs.writeFile(
-          `/examples/${this.name}/index.js`,
+          this.file,
           this.fileContent,
           { encoding: "utf-8" }
         );
@@ -45,16 +52,15 @@ const { file } = Astro.props;
       }
 
       async render() {
-        const { terminal } = this;
+        const { terminal, name, render } = this;
         terminal?.reset();
         const main = async () => {
-          const jshReady = Promise.withResolvers();
-          let process;
-          let isJSHReady = false;
-
           // we set an infinite loop so that when the user runs the `exit` command, we restart
           while (true) {
-            process = await host.spawn("jsh", {
+            const jsh = Promise.withResolvers();
+            let isJSHReady = false;
+            const process = await host.spawn("jsh", {
+              cwd: name,
               terminal: { rows: terminal?.rows!, cols: terminal?.cols! },
             });
             process.output.pipeTo(
@@ -62,20 +68,26 @@ const { file } = Astro.props;
                 write(data) {
                   if (data.includes("❯") && !isJSHReady) {
                     isJSHReady = true;
-                    jshReady.resolve(undefined);
+                    jsh.resolve(undefined);
+                  }
+                  if (data.includes("❯") || data.includes('~/demo')) {
+                    return;
+                  }
+                  if (data.includes("EOF")) {
+                    process.kill();
+                    render();
+                    return;
                   }
                   terminal?.write(data);
-                },
+                }
               })
             );
-            const shellWriter = process.input.getWriter();
-            await jshReady.promise;
-            await shellWriter.write(
-              `cd examples/${this.name} && clear && node index.js\n`
-            );
+            const shell = process.input.getWriter();
+            await jsh.promise;
+            await shell.write(`node index.js\n`);
             // write the terminal input to the process
             const terminalWriter = terminal?.onData((data) => {
-              shellWriter.write(data);
+              shell.write(data);
             });
             // wait for the process to finish
             await process.exit;
