@@ -2,7 +2,6 @@
 
 <script>
   import type { Terminal } from "@xterm/xterm";
-  import "@xterm/xterm/css/xterm.css";
   import { theme } from "./theme.ts";
 
   customElements.define(
@@ -41,7 +40,7 @@
           cursorBlink: false,
           disableStdin: false,
           theme,
-          fontSize: 14,
+          fontSize: 22,
           fontFamily: "Menlo, courier-new, courier, monospace",
         });
 
@@ -57,3 +56,14 @@
     }
   );
 </script>
+
+<style is:global>
+  @import "@xterm/xterm/css/xterm.css" layer(xterm);
+
+  .xterm {
+    padding: 12px;
+  }
+  .xterm-viewport {
+    background: #16181D;
+  }
+</style>
