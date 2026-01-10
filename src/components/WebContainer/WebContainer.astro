@@ -15,6 +15,7 @@ const { file } = Astro.props;
 <script>
   import type { Terminal } from "@xterm/xterm";
   import { WebContainer } from "@webcontainer/api";
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   let host: WebContainer;
 
   host = await WebContainer.boot({ workdirName: 'demo' });
@@ -32,8 +33,8 @@ const { file } = Astro.props;
         return `${this.dir}index.js`;
       }
       get fileContent() {
-        const text = this.querySelector("[data-content]")!.textContent;
-        return `import { intro, outro } from "@clack/prompts";console.clear();intro("\\x1b[46m\\x1b[30m ${this.name} \\x1b[0m");\n${text};process.on('exit', () => console.log('EOF'));`;
+        const text = this.querySelector("pre code")!.textContent;
+        return `import { intro, outro } from "@clack/prompts";console.clear();intro("\\x1b[46m\\x1b[30m ${this.name} \\x1b[0m");\n${text};`;
       }
       get name() {
         return this.getAttribute("name")!;
@@ -52,50 +53,35 @@ const { file } = Astro.props;
       }
 
       async render() {
-        const { terminal, name, render } = this;
+        const { terminal, name } = this;
         terminal?.reset();
         const main = async () => {
-          // we set an infinite loop so that when the user runs the `exit` command, we restart
+          // we set an infinite loop so that when the node process exits, we restart
           while (true) {
-            const jsh = Promise.withResolvers();
-            let isJSHReady = false;
-            const process = await host.spawn("jsh", {
+            const process = await host.spawn("node", ["index.js"], {
               cwd: name,
               terminal: { rows: terminal?.rows!, cols: terminal?.cols! },
             });
             process.output.pipeTo(
               new WritableStream({
                 write(data) {
-                  if (data.includes("❯") && !isJSHReady) {
-                    isJSHReady = true;
-                    jsh.resolve(undefined);
-                  }
-                  if (data.includes("❯") || data.includes('~/demo')) {
-                    return;
-                  }
-                  if (data.includes("EOF")) {
-                    process.kill();
-                    render();
-                    return;
-                  }
                   terminal?.write(data);
                 }
               })
             );
-            const shell = process.input.getWriter();
-            await jsh.promise;
-            await shell.write(`node index.js\n`);
             // write the terminal input to the process
             const terminalWriter = terminal?.onData((data) => {
-              shell.write(data);
+              const writer = process.input.getWriter();
+              writer.write(data);
+              writer.releaseLock();
             });
             // wait for the process to finish
             await process.exit;
+            await sleep(2000);
             terminal?.clear();
             terminalWriter?.dispose();
           }
         }
-
         main();
       }
     }
