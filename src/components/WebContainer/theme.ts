@@ -1,22 +1,30 @@
 export const theme = {
-  cursor: '#eff0eb',
+  cursor: "#C4C7CF",
   cursorAccent: '#00000000',
-  foreground: "#eff0eb",
-  background: "#16181D",
-  red: "#ff5c57",
-  green: "#5af78e",
-  yellow: "#f3f99d",
-  blue: "#57c7ff",
-  magenta: "#ff6ac1",
-  cyan: "#9aedfe",
-  white: "#f1f1f0",
-  brightBlack: "#686868",
-  brightRed: "#ff5c57",
-  brightGreen: "#5af78e",
-  brightYellow: "#f3f99d",
-  brightBlue: "#57c7ff",
-  brightMagenta: "#ff6ac1",
-  brightCyan: "#9aedfe",
-  brightWhite: "#f1f1f0",
+  foreground: "#FFFFFF",
+  background: "#191B23",
+  red: "#ff3e47",
+  green: "#07F53F",
+  yellow: "#FFE228",
+  blue: "#054bff",
+  magenta: "#ff00d2",
+  cyan: "#00E5FF",
+  white: "#FFFFFF",
+  brightBlack: "#484A54",
+  brightRed: "#FF3E47",
+  brightGreen: "#07F53F",
+  brightYellow: "#FFE228",
+  brightBlue: "#054bff",
+  brightMagenta: "#FF00D2",
+  brightCyan: "#00E5FF",
+  brightWhite: "#FFFFFF",
   selectionBackground: "#97979b33",
 };
+
+
+
+
+
+
+
+
