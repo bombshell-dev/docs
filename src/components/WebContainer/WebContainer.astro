@@ -8,7 +8,7 @@ const { name } = Astro.props;
 ---
 
 <web-container name={name}>
-  <pre data-content><code><slot /></code></pre>
+  <slot />
   <Terminal />
 </web-container>
 
