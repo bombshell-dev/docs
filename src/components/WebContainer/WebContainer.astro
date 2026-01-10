@@ -2,12 +2,12 @@
 import Terminal from "./Terminal.astro";
 
 interface Props {
-  file: string;
+  name: string;
 }
-const { file } = Astro.props;
+const { name } = Astro.props;
 ---
 
-<web-container name={file}>
+<web-container name={name}>
   <pre data-content><code><slot /></code></pre>
   <Terminal />
 </web-container>
