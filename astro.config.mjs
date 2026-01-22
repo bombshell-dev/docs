@@ -12,6 +12,12 @@ export default defineConfig({
 	site: "https://bomb.sh/",
 	base: "/docs",
 	outDir: "./dist/docs/",
+	server: {
+		headers: {
+			'Cross-Origin-Embedder-Policy': 'require-corp',
+			'Cross-Origin-Opener-Policy': 'same-origin'
+		}
+	},
 	integrations: [
 		starlight({
 			title: "Bombshell",

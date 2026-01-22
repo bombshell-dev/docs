@@ -1,0 +1,89 @@
+---
+import Terminal from "./Terminal.astro";
+
+interface Props {
+  name: string;
+}
+const { name } = Astro.props;
+---
+
+<web-container name={name}>
+  <slot />
+  <Terminal />
+</web-container>
+
+<script>
+  import type { Terminal } from "@xterm/xterm";
+  import { WebContainer } from "@webcontainer/api";
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  let host: WebContainer;
+
+  host = await WebContainer.boot({ workdirName: 'demo' });
+  const snapshotResponse = await fetch(`/docs/snapshot`);
+  const snapshot = await snapshotResponse.arrayBuffer();
+  await host.mount(snapshot, { mountPoint: "/" });
+
+  customElements.define(
+    "web-container",
+    class extends HTMLElement {
+      get dir() {
+          return `${this.name}/`
+      }
+      get file() {
+        return `${this.dir}index.js`;
+      }
+      get fileContent() {
+        const text = this.querySelector("pre code")!.textContent;
+        return `import { intro, outro } from "@clack/prompts";console.clear();intro("\\x1b[46m\\x1b[30m ${this.name} \\x1b[0m");\n${text};`;
+      }
+      get name() {
+        return this.getAttribute("name")!;
+      }
+      get terminal(): Terminal | undefined {
+        return (this.querySelector("docs-terminal") as any)?.instance;
+      }
+      async connectedCallback() {
+        await host.fs.mkdir(this.dir, { recursive: true });
+        await host.fs.writeFile(
+          this.file,
+          this.fileContent,
+          { encoding: "utf-8" }
+        );
+        await this.render();
+      }
+
+      async render() {
+        const { terminal, name } = this;
+        terminal?.reset();
+        const main = async () => {
+          // we set an infinite loop so that when the node process exits, we restart
+          while (true) {
+            const process = await host.spawn("node", ["index.js"], {
+              cwd: name,
+              terminal: { rows: terminal?.rows!, cols: terminal?.cols! },
+            });
+            process.output.pipeTo(
+              new WritableStream({
+                write(data) {
+                  terminal?.write(data);
+                }
+              })
+            );
+            // write the terminal input to the process
+            const terminalWriter = terminal?.onData((data) => {
+              const writer = process.input.getWriter();
+              writer.write(data);
+              writer.releaseLock();
+            });
+            // wait for the process to finish
+            await process.exit;
+            await sleep(2000);
+            terminal?.clear();
+            terminalWriter?.dispose();
+          }
+        }
+        main();
+      }
+    }
+  );
+</script>
