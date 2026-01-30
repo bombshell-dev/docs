@@ -1,0 +1,76 @@
+<docs-terminal class="not-content" />
+
+<style>
+docs-terminal {
+  display: block;
+  min-height: 256px;
+}
+</style>
+
+<script>
+  import type { Terminal } from "@xterm/xterm";
+  import { theme } from "./theme.ts";
+
+  customElements.define(
+    "docs-terminal",
+    class extends HTMLElement {
+      instance: Terminal | undefined;
+      ro: ResizeObserver | undefined;
+      updateSize = () => {};
+      
+      connectedCallback() {
+        this.boot();
+      }
+      disconnectedCallback() {
+        this.instance?.dispose();
+        this.ro?.disconnect();
+      }
+      handleResize() {
+        this.ro = new ResizeObserver(() => this.updateSize());
+        this.ro.observe(this);
+      }
+      async boot() {
+        if (this.instance) {
+          this.instance.options.theme = theme;
+          this.instance.open(this);
+          return;
+        }
+        this.innerHTML = "";
+        const [{ Terminal }, { FitAddon }, { WebLinksAddon }] =
+          await Promise.all([
+            import("@xterm/xterm"),
+            import("@xterm/addon-fit"),
+            import("@xterm/addon-web-links"),
+          ]);
+        this.instance = new Terminal({
+          convertEol: true,
+          cursorBlink: false,
+          disableStdin: false,
+          theme,
+          fontSize: 16,
+          fontFamily: "Menlo, courier-new, courier, monospace",
+        });
+
+        this.instance.open(this);
+
+        const fit = new FitAddon();
+        this.instance.loadAddon(fit);
+        this.instance.loadAddon(new WebLinksAddon());
+        this.updateSize = () => fit.fit();
+        this.updateSize();
+        this.handleResize();
+      }
+    }
+  );
+</script>
+
+<style is:global>
+  @import "@xterm/xterm/css/xterm.css" layer(xterm);
+
+  .xterm {
+    padding: 24px 12px;
+  }
+  .xterm-viewport {
+    background: #191B23;
+  }
+</style>

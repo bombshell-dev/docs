@@ -12,6 +12,12 @@ export default defineConfig({
 	site: "https://bomb.sh/",
 	base: "/docs",
 	outDir: "./dist/docs/",
+	server: {
+		headers: {
+			'Cross-Origin-Embedder-Policy': 'require-corp',
+			'Cross-Origin-Opener-Policy': 'same-origin'
+		}
+	},
 	integrations: [
 		starlight({
 			title: "Bombshell",
@@ -26,6 +32,12 @@ export default defineConfig({
 				Head: "./src/starlightOverrides/Head.astro",
 			},
 			expressiveCode: {
+				themes: ['github-dark-high-contrast', 'github-light-high-contrast'],
+				styleOverrides: {
+					twoSlash: {
+						cursorColor: 'rgba(255 0 210)'
+					}
+				},
 				plugins: [ecTwoSlash()],
 			},
 			editLink: {

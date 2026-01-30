@@ -3,12 +3,28 @@ title: Examples
 description: Learn through practical examples of using Clack
 ---
 
+import WebContainer from '/src/components/WebContainer/WebContainer.astro';
+
 This guide provides practical examples of using Clack in different scenarios.
 
 ## Basic Examples
 
+### Container
+
+<WebContainer name="container">
+```ts
+import { text, isCancel } from '@clack/prompts';
+
+const name = await text({
+  message: "What is your name?",
+  placeholder: "Jane Doe"
+})
+```
+</WebContainer>
+
 ### Simple Text Input
 
+<WebContainer name="simple-text">
 ```ts twoslash
 import { text, isCancel } from '@clack/prompts';
 
@@ -26,9 +42,11 @@ if (isCancel(name)) {
 
 console.log(`Hello, ${name}!`);
 ```
+</WebContainer>
 
 ### Selection Menu
 
+<WebContainer name="selection-menu">
 ```ts twoslash
 import { select, isCancel } from '@clack/prompts';
 
@@ -48,20 +66,22 @@ if (isCancel(framework)) {
 
 console.log(`You selected ${framework}`);
 ```
+</WebContainer>
 
 ### Autocomplete Selection
 
+<WebContainer name="autocomplete-selection">
 ```ts twoslash
 import { autocomplete, isCancel } from '@clack/prompts';
 
 const selectedPackage = await autocomplete({
   message: 'Search for a package:',
   options: [
+    { value: 'astro', label: 'Astro', hint: 'The web framework for content-based sites' },
     { value: 'react', label: 'React', hint: 'A JavaScript library for building user interfaces' },
     { value: 'vue', label: 'Vue', hint: 'The Progressive JavaScript Framework' },
     { value: 'svelte', label: 'Svelte', hint: 'Cybernetically enhanced web apps' },
     { value: 'angular', label: 'Angular', hint: 'Platform for building mobile & desktop web apps' },
-    { value: 'next', label: 'Next.js', hint: 'The React Framework for Production' },
   ],
   placeholder: 'Type to search...',
   maxItems: 5,
@@ -74,9 +94,11 @@ if (isCancel(selectedPackage)) {
 
 console.log(`Selected package: ${selectedPackage}`);
 ```
+</WebContainer>
 
 ### Multi-select with Groups
 
+<WebContainer name="multiselect-group">
 ```ts twoslash
 import { groupMultiselect, isCancel } from '@clack/prompts';
 
@@ -108,9 +130,11 @@ if (isCancel(tools)) {
 
 console.log('Selected tools:', tools);
 ```
+</WebContainer>
 
 ### Confirmation Dialog
 
+<WebContainer name="confirmation-dialog">
 ```ts twoslash
 import { confirm, isCancel } from '@clack/prompts';
 
@@ -129,6 +153,7 @@ if (shouldProceed) {
   console.log('Operation cancelled');
 }
 ```
+</WebContainer>
 
 ## Advanced Examples
 
