@@ -32,6 +32,12 @@ export default defineConfig({
 				Head: "./src/starlightOverrides/Head.astro",
 			},
 			expressiveCode: {
+				themes: ['github-dark-high-contrast', 'github-light-high-contrast'],
+				styleOverrides: {
+					twoSlash: {
+						cursorColor: 'rgba(255 0 210)'
+					}
+				},
 				plugins: [ecTwoSlash()],
 			},
 			editLink: {
