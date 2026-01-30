@@ -46,6 +46,7 @@ console.log(`Hello, ${name}!`);
 
 ### Selection Menu
 
+<WebContainer name="selection-menu">
 ```ts twoslash
 import { select, isCancel } from '@clack/prompts';
 
@@ -65,9 +66,11 @@ if (isCancel(framework)) {
 
 console.log(`You selected ${framework}`);
 ```
+</WebContainer>
 
 ### Autocomplete Selection
 
+<WebContainer name="autocomplete-selection">
 ```ts twoslash
 import { autocomplete, isCancel } from '@clack/prompts';
 
@@ -91,9 +94,11 @@ if (isCancel(selectedPackage)) {
 
 console.log(`Selected package: ${selectedPackage}`);
 ```
+</WebContainer>
 
 ### Multi-select with Groups
 
+<WebContainer name="multi-select-groups">
 ```ts twoslash
 import { groupMultiselect, isCancel } from '@clack/prompts';
 
@@ -125,9 +130,11 @@ if (isCancel(tools)) {
 
 console.log('Selected tools:', tools);
 ```
+</WebContainer>
 
 ### Confirmation Dialog
 
+<WebContainer name="confirmation-dialog">
 ```ts twoslash
 import { confirm, isCancel } from '@clack/prompts';
 
@@ -146,11 +153,13 @@ if (shouldProceed) {
   console.log('Operation cancelled');
 }
 ```
+</WebContainer>
 
 ## Advanced Examples
 
 ### Project Setup Wizard
 
+<WebContainer name="project-setup-wizard">
 ```ts twoslash
 import { text, select, confirm, groupMultiselect, isCancel } from '@clack/prompts';
 
@@ -243,9 +252,11 @@ async function setupProject() {
   }
 }
 ```
+</WebContainer>
 
 ### Configuration Setup with Validation
 
+<WebContainer name="config-setup-validation">
 ```ts twoslash
 import { text, select, groupMultiselect, isCancel } from '@clack/prompts';
 
@@ -380,9 +391,11 @@ async function setupConfig(): Promise<Config | null> {
   };
 }
 ```
+</WebContainer>
 
 ### Interactive CLI Tool with Tasks
 
+<WebContainer name="interactive-cli-tasks">
 ```ts twoslash
 import { text, select, confirm, tasks, spinner, isCancel } from '@clack/prompts';
 
@@ -565,9 +578,11 @@ async function cliTool() {
   }
 }
 ```
+</WebContainer>
 
 ### Form Validation with Complex Types
 
+<WebContainer name="form-validation-complex">
 ```ts twoslash
 import { text, select, groupMultiselect, isCancel } from '@clack/prompts';
 
@@ -734,6 +749,7 @@ async function collectUserData(): Promise<UserData | null> {
   };
 }
 ```
+</WebContainer>
 
 ## New Features Examples
 
@@ -741,6 +757,7 @@ async function collectUserData(): Promise<UserData | null> {
 
 The `path` prompt provides file system navigation with autocomplete:
 
+<WebContainer name="path-selection">
 ```ts twoslash
 import { path, isCancel } from '@clack/prompts';
 
@@ -764,11 +781,13 @@ async function selectConfigFile() {
   console.log(`Selected config: ${configPath}`);
 }
 ```
+</WebContainer>
 
 ### Progress Bar
 
 Display progress for long-running operations:
 
+<WebContainer name="progress-bar">
 ```ts twoslash
 import { progress, intro, outro } from '@clack/prompts';
 
@@ -795,11 +814,13 @@ async function downloadFiles() {
   outro('Download complete!');
 }
 ```
+</WebContainer>
 
 ### Spinner with Cancellation Handling
 
 Handle graceful cancellation with the new spinner API:
 
+<WebContainer name="spinner-cancellation">
 ```ts twoslash
 import { spinner, confirm, isCancel } from '@clack/prompts';
 
@@ -844,11 +865,13 @@ async function longRunningTask() {
   }
 }
 ```
+</WebContainer>
 
 ### Task Log with Groups
 
 Organize complex operations into groups:
 
+<WebContainer name="task-log-groups">
 ```ts twoslash
 // @errors: 2345
 import { taskLog, intro, outro } from '@clack/prompts';
@@ -889,11 +912,13 @@ async function buildProject() {
   outro('Ready to deploy!');
 }
 ```
+</WebContainer>
 
 ### Programmatic Cancellation with AbortController
 
 Cancel prompts after a timeout or from external events:
 
+<WebContainer name="abort-controller">
 ```ts twoslash
 import { text, select, isCancel } from '@clack/prompts';
 
@@ -947,5 +972,6 @@ async function racePrompts() {
   console.log(`Using: ${String(result)}`);
 }
 ```
+</WebContainer>
 
 For more examples and best practices, check out our [GitHub repository](https://github.com/bombshell-dev/clack/tree/main/examples/basic).
