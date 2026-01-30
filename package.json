@@ -10,7 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "snapshot": "node ./scripts/snapshot.ts"
+    "snapshot": "node --experimental-strip-types ./scripts/snapshot.ts"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.37.1",
