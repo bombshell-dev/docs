@@ -18,7 +18,7 @@ const { name } = Astro.props;
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   let host: WebContainer;
 
-  host = await WebContainer.boot({ workdirName: 'demo' });
+  host = await WebContainer.boot({ coep: 'require-corp', workdirName: 'demo' });
   const snapshotResponse = await fetch(`/docs/snapshot`);
   const snapshot = await snapshotResponse.arrayBuffer();
   await host.mount(snapshot, { mountPoint: "/" });
