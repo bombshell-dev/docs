@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "dev:snapshot": "",
     "start": "astro dev",
-    "prebuild": "node run snapshot",
+    "prebuild": "npm run snapshot",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
