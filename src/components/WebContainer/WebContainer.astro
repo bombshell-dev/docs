@@ -17,11 +17,21 @@ const { name } = Astro.props;
   import { WebContainer } from "@webcontainer/api";
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   let host: WebContainer;
+  let bootError: string | null = null;
 
-  host = await WebContainer.boot({ coep: 'require-corp', workdirName: 'demo' });
-  const snapshotResponse = await fetch(`/docs/snapshot`);
-  const snapshot = await snapshotResponse.arrayBuffer();
-  await host.mount(snapshot, { mountPoint: "/" });
+  try {
+    host = await WebContainer.boot({ coep: 'require-corp', workdirName: 'demo' });
+    const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '');
+    const snapshotUrl = `${base}/snapshot`;
+    const snapshotResponse = await fetch(snapshotUrl);
+    if (!snapshotResponse.ok) {
+      throw new Error(`Snapshot failed (${snapshotResponse.status}). Run \`pnpm run snapshot\` and ensure the dev server can serve ${snapshotUrl}.`);
+    }
+    const snapshot = await snapshotResponse.arrayBuffer();
+    await host.mount(snapshot, { mountPoint: "/" });
+  } catch (e) {
+    bootError = e instanceof Error ? e.message : String(e);
+  }
 
   customElements.define(
     "web-container",
@@ -43,6 +53,15 @@ const { name } = Astro.props;
         return (this.querySelector("docs-terminal") as any)?.instance;
       }
       async connectedCallback() {
+        if (bootError) {
+          this.innerHTML = `<div style="padding:1rem;background:var(--sl-color-accent-low);color:var(--sl-color-text);border-radius:0.5rem;font-family:monospace;font-size:0.875rem;">WebContainer: ${bootError}</div>`;
+          return;
+        }
+        const termEl = this.querySelector("docs-terminal") as any;
+        const deadline = Date.now() + 10000;
+        while (!termEl?.instance && Date.now() < deadline) {
+          await sleep(50);
+        }
         await host.fs.mkdir(this.dir, { recursive: true });
         await host.fs.writeFile(
           this.file,
