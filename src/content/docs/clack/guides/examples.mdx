@@ -745,6 +745,53 @@ async function collectUserData(): Promise<UserData | null> {
 
 ## New Features Examples
 
+### Date picker
+
+Use `date` with `format` (`YMD`, `MDY`, or `DMY`) and optional bounds:
+
+```ts twoslash
+import { date, isCancel, cancel, outro } from '@clack/prompts';
+
+async function pickReleaseDate() {
+  const result = await date({
+    message: 'Pick a release date',
+    format: 'YMD',
+    minDate: new Date('2026-01-01'),
+    maxDate: new Date('2026-12-31'),
+  });
+
+  if (isCancel(result)) {
+    cancel('Operation cancelled.');
+    process.exit(0);
+  }
+
+  outro(`Selected: ${result.toISOString().slice(0, 10)}`);
+}
+```
+
+### Select by key
+
+Compact menus where each choice is bound to a key:
+
+```ts twoslash
+import { selectKey, isCancel } from '@clack/prompts';
+
+async function confirmDestructive() {
+  const choice = await selectKey({
+    message: 'Delete all cache?',
+    options: [
+      { value: 'y', label: 'Yes, delete' },
+      { value: 'n', label: 'No, keep' },
+    ],
+  });
+
+  if (isCancel(choice) || choice === 'n') {
+    return false;
+  }
+  return choice === 'y';
+}
+```
+
 ### Path Selection
 
 The `path` prompt provides file system navigation with autocomplete:
@@ -756,6 +803,7 @@ async function selectConfigFile() {
   const configPath = await path({
     message: 'Select a configuration file:',
     root: process.cwd(),
+    directory: false,
     validate: (value) => {
       if (!value?.endsWith('.json') && !value?.endsWith('.yaml')) {
         return 'Please select a .json or .yaml file';
@@ -770,6 +818,33 @@ async function selectConfigFile() {
   }
 
   console.log(`Selected config: ${configPath}`);
+}
+```
+
+With `directory: true`, only folders appear in suggestions; with an existing directory as `initialValue`, **Enter** submits that folder directly (v1.2.0).
+
+### Autocomplete Tab and placeholder
+
+When the search box is empty and `placeholder` is set, **Tab** inserts the placeholder string—useful for default tokens:
+
+```ts twoslash
+import { autocomplete, isCancel } from '@clack/prompts';
+
+async function pickWithDefaultQuery() {
+  const tag = await autocomplete({
+    message: 'Filter by tag:',
+    placeholder: 'latest',
+    options: [
+      { value: 'latest', label: 'latest' },
+      { value: 'stable', label: 'stable' },
+      { value: 'canary', label: 'canary' },
+    ],
+  });
+
+  if (isCancel(tag)) {
+    return null;
+  }
+  return tag;
 }
 ```
 

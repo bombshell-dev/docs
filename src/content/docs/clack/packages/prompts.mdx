@@ -48,7 +48,7 @@ All prompts share these common options:
 
 ### Guide Lines
 
-The `withGuide` option controls whether the default Clack border/guide lines are displayed. You can disable them globally or per-prompt:
+The `withGuide` option (boolean **option**, not a separate API) turns Clack’s border/guide lines on or off. Every prompt accepts it alongside `message` and friends. You can set it globally with `updateSettings` or override it per call.
 
 ```ts twoslash
 import { text, updateSettings } from '@clack/prompts';
@@ -62,6 +62,10 @@ const name = await text({
   withGuide: false,  // Disable guide lines for this prompt
 });
 ```
+
+Session helpers use the same option on their **second argument**: `intro(title, { withGuide: false })`, `outro(message, { withGuide: false })`, and `cancel(message, { withGuide: false })`.
+
+`autocomplete` and `multiselect` respect `withGuide: false` per prompt (as of v1.2.0), matching other prompts.
 
 ### AbortController Support
 
@@ -245,6 +249,28 @@ const framework = await multiselect({
 <font color="#06989A">│</font>  ◻ SvelteKit (Compile-time framework)
 <font color="#06989A">└</font></pre>
 
+### Select by key
+
+`selectKey` shows each option with a visible key (the option `value`, typically one character). The user presses that key instead of moving a cursor with arrows—useful for compact yes/no/maybe menus or vim-style shortcuts.
+
+```ts twoslash
+import { selectKey, isCancel } from '@clack/prompts';
+
+const action = await selectKey({
+  message: 'What next?',
+  options: [
+    { value: 'y', label: 'Continue' },
+    { value: 'n', label: 'Stop' },
+    { value: 's', label: 'Skip', hint: 'optional' },
+  ],
+  caseSensitive: false,
+});
+
+if (isCancel(action)) {
+  process.exit(0);
+}
+```
+
 ### Autocomplete
 
 The `autocomplete` prompt combines text input with a searchable list of options. It's perfect for when you have a large list of options and want to help users find what they're looking for quickly.
@@ -273,6 +299,55 @@ const framework = await autocomplete({
 <font color="#06989A">│</font>  ● Next.js (React framework)
 <font color="#06989A">│</font>  ○ Nuxt (Vue framework)
 <font color="#06989A">└</font></pre>
+
+If you set `placeholder` and the search field is **empty**, pressing **Tab** copies the placeholder string into the input (v1.2.0)—handy for default search tokens or quick acceptance of a suggested value.
+
+#### Dynamic options (getter)
+
+Instead of a static array, `options` can be a **function** whose `this` is the underlying [`AutocompletePrompt`](https://github.com/bombshell-dev/clack/blob/main/packages/core/src/prompts/autocomplete.ts) from `@clack/core`. The function runs again whenever the search text changes, so you can read **`this.userInput`** and return a **new array in display order**—for example closest / highest-score matches first (similar to [fzf](https://github.com/junegunn/fzf)-style UIs). This pattern is what [issue #467](https://github.com/bombshell-dev/clack/issues/467) discusses for custom ranking and libraries like [Fuse.js](https://fusejs.io/).
+
+The high-level `autocomplete` wrapper still applies its **default `filter`** (substring match on label, hint, and value) to whatever your getter returns. If you already narrow or rank items in the getter, disable that second pass with **`filter: (_search, _option) => true`**, or pass a custom `(search, option) => boolean` aligned with your getter.
+
+`options` as a getter must be **synchronous**; there is no async API here—preload or sync work inside the function.
+
+The same `options` shape is supported on **`autocompleteMultiselect`**.
+
+```ts twoslash
+import { autocomplete } from '@clack/prompts';
+import type { AutocompletePrompt } from '@clack/core';
+import type { Option } from '@clack/prompts';
+
+const pool: Option<string>[] = [
+  { value: 'next', label: 'Next.js', hint: 'React' },
+  { value: 'nuxt', label: 'Nuxt', hint: 'Vue' },
+  { value: 'nest', label: 'NestJS', hint: 'Node' },
+];
+
+function rankByQuery(query: string, items: Option<string>[]): Option<string>[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [...items];
+  return [...items]
+    .filter((o) => {
+      const t = `${o.label ?? ''} ${o.hint ?? ''} ${o.value}`.toLowerCase();
+      return t.includes(q);
+    })
+    .sort((a, b) => {
+      const la = (a.label ?? '').toLowerCase();
+      const lb = (b.label ?? '').toLowerCase();
+      const sa = la.startsWith(q) ? 0 : 1;
+      const sb = lb.startsWith(q) ? 0 : 1;
+      return sa - sb || la.localeCompare(lb);
+    });
+}
+
+const picked = await autocomplete({
+  message: 'Pick a framework',
+  options(this: AutocompletePrompt<Option<string>>) {
+    return rankByQuery(this.userInput, pool);
+  },
+  filter: (_search, _option) => true,
+});
+```
 
 ### Autocomplete Multiselect
 
@@ -329,9 +404,32 @@ const selectedPath = await path({
 Options:
 - `message`: The prompt message to display
 - `root`: The starting directory for path suggestions (defaults to current working directory)
-- `directory`: When `true`, only directories are shown (defaults to `false`)
-- `initialValue`: Pre-fill the path input with an initial value
+- `directory`: When `true`, only **directories** appear in suggestions while you navigate; you still move through the tree normally (v1.2.0 fixes for directory-only mode).
+- `initialValue`: Pre-fill the path input. In **directory** mode, if `initialValue` already points at an existing directory, pressing **Enter** submits **that** directory immediately instead of jumping to the first child (v1.2.0).
 - `validate`: Custom validation function for the selected path
+
+### Date input
+
+`date` returns a `Date` on success or a cancel symbol. Use `format` to pick segment order: `YMD`, `MDY`, or `DMY`. Pass `locale` (BCP 47 string) to derive order and separators from `Intl`, or rely on the format alone.
+
+```ts twoslash
+import { date, isCancel } from '@clack/prompts';
+
+const picked = await date({
+  message: 'Pick a date',
+  format: 'YMD',
+  minDate: new Date('2026-01-01'),
+  maxDate: new Date('2026-12-31'),
+});
+
+if (isCancel(picked)) {
+  process.exit(0);
+}
+
+// picked is a Date
+```
+
+Options include `defaultValue`, `initialValue`, `minDate`, `maxDate`, `validate`, and the usual `signal`, `input`, `output`, and `withGuide` settings.
 
 ### Confirmation
 
@@ -347,6 +445,10 @@ const shouldProceed = await confirm({
 <font color="#06989A">◆</font>  Do you want to continue?
 <font color="#06989A">│</font>  <font color="#4E9A06">●</font> Yes / ○ No
 <font color="#06989A">└</font></pre>
+
+Options:
+- `vertical: true`: Stack Yes / No vertically instead of inline (v1.0.1+).
+- Multi-line `message` strings wrap correctly; guide lines apply to wrapped confirmation text (v1.2.0).
 
 ## Grouping
 
@@ -866,15 +968,27 @@ log.step('Check files');
 The prompts package supports internationalization through the `updateSettings` function. You can customize the messages used by various prompts to match your preferred language.
 
 ```ts twoslash
-// @errors: 2353
 import { updateSettings, select, cancel } from '@clack/prompts';
 
 // Update global messages
 updateSettings({
   messages: {
     cancel: "Operación cancelada",
-    error: "Se ha producido un error"
-  }
+    error: "Se ha producido un error",
+  },
+  date: {
+    monthNames: [
+      "enero", "febrero", "marzo", "abril", "mayo", "junio",
+      "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+    ],
+    messages: {
+      required: "Introduce una fecha válida",
+      invalidMonth: "Solo hay 12 meses",
+      invalidDay: (days, month) => `Solo hay ${days} días en ${month}`,
+      afterMin: (min) => `La fecha debe ser el ${min.toISOString().slice(0, 10)} o posterior`,
+      beforeMax: (max) => `La fecha debe ser el ${max.toISOString().slice(0, 10)} o anterior`,
+    },
+  },
 });
 
 // Use the select prompt with translated content
@@ -961,3 +1075,21 @@ await stream.step([
 <font color="#4E9A06">◇</font>  Job1{`...`} <font color="#4E9A06">done</font>
 <font color="#555753">│</font>  Job2{`...`} <font color="#4E9A06">done</font>
 <font color="#555753">│</font>  Job3{`...`} <font color="#4E9A06">done</font></pre>
+
+### limitOptions
+
+`limitOptions` trims a long option list to what fits the terminal, returning the lines to render and keeping the active index visible—intended for **custom** prompts that mirror Clack’s sliding window (see `@clack/prompts` source). Pass `options`, `cursor`, a `style` callback, optional `maxItems`, `columnPadding`, `rowPadding`, and `output` if not using `stdout`.
+
+```ts twoslash
+import { limitOptions } from '@clack/prompts';
+import { styleText } from 'node:util';
+
+const options = ['apple', 'banana', 'cherry', 'date'];
+const lines = limitOptions({
+  options,
+  cursor: 2,
+  style: (opt, active) =>
+    active ? styleText('cyan', opt) : styleText('dim', opt),
+  maxItems: 8,
+});
+```
