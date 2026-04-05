@@ -20,6 +20,7 @@ const { name } = Astro.props;
   let bootError: string | null = null;
 
   try {
+    (globalThis as any).WEBCONTAINER_API_IFRAME_URL = 'https://w.stackblitz.io';
     host = await WebContainer.boot({ coep: 'require-corp', workdirName: 'demo' });
     const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '');
     const snapshotUrl = `${base}/snapshot`;
