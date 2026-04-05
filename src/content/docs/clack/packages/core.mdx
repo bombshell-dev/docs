@@ -43,16 +43,23 @@ To start using the core package, first install it:
 Then import the components you need:
 
 ```ts twoslash
-import { 
+import {
   // Prompt classes
-  TextPrompt, 
-  SelectPrompt, 
+  TextPrompt,
+  SelectPrompt,
   ConfirmPrompt,
   PasswordPrompt,
   MultiSelectPrompt,
   GroupMultiSelectPrompt,
   SelectKeyPrompt,
   AutocompletePrompt,
+  DatePrompt,
+
+  // Layout helpers
+  block,
+  getColumns,
+  getRows,
+  wrapTextWithPrefix,
 
   // Utilities
   isCancel,
@@ -68,6 +75,9 @@ import {
   type GroupMultiSelectOptions,
   type SelectKeyOptions,
   type AutocompleteOptions,
+  type DateFormat,
+  type DateOptions,
+  type DateParts,
 } from '@clack/core';
 ```
 
@@ -144,7 +154,7 @@ p.on('cancel', () => {
    - Supports validation
    - Placeholder text
    - Initial value
-   - Separate `userInput` and `value` tracking
+   - Separate `userInput` and `value` tracking; use **`userInputWithCursor`** when rendering so the raw buffer and cursor position match what the user sees
 
 2. **SelectPrompt**: For selection from options
    - Custom rendering
@@ -158,9 +168,10 @@ p.on('cancel', () => {
 
 4. **AutocompletePrompt**: For searchable selection
    - Type-ahead filtering
-   - Custom filtering logic
+   - Custom filtering logic via the `filter` option
    - Multiple selection support (`multiple: true`)
    - Dynamic options (function or array)
+   - As of v1.2.0, the built-in default filter runs only when `filter` is set explicitly **or** when `options` is not a getter—so lazy `options` getters are not pre-filtered unexpectedly
 
 5. **PasswordPrompt**: For secure input
    - Character masking
@@ -183,6 +194,22 @@ p.on('cancel', () => {
 8. **SelectKeyPrompt**: For key-based selection
    - Custom key bindings
    - Multiple selection support
+
+9. **DatePrompt**: For structured date entry
+   - Segment-based editing (year, month, day) with `DateFormat` (`YMD`, `MDY`, or `DMY`)
+   - Optional `locale` for segment order and separator via `Intl`
+   - Optional `separator` override for display
+   - `minDate` / `maxDate` bounds and `DateParts` segment values
+
+10. **Multi-line input**: v1.2.0 does not include a dedicated multi-line prompt in `@clack/core` or `@clack/prompts`. Use `text()` for a single line, an external editor or stdin for paragraphs, or extend `Prompt` for custom multi-line TTY behavior.
+
+## Layout utilities
+
+These helpers are useful when building custom prompts or lists that respect terminal width:
+
+- **`getColumns(output?)` / `getRows(output?)`**: Terminal size for the given writable (defaults to `stdout`).
+- **`wrapTextWithPrefix(output, text, prefix, ...)`**: Wrap lines to the terminal width while repeating a prefix on each line (used heavily by prompts for guide-aligned output).
+- **`block`**: Lower-level TTY helper (raw mode, keypress handling, optional cursor hide) used when building custom full-screen or overlay flows; most apps use the prompt classes instead.
 
 ## Global Settings
 
