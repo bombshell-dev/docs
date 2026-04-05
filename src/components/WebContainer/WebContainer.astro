@@ -14,13 +14,17 @@ const { name } = Astro.props;
 
 <script>
   import type { Terminal } from "@xterm/xterm";
-  import { WebContainer } from "@webcontainer/api";
+  import { WebContainer, auth } from "@webcontainer/api";
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   let host: WebContainer;
   let bootError: string | null = null;
 
+  auth.init({
+    clientId: 'wc_api_natemoo_re_679fe059f5f36e18deed13fb4a9c7b4f',
+    scope: '',
+  });
+
   try {
-    (globalThis as any).WEBCONTAINER_API_IFRAME_URL = 'https://w.stackblitz.io';
     host = await WebContainer.boot({ coep: 'require-corp', workdirName: 'demo' });
     const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '');
     const snapshotUrl = `${base}/snapshot`;
