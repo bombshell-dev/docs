@@ -14,8 +14,9 @@ export default defineConfig({
 	outDir: "./dist/docs/",
 	server: {
 		headers: {
-			'Cross-Origin-Embedder-Policy': 'credentialless',
-			'Cross-Origin-Opener-Policy': 'same-origin'
+			'Cross-Origin-Embedder-Policy': 'require-corp',
+			'Cross-Origin-Opener-Policy': 'same-origin',
+			'Cross-Origin-Resource-Policy': 'cross-origin'
 		}
 	},
 	integrations: [
