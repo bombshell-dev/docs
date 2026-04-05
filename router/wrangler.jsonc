@@ -1,0 +1,5 @@
+{
+	"name": "bombsh-docs-router",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-03-23"
+}

@@ -1,0 +1,7 @@
+packages:
+  - .
+  - ./router
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - workerd
