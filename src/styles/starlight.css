@@ -76,7 +76,7 @@
 
   /* Right sidebar (TOC) background gradient */
   .right-sidebar {
-    background: linear-gradient(to bottom, var(--surface-fill) 0%, var(--surface-highlight) 100%);
+    background: linear-gradient(to bottom, var(--color-gray-90) 0%, var(--container-fill) 100%);
   }
 
   starlight-toc nav>ul {
@@ -159,30 +159,44 @@
 
   /* Sidebar background gradient */
   .sidebar-pane {
-    background: linear-gradient(to bottom, var(--surface-fill) 0%, var(--surface-highlight) 100%) !important;
+    background: linear-gradient(to bottom, var(--color-gray-90) 0%, var(--container-fill) 100%) !important;
 
     a {
       border: 1px solid transparent;
+      border-radius: 0;
     }
 
-    /* Active sidebar link — accent indicator + gradient bg */
+    /* Move connector line from per-item to per-group */
+    ul ul {
+      position: relative;
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        left: calc(var(--sl-sidebar-item-padding-inline) * 2);
+        border-inline-start: 1px solid;
+        border-image: linear-gradient(to bottom, var(--surface-border-highlight), var(--surface-border-fill)) 1;
+        pointer-events: none;
+        z-index: 0;
+      }
+    }
+    ul ul li {
+      border-inline-start: none;
+      z-index: 1;
+    }
+
+    /* Active sidebar link — accent text + left indicator, no bg */
     [aria-current="page"],
     [aria-current="page"]:hover,
     [aria-current="page"]:focus {
       color: hsl(var(--sl-color-accent-hsl));
-      background: linear-gradient(to right, hsl(var(--sl-color-accent-hsl) / 0.05), hsl(var(--sl-color-accent-hsl) / 0.3));
-      border-color: hsl(var(--sl-color-accent-hsl) / 0.9);
+      background: transparent;
       border-inline-start: 2px solid hsl(var(--sl-color-accent-hsl));
     }
 
-    [aria-current="page"]:hover {
-      color: var(--color-gray-100);
-      background: linear-gradient(to right, hsl(var(--sl-color-accent-hsl)), hsl(var(--sl-color-accent-hsl) / 0.5));
-    }
-
-    /* Sidebar nested list connector line — gradient */
-    ul ul li {
-      border-image: linear-gradient(to bottom, var(--surface-border-highlight), var(--surface-border-fill)) 1;
+    a:hover,
+    a:focus-visible {
+      border-inline-start: 2px solid hsl(var(--sl-color-accent-hsl) / 0.5);
     }
 
     /* Sidebar group labels — uppercase */
@@ -193,9 +207,9 @@
     }
   }
 
-  /* Sidebar topic list — active topic gradient highlight */
-  .starlight-sidebar-topics a.starlight-sidebar-topics-current {
-    background: linear-gradient(to right, var(--sl-color-accent-low), hsl(var(--sl-color-accent-hsl) / 0.5));
+  /* Sidebar topic list — gradient box on hover + active */
+  .starlight-sidebar-topics a:is(.starlight-sidebar-topics-current, :hover, :focus-visible) {
+    background: linear-gradient(to right, hsl(var(--sl-color-accent-hsl) / 0.1), hsl(var(--sl-color-accent-hsl) / 0.5));
     border: 1px solid hsl(var(--sl-color-accent-hsl) / 0.9);
     border-radius: var(--radius-100);
   }
@@ -204,7 +218,7 @@
     color: var(--heading-muted);
   }
 
-  .starlight-sidebar-topics a.starlight-sidebar-topics-current .starlight-sidebar-topics-icon {
+  .starlight-sidebar-topics a .starlight-sidebar-topics-icon {
     border-color: transparent;
     background: transparent;
     color: hsl(var(--sl-color-accent-hsl));
