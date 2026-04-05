@@ -10,6 +10,7 @@ export default {
 			headers.set("Cross-Origin-Embedder-Policy", "require-corp");
 			headers.set("Cross-Origin-Opener-Policy", "same-origin");
 			headers.set("Cross-Origin-Resource-Policy", "cross-origin");
+			headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 			return new Response(response.body, {
 				status: response.status,
 				statusText: response.statusText,
