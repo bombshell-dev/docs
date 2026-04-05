@@ -20,7 +20,7 @@ const { name } = Astro.props;
   let bootError: string | null = null;
 
   try {
-    host = await WebContainer.boot({ coep: 'require-corp', workdirName: 'demo' });
+    host = await WebContainer.boot({ coep: 'credentialless', workdirName: 'demo' });
     const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '');
     const snapshotUrl = `${base}/snapshot`;
     const snapshotResponse = await fetch(snapshotUrl);

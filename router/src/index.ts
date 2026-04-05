@@ -7,7 +7,7 @@ export default {
 		if (url.pathname.startsWith("/docs")) {
 			const response = await fetch(new URL(url.pathname, "https://docs.bomb.sh/"));
 			const headers = new Headers(response.headers);
-			headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+			headers.set("Cross-Origin-Embedder-Policy", "credentialless");
 			headers.set("Cross-Origin-Opener-Policy", "same-origin");
 			return new Response(response.body, {
 				status: response.status,
