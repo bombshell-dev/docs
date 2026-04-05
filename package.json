@@ -28,7 +28,8 @@
     "starlight-sidebar-topics": "^0.6.2"
   },
   "devDependencies": {
-    "tinyexec": "^1.0.2"
+    "tinyexec": "^1.0.2",
+    "wrangler": "^4.14.4"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
