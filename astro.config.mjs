@@ -32,6 +32,7 @@ export default defineConfig({
 			],
 			components: {
 				Head: "./src/starlightOverrides/Head.astro",
+				PageFrame: "./src/starlightOverrides/PageFrame.astro",
 			},
 			expressiveCode: {
 				themes: ['github-dark-high-contrast', 'github-light-high-contrast'],
