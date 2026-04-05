@@ -157,6 +157,35 @@
     color: var(--color-white-100);
   }
 
+  /* Expressive Code — subtle border, rounded, gradient bg */
+  .expressive-code {
+    --ec-brdWd: 1px;
+    --ec-brdCol: var(--color-white-50);
+    --ec-brdRad: var(--radius-100);
+    --ec-codeBg: var(--container-fill);
+    --ec-frm-shdCol: transparent;
+    --ec-frm-frameBoxShdCssVal: none;
+    --ec-frm-trmTtbBg: transparent;
+    --ec-frm-trmTtbBrdBtmCol: transparent;
+    --ec-frm-trmBg: var(--container-fill);
+    --ec-frm-edBg: var(--container-fill);
+    --ec-frm-edTabBarBg: transparent;
+    --ec-frm-edTabBarBrdCol: transparent;
+    --ec-frm-edTabBarBrdBtmCol: transparent;
+    --ec-frm-edActTabBg: transparent;
+    --ec-frm-edActTabBrdCol: transparent;
+  }
+
+  /* Terminal title bar — subtle gradient fade */
+  .expressive-code .frame.is-terminal .header {
+    background: linear-gradient(to bottom, var(--color-white-0), var(--color-white-10));
+  }
+
+  /* Editor title bar — same treatment */
+  .expressive-code .frame.has-title:not(.is-terminal) .header {
+    background: linear-gradient(to bottom, var(--color-white-0), var(--color-white-10));
+  }
+
   /* Sidebar background gradient */
   .sidebar-pane {
     background: linear-gradient(to bottom, var(--color-gray-90) 0%, var(--container-fill) 100%) !important;
