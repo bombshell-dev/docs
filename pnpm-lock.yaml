@@ -54,6 +54,9 @@ importers:
       tinyexec:
         specifier: ^1.0.2
         version: 1.0.2
+      wrangler:
+        specifier: ^4.14.4
+        version: 4.80.0(@cloudflare/workers-types@4.20260405.1)
 
   router:
     devDependencies:
