@@ -331,19 +331,29 @@ const framework = await autocomplete({
     { value: 'nuxt', label: 'Nuxt', hint: 'Vue framework' },
   ],
   placeholder: 'Type to search...',
-  maxItems: 5, // Maximum number of items to display at once
+  maxItems: 5,
 });
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
-<font color="#06989A">◆</font>  Search for a framework
+<font color="#06989A">◆</font> Search for a framework
 <font color="#06989A">│</font>  Search: <span style="background-color:#FFFFFF"><font color="#181818">n</font></span>
 <font color="#06989A">│</font>  (2 matches)
 <font color="#06989A">│</font>  ● Next.js (React framework)
 <font color="#06989A">│</font>  ○ Nuxt (Vue framework)
 <font color="#06989A">└</font></pre>
 
-If you set `placeholder` and the search field is **empty**, pressing **Tab** copies the placeholder string into the input (v1.2.0)—handy for default search tokens or quick acceptance of a suggested value.
+Options:
+
+- `message`: The message or question shown to the user above the input.
+- `options`: The options to present, or a function that returns the options to present allowing for custom search/filtering. [Learn more below](#dynamic-options-getter).
+- `maxItems`: The maximum number of items/options to display in the autocomplete list at once.
+- `placeholder`: Placeholder text displayed when the search field is empty. When set, pressing tab copies the placeholder into the input.
+- `validate`: A function that validates user input. Return a `string` or `Error` to show as a validation error, or `undefined` to accept the result.
+- `filter`: Custom filter function to match options against the search input.
+- `initialValue`: The initially selected option from the list.
+- `initialUserInput`: The starting value shown in the users input box.
+- All [Common Options](#common-options)
 
 #### Dynamic options (getter)
 
@@ -394,7 +404,7 @@ const picked = await autocomplete({
 
 ### Autocomplete Multiselect
 
-The `autocompleteMultiselect` combines the search functionality of autocomplete with the ability to select multiple options.
+The `autocompleteMultiselect` prompt combines the search functionality of [autocomplete](#autocomplete) with the ability to select multiple options.
 
 ```ts twoslash
 import { autocompleteMultiselect } from '@clack/prompts';
@@ -414,16 +424,28 @@ const frameworks = await autocompleteMultiselect({
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
-<font color="#06989A">◆</font>  Select frameworks
+<font color="#06989A">◆</font> Select frameworks
 <font color="#06989A">│</font>  Search: <span style="background-color:#FFFFFF"><font color="#181818">n</font></span>
 <font color="#06989A">│</font>  (2 matches)
 <font color="#06989A">│</font>  ◼ Next.js (React framework)
 <font color="#06989A">│</font>  ◻ Nuxt (Vue framework)
 <font color="#06989A">└</font></pre>
 
+Options:
+
+- `message`: The prompt message or question shown to the user above the input.
+- `options`: The options to present, or a function that returns the options to present allowing for custom search/filtering. [Learn more below](#dynamic-options-getter).
+- `maxItems`: The maximum number of items/options to display in the autocomplete list at once.
+- `placeholder`: Placeholder text displayed when the search field is empty. When set, pressing tab copies the placeholder into the input.
+- `validate`: A function that validates user input. Return a `string` or `Error` to show as a validation error, or `undefined` to accept the result.
+- `filter`: Custom filter function to match options against the search input.
+- `initialValues`: The initially selected option(s) from the list.
+- `required`: When `true` at least one option must be selected (default: `false`).
+- All [Common Options](#common-options)
+
 ### Path Selection
 
-The `path` prompt provides an autocomplete-based file and directory path selection. It automatically suggests files and directories as the user types.
+The `path` prompt extends [`autocomplete`](#autocomplete) to provide file and directory suggestions.
 
 ```ts twoslash
 import { path } from '@clack/prompts';
@@ -445,11 +467,12 @@ const selectedPath = await path({
 <font color="#06989A">└</font></pre>
 
 Options:
-- `message`: The prompt message to display
-- `root`: The starting directory for path suggestions (defaults to current working directory)
-- `directory`: When `true`, only **directories** appear in suggestions while you navigate; you still move through the tree normally (v1.2.0 fixes for directory-only mode).
-- `initialValue`: Pre-fill the path input. In **directory** mode, if `initialValue` already points at an existing directory, pressing **Enter** submits **that** directory immediately instead of jumping to the first child (v1.2.0).
-- `validate`: Custom validation function for the selected path
+- `message`: The message or question shown to the user above the input.
+- `root`: The starting directory for path suggestions (defaults to current working directory).
+- `directory`: When `true` only **directories** appear in suggestions while you navigate (v1.2.0 fixes for directory-only mode).
+- `initialValue`: The starting path shown when the prompt first renders, which users can edit before submitting. If not provided it will fall back to the given `root`, or the current working directory. In `directory` mode, if the initial value points to a directory that exists, pressing enter will submit the input instead of jumping to the first child (v1.2.0).
+- `validate`: A function that validates the given path. Return a `string` or `Error` to show as a validation error, or `undefined` to accept the result.
+- All [Common Options](#common-options)
 
 ### Date input
 
@@ -476,6 +499,8 @@ Options include `defaultValue`, `initialValue`, `minDate`, `maxDate`, `validate`
 
 ### Confirmation
 
+The `confirm` prompt accepts a yes or no choice, returning a boolean value corresponding to the user's selection.
+
 ```ts twoslash
 import { confirm } from '@clack/prompts';
 
@@ -485,13 +510,21 @@ const shouldProceed = await confirm({
 ```
 
 <pre class="cli-preview"><font color="#555753">│</font>
-<font color="#06989A">◆</font>  Do you want to continue?
+<font color="#06989A">◆</font> Do you want to continue?
 <font color="#06989A">│</font>  <font color="#4E9A06">●</font> Yes / ○ No
 <font color="#06989A">└</font></pre>
 
+:::tip
+Multi-line `message` strings wrap correctly; guide lines apply to wrapped confirmation text (v1.2.0).
+:::
+
 Options:
-- `vertical: true`: Stack Yes / No vertically instead of inline (v1.0.1+).
-- Multi-line `message` strings wrap correctly; guide lines apply to wrapped confirmation text (v1.2.0).
+- `message`: The message or question shown to the user above the input.
+- `active`: The label to use for the active (true) option (default: `Yes`).
+- `inactive`: The label to use for the inactive (false) option (default: `No`).
+- `initialValue`: The initial selected value (true or false) (default: `true`).
+- `vertical`: Whether to render the options vertically instead of horizontally (default: `false`) (v1.0.1+).
+- All [Common Options](#common-options)
 
 ## Grouping
 
