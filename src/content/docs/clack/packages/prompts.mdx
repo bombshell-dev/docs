@@ -345,7 +345,7 @@ const framework = await autocomplete({
 
 Options:
 
-- `message`: The prompt message or question shown to the user above the input.
+- `message`: The message or question shown to the user above the input.
 - `options`: The options to present, or a function that returns the options to present allowing for custom search/filtering. [Learn more below](#dynamic-options-getter).
 - `maxItems`: The maximum number of items/options to display in the autocomplete list at once.
 - `placeholder`: Placeholder text displayed when the search field is empty. When set, pressing tab copies the placeholder into the input.
@@ -467,7 +467,7 @@ const selectedPath = await path({
 <font color="#06989A">└</font></pre>
 
 Options:
-- `message`: The prompt message or question shown to the user above the input.
+- `message`: The message or question shown to the user above the input.
 - `root`: The starting directory for path suggestions (defaults to current working directory).
 - `directory`: When `true` only **directories** appear in suggestions while you navigate (v1.2.0 fixes for directory-only mode).
 - `initialValue`: The starting path shown when the prompt first renders, which users can edit before submitting. If not provided it will fall back to the given `root`, or the current working directory. In `directory` mode, if the initial value points to a directory that exists, pressing enter will submit the input instead of jumping to the first child (v1.2.0).
@@ -519,7 +519,7 @@ Multi-line `message` strings wrap correctly; guide lines apply to wrapped confir
 :::
 
 Options:
-- `message`: The prompt message or question shown to the user above the input.
+- `message`: The message or question shown to the user above the input.
 - `active`: The label to use for the active (true) option (default: `Yes`).
 - `inactive`: The label to use for the inactive (false) option (default: `No`).
 - `initialValue`: The initial selected value (true or false) (default: `true`).
