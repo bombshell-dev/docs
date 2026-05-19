@@ -53,6 +53,18 @@ const age = await text({
 });
 ```
 
+A [Standard Schema](https://github.com/standard-schema/standard-schema) can be used, for example using [Arktype](https://arktype.io/):
+
+```ts twoslash
+import { text } from '@clack/prompts';
+import { type } from 'arktype';
+
+const name = await text({
+	message: 'Enter your name (letters only)',
+  validate: type('string.alpha').describe('Name can only contain letters'),
+});
+```
+
 ### 3. Consistent Messaging
 
 Use clear and consistent messaging across your prompts:
