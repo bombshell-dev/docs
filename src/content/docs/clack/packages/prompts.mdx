@@ -130,7 +130,7 @@ Options:
 - `placeholder`: A visual hint shown when the field has no content.
 - `defaultValue`: A fallback value returned when the user provides nothing (empty input).
 - `initialValue`: The starting value shown when the prompt first renders. Users can edit this value before submitting.
-- `validate`: A function or a [Standard Schema](https://github.com/standard-schema/standard-schema) that validates user input. Return a `string` or `Error` to show as a validation error, or `undefined` to accept the result.
+- `validate`: A function or a [Standard Schema](https://github.com/standard-schema/standard-schema) that validates user input. If a custom function is given, you should return a `string` or `Error` to show as a validation error, or `undefined` to accept the result..
 - All [Common Options](#common-options)
 
 ### Password Input
@@ -163,7 +163,7 @@ Options:
 
 - `message`: The prompt message or question shown to the user above the input.
 - `mask`: Character to use for masking input. Default: `'▪/•'`.
-- `validate`: A function or a [Standard Schema](https://github.com/standard-schema/standard-schema) that validates user input. Return a `string` or `Error` to show as a validation error, or `undefined` to accept the result.
+- `validate`: A function or a [Standard Schema](https://github.com/standard-schema/standard-schema) that validates user input. If a custom function is given, you should return a `string` or `Error` to show as a validation error, or `undefined` to accept the result.
 - `clearOnError`: When enabled it causes the input to be cleared if/when validation fails. Default: `false`.
 - All [Common Options](#common-options)
 
