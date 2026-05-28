@@ -103,6 +103,8 @@ const name = await text({
 
 ### Text Input
 
+The text prompt accepts a single line of text.
+
 ```ts twoslash
 // @errors: 2339 18048
 import { text } from '@clack/prompts';
@@ -122,7 +124,18 @@ const name = await text({
 <font color="#06989A">│</font>  <span style="background-color:#FFFFFF"><font color="#181818">J</font></span><font color="#AAAAAA">ohn Doe</font>
 <font color="#06989A">└</font></pre>
 
+Options:
+
+- `message`: The prompt message shown to the user above the input.
+- `placeholder`: A visual hint shown when the field has no content.
+- `defaultValue`: A fallback value returned when the user provides nothing (empty input).
+- `initialValue`: The starting value shown when the prompt first renders. Users can edit this value before submitting.
+- `validate`: A function or a [Standard Schema](https://github.com/standard-schema/standard-schema) that validates user input. If a custom function is given, you should return a `string` or `Error` to show as a validation error, or `undefined` to accept the result..
+- All [Common Options](#common-options)
+
 ### Password Input
+
+Behaves like the text component, but the input is masked.
 
 ```ts twoslash
 import { password } from '@clack/prompts';
@@ -147,9 +160,39 @@ const secret = await password({
 <font color="#06989A">└</font></pre>
 
 Options:
-- `message`: The prompt message to display
-- `mask`: Character used to mask input (default: `'▪'`)
-- `clearOnError`: When `true`, clears the input field when validation fails (useful for security)
+
+- `message`: The prompt message or question shown to the user above the input.
+- `mask`: Character to use for masking input. Default: `'▪/•'`.
+- `validate`: A function or a [Standard Schema](https://github.com/standard-schema/standard-schema) that validates user input. If a custom function is given, you should return a `string` or `Error` to show as a validation error, or `undefined` to accept the result.
+- `clearOnError`: When enabled it causes the input to be cleared if/when validation fails. Default: `false`.
+- All [Common Options](#common-options)
+
+Common options (`withGuide`, `signal`, `input`, `output`) are also supported.
+
+### Multi-line Text
+
+The multi-line component accepts multiple lines of text input. By default, pressing Enter twice submits the input.
+
+```ts twoslash
+import { multiline } from '@clack/prompts';
+
+const bio = await multiline({
+	message: 'Enter your bio',
+	placeholder: 'Tell us about yourself...',
+	showSubmit: true,
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font> Enter your bio
+<font color="#06989A">│</font>  <span style="background-color:#FFFFFF"><font color="#181818">T</font></span><font color="#AAAAAA">ell us about yourself...</font>
+<font color="#06989A">└</font>
+<font color="#AAAAAA">  [ submit ]</font></pre>
+
+Options:
+
+- `showSubmit`: When enabled it shows a `[ submit ]` button that can be focused with tab. By default, pressing Enter twice submits the input. Default: `false`.
+- All [Text Options](#text-input)
 
 ### Selection
 
