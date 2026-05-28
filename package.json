@@ -31,11 +31,5 @@
     "tinyexec": "^1.0.2",
     "wrangler": "^4.14.4"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "sharp",
-      "workerd"
-    ]
-  }
+  "packageManager": "pnpm@11.1.2"
 }
