@@ -57,12 +57,14 @@ A [Standard Schema](https://github.com/standard-schema/standard-schema) can be u
 
 ```ts twoslash
 import { text } from '@clack/prompts';
-// @errors: 2322
 import { type } from 'arktype';
 
 const name = await text({
-	message: 'Enter your name (letters only)',
-  validate: type('string.alpha').describe('Name can only contain letters'),
+  message: 'Enter your name (letters only)',
+  validate: (value) => {
+    const result = type('string.alpha').describe('Name can only contain letters')(value);
+    return result instanceof type.errors ? result.summary : undefined;
+  },
 });
 ```
 
