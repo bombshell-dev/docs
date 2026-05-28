@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 👾 Chat
+    url: https://bomb.sh/chat
+    about: Our Discord server is active, come join us!
+  - name: 💁 Support
+    url: https://bomb.sh/chat
+    about: "This issue tracker is not for support questions. Join us on Discord for assistance!"
