@@ -57,6 +57,7 @@ A [Standard Schema](https://github.com/standard-schema/standard-schema) can be u
 
 ```ts twoslash
 import { text } from '@clack/prompts';
+// @errors: 2322
 import { type } from 'arktype';
 
 const name = await text({
@@ -415,4 +416,4 @@ async function promptForPort(defaultPort: string) {
 // Use the reusable function
 const serverPort = await promptForPort('3000');
 const dbPort = await promptForPort('5432');
-``` 
+```
