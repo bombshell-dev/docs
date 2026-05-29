@@ -157,6 +157,14 @@
     bottom: 0;
   }
 
+  .starlight-sidebar-topics-current .starlight-sidebar-topics-icon {
+      background-color: var(--color-gray-20) !important;
+  }
+
+  a:has(.starlight-sidebar-topics-icon):is(:hover, :focus-visible) .starlight-sidebar-topics-icon {
+      background-color: var(--color-gray-20) !important;
+  }
+
   /* Light theme specific overrides for better readability */
   :root[data-theme=light] {
     --sl-color-text: var(--color-gray-100);
