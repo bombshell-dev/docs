@@ -476,26 +476,30 @@ Options:
 
 ### Date input
 
-`date` returns a `Date` on success or a cancel symbol. Use `format` to pick segment order: `YMD`, `MDY`, or `DMY`. Pass `locale` (BCP 47 string) to derive order and separators from `Intl`, or rely on the format alone.
+The `date` prompt provides an interactive date picker, allowing users to navigate between year, month, and day segments and increment/decrement values using keyboard controls.
 
 ```ts twoslash
-import { date, isCancel } from '@clack/prompts';
+import { date } from '@clack/prompts';
 
-const picked = await date({
-  message: 'Pick a date',
-  format: 'YMD',
-  minDate: new Date('2026-01-01'),
-  maxDate: new Date('2026-12-31'),
+const birthday = await date({
+  message: 'Pick your birthday',
+  minDate: new Date('1900-01-01'),
+  initialValue: new Date(),
+  maxDate: new Date(),
 });
-
-if (isCancel(picked)) {
-  process.exit(0);
-}
-
-// picked is a Date
 ```
 
-Options include `defaultValue`, `initialValue`, `minDate`, `maxDate`, `validate`, and the usual `signal`, `input`, `output`, and `withGuide` settings.
+Options:
+
+- `message`: The message or question shown to the user above the input.
+- `format`: The date format to use (default: based on `locale`).
+- `locale`: The [BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Glossary/BCP_47_language_tag) to use for formatting.
+- `defaultValue`: The default value returned when the user doesn't select a date.
+- `initialValue`: The starting date shown when the prompt first renders. Users can edit this value before submitting.
+- `minDate`: The minimum allowed date for validation.
+- `maxDate`: The maximum allowed date for validation.
+- `validate`: A function or a [Standard Schema](https://github.com/standard-schema/standard-schema) that validates user input. If a custom function is given, you should return a `string` or `Error` to show as a validation error, or `undefined` to accept the result..
+- All [Common Options](#common-options)
 
 ### Confirmation
 
@@ -701,6 +705,10 @@ intro('Welcome to clack');
 
 <pre class="cli-preview"><font color="#555753">┌</font>  Welcome to clack</pre>
 
+Options:
+
+- All [Common Options](#common-options)
+
 ### Outro
 
 The `outro` function defines the end of an interaction.
@@ -716,6 +724,10 @@ outro('All operations are finished');
 <font color="#555753">└</font>  All operations are finished
 &nbsp;</pre>
 
+Options:
+
+- All [Common Options](#common-options)
+
 ### Cancel
 
 The `cancel` function defines an interruption of an interaction and therefore its end.
@@ -723,12 +735,18 @@ It accepts an optional string parameter which is displayed as a cancellation mes
 
 ```ts twoslash
 import { cancel } from '@clack/prompts';
+import process from 'node:process';
 
 cancel('Installation canceled');
+process.exit(1);
 ```
 
 <pre class="cli-preview"><font color="#555753">└</font>  <font color="#CC0000">Installation canceled</font>
 &nbsp;</pre>
+
+Options:
+
+- All [Common Options](#common-options)
 
 ### Spinner
 
@@ -1167,7 +1185,7 @@ await stream.step([
 
 ### limitOptions
 
-`limitOptions` trims a long option list to what fits the terminal, returning the lines to render and keeping the active index visible—intended for **custom** prompts that mirror Clack’s sliding window (see `@clack/prompts` source). Pass `options`, `cursor`, a `style` callback, optional `maxItems`, `columnPadding`, `rowPadding`, and `output` if not using `stdout`.
+Trims an option list to what fits the terminal, while keeping the active option (cursor) visible using a Clack style sliding window. Returns the lines to render.
 
 ```ts twoslash
 import { limitOptions } from '@clack/prompts';
@@ -1177,8 +1195,18 @@ const options = ['apple', 'banana', 'cherry', 'date'];
 const lines = limitOptions({
   options,
   cursor: 2,
+  maxItems: 8,
   style: (opt, active) =>
     active ? styleText('cyan', opt) : styleText('dim', opt),
-  maxItems: 8,
 });
 ```
+
+Options:
+
+- `options`: The list of options to display.
+- `cursor`: The index of the currently active/selected option.
+- `style`: A function that styles the given option string. The `active` parameter indicates whether the option is currently selected.
+- `maxItems`: Maximum number of options to display at once (default: `Infinity`).
+- `columnPadding`: Number of columns to reserve for padding (default: `0`).
+- `rowPadding`: Number of rows to reserve for padding (default: `0`).
+- All [Common Options](#common-options)
