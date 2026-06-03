@@ -12,6 +12,7 @@
     "snapshot": "node --experimental-strip-types ./scripts/snapshot.ts"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^13.6.1",
     "@astrojs/starlight": "^0.37.1",
     "@bomb.sh/args": "^0.3.1",
     "@clack/core": "^1.4.0",
@@ -30,7 +31,7 @@
   },
   "devDependencies": {
     "tinyexec": "^1.0.2",
-    "wrangler": "^4.14.4"
+    "wrangler": "^4.97.0"
   },
   "packageManager": "pnpm@11.1.2"
 }
