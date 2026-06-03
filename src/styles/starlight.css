@@ -151,7 +151,16 @@
     }
   }
 
-  starlight-menu-button button,
+  [data-has-sidebar] header.header {
+    padding-inline-end: 1rem;
+  }
+
+  starlight-menu-button button {
+      top: unset;
+      bottom: calc((var(--sl-mobile-toc-height) - var(--sl-menu-button-size)) / 2);
+      background-color: var(--color-gray-80);
+  }
+
   mobile-starlight-toc nav {
     top: unset;
     bottom: 0;
