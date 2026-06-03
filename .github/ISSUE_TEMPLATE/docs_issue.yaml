@@ -1,0 +1,45 @@
+name: "\U0001F4DA Documentation improvement"
+description: Report a typo, outdated info, or suggest new documentation
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us improve our documentation! Clear docs make the whole bombshell ecosystem better for everyone.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Related Package
+      description: Which package's documentation needs improvement?
+      options:
+        - "@clack/core"
+        - "@clack/prompts"
+        - "@bomb.sh/tab"
+        - "@bomb.sh/args"
+        - "@bomb.sh/tools"
+        - "clink"
+        - "General / Website Docs"
+    validations:
+      required: true
+  - type: textarea
+    id: current-issue
+    attributes:
+      label: What needs to be changed?
+      description: Describe the typo, outdated section, or missing concept. Please include links to the current documentation if applicable.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-change
+    attributes:
+      label: Proposed improvement / suggestion
+      description: A clear description of what should be written or fixed. Feel free to provide a rough draft or code snippets of the expected output!
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots that might help explain your suggestion.
+    validations:
+      required: false

@@ -1,16 +1,20 @@
 ## What does this PR do?
 
 <!--
-  Describe the change and why it's needed.
+  Describe the change and why it's needed. Link to a related issue or discussion.
   If there is no issue, please explain why one isn't needed.
 -->
 
-## Related issues/PRs
+Closes #
 
-<!-- 
-  If this is a PR about a new feature, link to the related clack/args/tab PR.
-  If this fixes an issue of the docs site, link to the related issue.
--->
+## Type of change
+
+<!-- Check one. -->
+
+- [ ] Typo
+- [ ] New Documentation for Feature
+- [ ] Improvement for Clarification
+- [ ] Chore (dependencies, CI, tooling)
 
 ## AI-generated code disclosure
 
