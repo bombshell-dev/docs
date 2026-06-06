@@ -1,7 +1,7 @@
-import starlight from "@astrojs/starlight";
 // @ts-check
 import { defineConfig } from "astro/config";
-
+import starlight from "@astrojs/starlight";
+import cloudflare from "@astrojs/cloudflare";
 import ecTwoSlash from "expressive-code-twoslash";
 import topics from "starlight-sidebar-topics";
 
@@ -9,6 +9,9 @@ const site = "https://bomb.sh/docs/";
 
 // https://astro.build/config
 export default defineConfig({
+	adapter: cloudflare({
+		imageService: 'compile'
+	}),
 	site: "https://bomb.sh/",
 	base: "/docs",
 	outDir: "./dist/docs/",
