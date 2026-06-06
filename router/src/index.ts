@@ -23,7 +23,9 @@ export default {
 
 		if (url.pathname.startsWith("/docs")) {
 			const origin = docsOrigin(url.host);
-			let response = await fetch(new URL(url.pathname, origin));
+			let response = await fetch(new URL(url.pathname, docsOrigin(url.host)));
+			console.log({ from: url, to: new URL(url.pathname, docsOrigin(url.host)) });
+
 
 			// Special case for Starlight's 404 page
 			let status = response.status;
