@@ -17,8 +17,6 @@ body:
         - "@clack/prompts"
         - "@bomb.sh/tab"
         - "@bomb.sh/args"
-        - "@bomb.sh/tools"
-        - "clink"
         - "General / Website Docs"
     validations:
       required: true
