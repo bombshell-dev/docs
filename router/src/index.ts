@@ -11,10 +11,10 @@ function docsOrigin(host: string): string {
 	if (match) {
 		const [, slug, zone] = match;
 		if (!/^[0-9a-f]{8}$/.test(slug)) {
-			return `https://${slug}-bombshell-docs.${zone}`;
+			return `https://${slug}-bombshell-docs.${zone}/`;
 		}
 	}
-	return "https://docs.bomb.sh";
+	return "https://docs.bomb.sh/";
 }
 
 export default {
@@ -27,8 +27,9 @@ export default {
 
 			// Special case for Starlight's 404 page
 			let status = response.status;
-			if (status === 404)
+			if (status === 404) {
 				response = await fetch(new URL("/docs/404.html", origin))
+			}
 
 			const headers = new Headers(response.headers);
 			headers.set("Cross-Origin-Embedder-Policy", "require-corp");
