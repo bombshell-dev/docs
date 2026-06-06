@@ -5,14 +5,14 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "prebuild": "npm run snapshot",
+    "prebuild": "pnpm run snapshot",
     "build": "astro build && cp public/_headers dist/_headers",
     "preview": "astro preview",
     "astro": "astro",
     "snapshot": "node --experimental-strip-types ./scripts/snapshot.ts"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.6.1",
+    "@astrojs/cloudflare": "^12.6.13",
     "@astrojs/starlight": "^0.37.1",
     "@bomb.sh/args": "^0.3.1",
     "@clack/core": "^1.4.0",

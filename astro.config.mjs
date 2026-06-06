@@ -9,7 +9,9 @@ const site = "https://bomb.sh/docs/";
 
 // https://astro.build/config
 export default defineConfig({
-	adapter: cloudflare(),
+	adapter: cloudflare({
+		imageService: 'compile'
+	}),
 	site: "https://bomb.sh/",
 	base: "/docs",
 	outDir: "./dist/docs/",
