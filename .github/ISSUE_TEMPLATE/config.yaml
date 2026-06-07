@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "\U0001F4AC Discord Chat"
+    url: https://bomb.sh/chat
+    about: Our Discord server is active, come join us for support and chat!
+  - name: "\U0001F98B Bluesky"
+    url: https://bsky.app/profile/bomb.sh
+    about: Follow us on Bluesky for updates, news, and announcements.
+  - name: "\U0001F496 Sponsor"
+    url: https://opencollective.com/bombshell-dev
+    about: Support the development of bombshell projects via Open Collective!
