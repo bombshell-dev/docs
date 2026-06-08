@@ -193,13 +193,13 @@
     .sl-link-button>svg {
       fill: var(--color-white-100);
     }
+  }
+}
 
+/* this rule must not be layered because the Starlight Sidebar Topics plugin doesn't use Cascade Layers */
+:root[data-theme="light"] {
+  a:is(.starlight-sidebar-topics-current, :hover, :focus-visible)
     .starlight-sidebar-topics-icon {
-      background-color: var(--color-gray-20);
-    }
-
-    starlight-menu-button button {
-        background-color: var(--color-gray-20);
-    }
+    background-color: var(--sl-color-accent-low);
   }
 }

@@ -1,7 +1,6 @@
-import starlight from "@astrojs/starlight";
 // @ts-check
 import { defineConfig } from "astro/config";
-
+import starlight from "@astrojs/starlight";
 import ecTwoSlash from "expressive-code-twoslash";
 import topics from "starlight-sidebar-topics";
 
