@@ -3,6 +3,7 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import ecTwoSlash from "expressive-code-twoslash";
 import topics from "starlight-sidebar-topics";
+import starlightMarkdown from "starlight-markdown";
 
 const site = "https://bomb.sh/docs/";
 
@@ -87,6 +88,7 @@ export default defineConfig({
 				{ icon: 'github', label: 'GitHub', href: 'https://bomb.sh/on/github' },
 			],
 			plugins: [
+				starlightMarkdown(),
 				topics([
 					{
 						label: "Clack",

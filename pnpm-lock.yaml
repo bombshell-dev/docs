@@ -50,6 +50,9 @@ importers:
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
+      starlight-markdown:
+        specifier: ^0.1.5
+        version: 0.1.5(astro@5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2))
       starlight-sidebar-topics:
         specifier: ^0.6.2
         version: 0.6.2(@astrojs/starlight@0.37.1(astro@5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2)))
@@ -2138,6 +2141,11 @@ packages:
 
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
+
+  starlight-markdown@0.1.5:
+    resolution: {integrity: sha512-23LXRaZp7pyE+r/HP6rxHfwic8HfvUBT4EImECA6encs/eTtrF0Z+7svANofdtfbiNt31D5q26i03B6FtcSmGg==}
+    peerDependencies:
+      astro: ^5.0.0
 
   starlight-sidebar-topics@0.6.2:
     resolution: {integrity: sha512-SNCTUZS/hcVor0ZcaXbaSVU37+V+qtvzNirkvnOg3Mqu/awuGpthkH5+uKpiZqWxLffp6TrOlsv5E5QsxrndNg==}
@@ -5034,6 +5042,10 @@ snapshots:
   source-map@0.7.6: {}
 
   space-separated-tokens@2.0.2: {}
+
+  starlight-markdown@0.1.5(astro@5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2)):
+    dependencies:
+      astro: 5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2)
 
   starlight-sidebar-topics@0.6.2(@astrojs/starlight@0.37.1(astro@5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2))):
     dependencies:
