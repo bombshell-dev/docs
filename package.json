@@ -5,11 +5,13 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "prebuild": "pnpm run snapshot",
+    "prebuild": "pnpm run snapshot && pnpm run generate:docs-index",
+    "predev": "pnpm run generate:docs-index",
     "build": "astro build && cp public/_headers dist/_headers",
     "preview": "astro preview",
     "astro": "astro",
-    "snapshot": "node --experimental-strip-types ./scripts/snapshot.ts"
+    "snapshot": "node --experimental-strip-types ./scripts/snapshot.ts",
+    "generate:docs-index": "node --experimental-strip-types ./scripts/generate-docs-index.ts"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.37.1",
@@ -26,6 +28,7 @@
     "astro": "^5.16.6",
     "expressive-code-twoslash": "^0.5.3",
     "sharp": "^0.33.5",
+    "starlight-markdown": "^0.1.5",
     "starlight-sidebar-topics": "^0.6.2"
   },
   "devDependencies": {

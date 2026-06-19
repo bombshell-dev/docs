@@ -4,6 +4,8 @@ dist/
 # generated types
 .astro/
 public/snapshot
+public/llms.txt
+public/docs-index.json
 
 # dependencies
 node_modules/
