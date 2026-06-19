@@ -177,6 +177,7 @@ p.on('cancel', () => {
    - Character masking
    - Validation support
    - `clearOnError` option to reset on validation failure
+   - Empty submit resolves to `""`, matching `TextPrompt` and `Promise<string | symbol>` (v1.4.2)
 
 6. **MultiSelectPrompt**: For multiple selections
    - Checkbox interface
@@ -201,7 +202,7 @@ p.on('cancel', () => {
    - Optional `separator` override for display
    - `minDate` / `maxDate` bounds and `DateParts` segment values
 
-10. **Multi-line input**: v1.2.0 does not include a dedicated multi-line prompt in `@clack/core` or `@clack/prompts`. Use `text()` for a single line, an external editor or stdin for paragraphs, or extend `Prompt` for custom multi-line TTY behavior.
+10. **Multi-line input**: Use [`multiline()`](/docs/clack/packages/prompts#multi-line-text) from `@clack/prompts` for multi-line text entry (since v1.3.0). `@clack/core` provides the underlying prompt primitive; extend `Prompt` directly only when you need custom multi-line TTY behavior.
 
 ## Layout utilities
 

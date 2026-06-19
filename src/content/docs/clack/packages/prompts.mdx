@@ -165,13 +165,14 @@ Options:
 - `mask`: Character to use for masking input. Default: `'▪/•'`.
 - `validate`: A function or a [Standard Schema](https://github.com/standard-schema/standard-schema) that validates user input. If a custom function is given, you should return a `string` or `Error` to show as a validation error, or `undefined` to accept the result.
 - `clearOnError`: When enabled it causes the input to be cleared if/when validation fails. Default: `false`.
+- Submitting with no input resolves to `""`, matching `text()` and the documented `Promise<string | symbol>` return type (v1.4.2).
 - All [Common Options](#common-options)
 
 Common options (`withGuide`, `signal`, `input`, `output`) are also supported.
 
 ### Multi-line Text
 
-The multi-line component accepts multiple lines of text input. By default, pressing Enter twice submits the input.
+The multi-line component accepts multiple lines of text input. By default, pressing Enter twice **at the end of the input** submits; a double Enter elsewhere in the text adds a blank line instead (v1.4.2).
 
 ```ts twoslash
 import { multiline } from '@clack/prompts';
@@ -191,10 +192,13 @@ const bio = await multiline({
 
 Options:
 
-- `showSubmit`: When enabled it shows a `[ submit ]` button that can be focused with tab. By default, pressing Enter twice submits the input. Default: `false`.
+- `showSubmit`: When enabled it shows a `[ submit ]` button that can be focused with tab. By default, pressing Enter twice at the end of the input submits. Default: `false`.
+- `initialValue`: Pre-fills editable content when the prompt opens; the cursor is placed at the end (v1.4.2). See also [Text Options](#text-input).
 - All [Text Options](#text-input)
 
 ### Selection
+
+`select`, `multiselect`, and `groupMultiselect` show persistent keyboard hint footers while active (v1.6.0), matching `autocomplete`. There is no option to disable them.
 
 #### Simple value
 
@@ -217,6 +221,7 @@ const framework = await select({
 <font color="#06989A">│</font>  <font color="#4E9A06">●</font> Next.js (React framework)
 <font color="#06989A">│</font>  ○ Astro (Content-focused)
 <font color="#06989A">│</font>  ○ SvelteKit (Compile-time framework)
+<font color="#06989A">│</font>  <font color="#AAAAAA">↑/↓ to navigate • Enter: confirm</font>
 <font color="#06989A">└</font></pre>
 
 #### Complex value
@@ -290,6 +295,7 @@ const framework = await multiselect({
 <font color="#06989A">│</font>  <font color="#4E9A06">◼</font> Next.js (React framework)
 <font color="#06989A">│</font>  <font color="#06989A">◻</font> Astro (Content-focused)
 <font color="#06989A">│</font>  ◻ SvelteKit (Compile-time framework)
+<font color="#06989A">│</font>  <font color="#AAAAAA">↑/↓ to navigate • Space: select • Enter: confirm</font>
 <font color="#06989A">└</font></pre>
 
 ### Select by key
@@ -588,6 +594,7 @@ const projectOptions = await groupMultiselect({
 <font color="#06989A">│</font>  │ ◻ Prettier (Code formatter)
 <font color="#06989A">│</font>  │ ◻ ESLint (Linter)
 <font color="#06989A">│</font>  └ <font color="#4E9A06">◼</font> Biome.js (Formatter and linter)
+<font color="#06989A">│</font>  <font color="#AAAAAA">↑/↓ to navigate • Space: select • Enter: confirm</font>
 <font color="#06989A">└</font></pre>
 
 Options:
@@ -916,6 +923,19 @@ note(
 <font color="#555753">│</font>  You can edit the file src/index.jsx  <font color="#555753">│</font>
 <font color="#555753">│</font>                                       <font color="#555753">│</font>
 <font color="#555753">├───────────────────────────────────────╯</font></pre>
+
+<Aside type="note">As of v1.6.0, body lines in `note()` are no longer dimmed by default. To restore the previous styling, pass a `format` function—for example, using `styleText` from `node:util`:</Aside>
+
+```ts twoslash
+import { note } from '@clack/prompts';
+import { styleText } from 'node:util';
+
+note(
+  'You can edit the file src/index.jsx',
+  'Next steps.',
+  { format: (text) => styleText('dim', text) }
+);
+```
 
 The second parameter (the title) is optional. You can also provide a format function to customize how each line is displayed:
 
