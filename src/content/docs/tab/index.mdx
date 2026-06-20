@@ -7,13 +7,38 @@ Shell autocompletions are largely missing in the JavaScript CLI ecosystem. tab p
 
 Additionally, tab supports autocompletions for `pnpm`, `npm`, `yarn`, and `bun`.
 
-Modern CLI libraries like [Gunshi](https://github.com/kazupon/gunshi) include tab completion natively in their core.
+Modern CLI libraries like [Gunshi](https://github.com/kazupon/gunshi) include tab completion natively in their core. 
+
+Major CLIs and tooling projects including Cloudflare, Nuxt, Astro, and Vitest also adopted tab to provide shell completions for their users.
 
 As CLI tooling authors, if we can spare our users a second or two by not checking documentation or writing the `-h` flag, we're doing them a huge favor. The unconscious mind loves hitting the [TAB] key and always expects feedback. When nothing happens, it breaks the user's flow - a frustration apparent across the whole JavaScript CLI tooling ecosystem.
 
 tab solves this complexity by providing autocompletions that work consistently across `zsh`, `bash`, `fish`, and `powershell`.
 
 ## Installation
+
+### For Package Manager Completions
+
+Global install is recommended:
+
+```bash
+npm install -g @bomb.sh/tab
+```
+
+Then enable completions permanently:
+
+```bash
+# For zsh
+echo 'source <(tab pnpm zsh)' >> ~/.zshrc
+source ~/.zshrc
+
+# For bash
+echo 'source <(tab pnpm bash)' >> ~/.bashrc
+source ~/.bashrc
+
+```
+
+### For CLI Library (Adding Completions to Your CLI)
 
 ```bash
 npm install @bomb.sh/tab
@@ -70,16 +95,56 @@ my-cli complete zsh > ~/.my-cli-completion.zsh
 echo 'source ~/.my-cli-completion.zsh' >> ~/.zshrc
 ```
 
+## Positional Arguments
+
+In addition to options, tab supports positional arguments with completion handlers:
+
+```typescript
+// Root-level positional arg
+t.argument('project', (complete) => {
+  complete('my-app', 'My application');
+});
+
+// Command-level positional args
+t.command('copy', 'Copy files')
+  .argument('source', (complete) => {
+    complete('src/', 'Source directory');
+    complete('dist/', 'Distribution directory');
+  })
+  .argument('destination', (complete) => {
+    complete('build/', 'Build output');
+    complete('release/', 'Release directory');
+  });
+
+// Variadic arguments (pass true as the third argument)
+t.command('lint', 'Lint project').argument(
+  'files',
+  (complete) => {
+    complete('src/', 'Source directory');
+    complete('tests/', 'Tests directory');
+  },
+  true
+);
+```
+
+Framework adapters infer positional arguments from your CLI framework definitions. See the [Commander.js integration](#commanderjs-integration) below for adapter-specific examples.
+
 ## Package Manager Completions
 
 As mentioned earlier, tab provides completions for package managers as well:
 
 ```bash
-# Generate and install completion scripts
+# Generate and install completion scripts (requires global install)
+tab pnpm zsh > ~/.pnpm-completion.zsh && echo 'source ~/.pnpm-completion.zsh' >> ~/.zshrc
+tab npm bash > ~/.npm-completion.bash && echo 'source ~/.npm-completion.bash' >> ~/.bashrc
+tab yarn fish > ~/.config/fish/completions/yarn.fish
+tab bun powershell > ~/.bun-completion.ps1 && echo '. ~/.bun-completion.ps1' >> $PROFILE
+```
+
+Without a global install, use `npx`:
+
+```bash
 npx @bomb.sh/tab pnpm zsh > ~/.pnpm-completion.zsh && echo 'source ~/.pnpm-completion.zsh' >> ~/.zshrc
-npx @bomb.sh/tab npm bash > ~/.npm-completion.bash && echo 'source ~/.npm-completion.bash' >> ~/.bashrc
-npx @bomb.sh/tab yarn fish > ~/.config/fish/completions/yarn.fish
-npx @bomb.sh/tab bun powershell > ~/.bun-completion.ps1 && echo '. ~/.bun-completion.ps1' >> $PROFILE
 ```
 
 Example in action:
@@ -91,6 +156,20 @@ pnpm install --reporter=<TAB>
 yarn add --emoji=<TAB>
 # Shows: true, false
 ```
+
+### Completing locally-installed CLIs
+
+Package manager completion does more than complete the package manager's own flags — it also **delegates to CLIs installed as local project dependencies**. If a CLI implements tab's completion protocol (directly or via a [framework adapter](#framework-adapters)), it becomes completable through your package manager _without_ being on your `PATH` and without installing its completion script separately:
+
+```bash
+pnpm exec my-cli <TAB>      # completes my-cli's subcommands and flags
+pnpm dlx my-cli <TAB>
+pnpm my-cli <TAB>           # the bare form works too
+```
+
+Under the hood, tab strips the package-manager wrapper (`exec`, `x`, `run`, `dlx`), detects whether the target CLI supports completion, and forwards the request to it — falling back to running the CLI _through_ the package manager (e.g. `pnpm my-cli complete -- …`) so locally-installed binaries resolve. The same works for `npm exec`, `yarn`, and `bun x`.
+
+Completion is registered against the package-manager binary (`npm`, `pnpm`, `yarn`, `bun`). `npx` and `bunx` are separate commands with no completion of their own, so `npx my-cli <TAB>` / `bunx my-cli <TAB>` won't complete — use `npm exec my-cli` / `bun x my-cli` instead.
 
 ## Framework Adapters
 
@@ -165,26 +244,44 @@ cli();
 ### Commander.js Integration
 
 ```typescript
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import tab from '@bomb.sh/tab/commander';
 
 const program = new Command('my-cli');
 program.version('1.0.0');
 
-// Define commands
+// Options with .choices() get completions automatically
+program.addOption(
+  new Option('-l, --logLevel <level>', 'Specify log level').choices([
+    'info',
+    'warn',
+    'error',
+    'silent',
+  ])
+);
+
 program
   .command('serve')
   .description('Start the server')
   .option('-p, --port <number>', 'port to use', '3000')
   .option('-H, --host <host>', 'host to use', 'localhost')
-  .action((options) => {
+  .action(() => {
     console.log('Starting server...');
   });
+
+program
+  .command('lint [files...]')
+  .description('Lint source files')
+  .option('--fix', 'automatically fix problems');
+
+program
+  .command('copy <source> <destination>')
+  .description('Copy files');
 
 // Initialize tab completions
 const completion = tab(program);
 
-// Add custom completions
+// Custom option completions
 const serveCommand = completion.commands.get('serve');
 const portOption = serveCommand?.options.get('port');
 if (portOption) {
@@ -194,7 +291,34 @@ if (portOption) {
   };
 }
 
+// Custom positional argument completions
+const lintCommand = completion.commands.get('lint');
+const filesArg = lintCommand?.arguments.get('files');
+if (filesArg) {
+  filesArg.handler = (complete) => {
+    complete('main.ts', 'Main file');
+    complete('index.ts', 'Index file');
+  };
+}
+
+const copyCommand = completion.commands.get('copy');
+const sourceArg = copyCommand?.arguments.get('source');
+if (sourceArg) {
+  sourceArg.handler = (complete) => {
+    complete('src/', 'Source directory');
+    complete('dist/', 'Distribution directory');
+  };
+}
+
 program.parse();
+```
+
+Options defined with Commander's `.choices()` are picked up automatically — no custom handler needed. For positional arguments, the adapter reads argument definitions from your commands; add handlers via `arguments.get('name')` when you need custom suggestions.
+
+The Commander integration supports customising the command name used to generate shell completion scripts. The default is `complete`. If you use a custom name like `completion`, it appears in help as `completion <shell>`, while runtime suggestions stay on the hidden `complete -- [args...]` command. Use your custom command when generating shell scripts:
+
+```javascript
+const completion = tab(program, { completionCommandName: 'completion' });
 ```
 
 ## How It Works
