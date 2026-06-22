@@ -1,0 +1,25 @@
+---
+import Default from '@astrojs/starlight/components/PageFrame.astro';
+
+const topics = Astro.locals.starlightSidebarTopics?.topics ?? [];
+const currentTopic = topics.find((t: { isCurrent: boolean }) => t.isCurrent);
+
+const accentMap: Record<string, { hsl: string; name: string }> = {
+	Clack: { hsl: '311 100% 50%', name: 'pink' },
+	Args: { hsl: '52 81% 53%', name: 'yellow' },
+	Tab: { hsl: '134 94% 49%', name: 'green' },
+};
+
+const accent = accentMap[currentTopic?.label] ?? accentMap.Clack;
+---
+
+<div
+	data-topic={currentTopic?.label?.toLowerCase() ?? 'clack'}
+	style={`--sl-color-accent-hsl:${accent.hsl};--sl-color-accent-low:hsl(${accent.hsl}/0.1);--sl-color-accent:hsl(${accent.hsl}/0.9);--sl-color-accent-high:hsl(${accent.hsl}/1);--accent-fill:var(--color-${accent.name}-90);--accent-muted:var(--color-${accent.name}-50);--accent-highlight:var(--color-${accent.name}-100);--topic-clack-hsl:311 100% 50%;--topic-args-hsl:52 81% 53%;--topic-tab-hsl:134 94% 49%;`}
+>
+	<Default>
+		<slot name="header" slot="header" />
+		<slot name="sidebar" slot="sidebar" />
+		<slot />
+	</Default>
+</div>

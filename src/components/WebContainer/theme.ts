@@ -20,11 +20,3 @@ export const theme = {
   brightWhite: "#FFFFFF",
   selectionBackground: "#97979b33",
 };
-
-
-
-
-
-
-
-
