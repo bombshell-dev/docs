@@ -17,6 +17,7 @@ docs-terminal {
       instance: Terminal | undefined;
       ro: ResizeObserver | undefined;
       updateSize = () => {};
+      inputId = `docs-terminal-${crypto.randomUUID()}`;
       
       connectedCallback() {
         this.boot();
@@ -29,10 +30,16 @@ docs-terminal {
         this.ro = new ResizeObserver(() => this.updateSize());
         this.ro.observe(this);
       }
+      labelHelperInput() {
+        const input = this.querySelector<HTMLTextAreaElement>(".xterm-helper-textarea");
+        input?.setAttribute("id", this.inputId);
+        input?.setAttribute("name", this.inputId);
+      }
       async boot() {
         if (this.instance) {
           this.instance.options.theme = theme;
           this.instance.open(this);
+          this.labelHelperInput();
           return;
         }
         this.innerHTML = "";
@@ -52,6 +59,7 @@ docs-terminal {
         });
 
         this.instance.open(this);
+        this.labelHelperInput();
 
         const fit = new FitAddon();
         this.instance.loadAddon(fit);
