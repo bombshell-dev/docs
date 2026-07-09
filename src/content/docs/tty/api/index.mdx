@@ -1,0 +1,44 @@
+---
+title: API Overview
+description: Overview of the @bomb.sh/tty public API
+---
+
+`@bomb.sh/tty` exports five modules from a single entry point. Everything is available from `@bomb.sh/tty`:
+
+```ts twoslash
+import {
+  open, text, close, snapshot, rgba, fit, grow, percent, fixed,
+  createTerm,
+  createInput,
+  settings, alternateBuffer, cursor, mouseTracking,
+} from "@bomb.sh/tty";
+```
+
+## Modules
+
+| Module | Description |
+|---|---|
+| [Ops](/docs/tty/api/ops) | UI directive builders: `open`, `text`, `close`, sizing, colors, transitions |
+| [Term](/docs/tty/api/term) | Renderer: `createTerm`, `render`, pointer events, layout info |
+| [Input](/docs/tty/api/input) | Input parser: `createInput`, `scan`, keyboard/mouse/resize events |
+| [Settings](/docs/tty/api/settings) | Terminal mode helpers: alternate buffer, cursor, mouse tracking |
+| [Termcodes](/docs/tty/api/termcodes) | Low-level ANSI escape sequence bytes |
+
+## Typical app structure
+
+1. Apply [settings](/docs/tty/api/settings) to stdout (alternate buffer, cursor, mouse)
+2. Create a [term](/docs/tty/api/term) and [input](/docs/tty/api/input) instance
+3. Set stdin to raw mode
+4. On each frame: build [ops](/docs/tty/api/ops) → `term.render()` → write `output`
+5. On stdin data: `input.scan()` → handle events
+6. If `renderResult.animating`, schedule another frame
+7. On exit: revert settings and restore terminal state
+
+## Deno-only exports
+
+The Deno source tree includes `@bomb.sh/tty/validate` with runtime op validation (`validate`, `assert`, `validated`). This subpath is not in the published npm `exports` map for v0.8.0.
+
+## Next steps
+
+- [Getting Started](/docs/tty/basics/getting-started)
+- [Examples](/docs/tty/guides/examples)

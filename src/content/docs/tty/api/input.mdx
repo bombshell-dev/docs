@@ -1,0 +1,127 @@
+---
+title: Input
+description: Terminal input parser API for @bomb.sh/tty
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The input module decodes raw terminal bytes into structured events. All parsing logic lives in WASM. The TypeScript layer is a thin wrapper.
+
+## createInput(options?)
+
+Creates an input parser instance.
+
+```ts twoslash
+import { createInput } from "@bomb.sh/tty";
+
+async function main() {
+  let input = await createInput({ escLatency: 25 });
+}
+```
+
+### InputOptions
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `escLatency` | `number` | `25` | Milliseconds to wait before resolving a lone ESC as the Escape key |
+| `terminfo` | `Uint8Array` | xterm defaults | Compiled terminfo binary for terminal-specific sequences |
+
+<Aside type="note">
+Lower `escLatency` feels snappier but risks misinterpreting multi-byte sequences on slow connections. Vim's `ttimeoutlen` defaults to 100ms; ncurses `ESCDELAY` defaults to 1000ms.
+</Aside>
+
+## input.scan(bytes?)
+
+Feed raw bytes from stdin and return parsed events. Call with no arguments to flush a pending ESC after the latency period.
+
+```ts twoslash
+import { createInput } from "@bomb.sh/tty";
+
+async function main() {
+  let input = await createInput({ escLatency: 25 });
+
+  process.stdin.setRawMode(true);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  process.stdin.on("data", (buf) => {
+    clearTimeout(timer);
+
+    let { events, pending } = input.scan(new Uint8Array(buf));
+
+    for (let event of events) {
+      console.log(event);
+    }
+
+    if (pending) {
+      timer = setTimeout(() => {
+        let flush = input.scan();
+        for (let event of flush.events) {
+          console.log(event);
+        }
+      }, pending.delay);
+    }
+  });
+}
+```
+
+### ScanResult
+
+| Property | Type | Description |
+|---|---|---|
+| `events` | `InputEvent[]` | Events produced from this scan |
+| `pending` | `{ delay: number }` | Present when a lone ESC is buffered. Re-call `scan()` after `delay` ms |
+
+## Event types
+
+### Keyboard events
+
+| Type | Description |
+|---|---|
+| `keydown` | Key was pressed |
+| `keyrepeat` | Key auto-repeat (Kitty enhancement level 2+) |
+| `keyup` | Key was released (Kitty enhancement level 2+) |
+
+All keyboard events include:
+
+| Property | Type | Description |
+|---|---|---|
+| `key` | `string` | Key value (e.g. `"a"`, `"Enter"`, `"ArrowUp"`) |
+| `code` | `KeyCode` | Physical key identity (US PC-101 layout) |
+| `text` | `string?` | Typed character, if applicable |
+| `shifted` | `string?` | Shifted character variant |
+| `alt`, `ctrl`, `shift` | `true?` | Modifier keys held |
+
+### Mouse events
+
+| Type | Description |
+|---|---|
+| `mousedown` | Button pressed (`left`, `right`, `middle`) |
+| `mouseup` | Button released |
+| `mousemove` | Movement while button held |
+| `wheel` | Scroll wheel (`direction: "up"` \| `"down"`) |
+
+Mouse events include `x` and `y` coordinates (0-based) and optional modifiers.
+
+### Other events
+
+| Type | Description |
+|---|---|
+| `resize` | Terminal resized. Returns `{ width, height }` |
+| `cursor` | DSR cursor position report. Returns `{ row, column }` (1-based) |
+
+Pointer events (`pointerenter`, `pointerleave`, `pointerclick`) are produced by the [renderer](/docs/tty/api/term), not the input parser.
+
+## Supported protocols
+
+The parser recognizes:
+
+- VT/ANSI escape sequences
+- UTF-8 codepoints
+- Mouse protocols (VT200, SGR, urxvt)
+- Progressive keyboard protocol (via [settings](/docs/tty/api/settings))
+- Partial sequence reassembly across read boundaries
+
+## Next steps
+
+- [Settings API](/docs/tty/api/settings) (enable mouse tracking and keyboard protocols)
+- [Term API](/docs/tty/api/term) (pointer hit testing on the render side)

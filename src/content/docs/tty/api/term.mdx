@@ -1,0 +1,172 @@
+---
+title: Term
+description: Terminal renderer API for @bomb.sh/tty
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The term module creates a WASM-backed renderer that converts UI ops into ANSI escape sequences.
+
+## createTerm(options)
+
+Creates a renderer instance. Both dimensions are required.
+
+```ts twoslash
+import { createTerm } from "@bomb.sh/tty";
+
+async function main() {
+  let term = await createTerm({ width: 80, height: 24 });
+}
+```
+
+| Option | Type | Description |
+|---|---|---|
+| `width` | `number` | Terminal width in columns |
+| `height` | `number` | Terminal height in rows |
+
+Returns a `Term` with a single `render()` method.
+
+## term.render(ops, options?)
+
+Renders a frame and returns the result.
+
+```ts twoslash
+import { close, createTerm, open, text, grow } from "@bomb.sh/tty";
+
+async function main() {
+  let term = await createTerm({ width: 80, height: 24 });
+
+  let { output, events, info, errors, animating } = term.render([
+    open("root", { layout: { width: grow(), height: grow() } }),
+    text("Hello"),
+    close(),
+  ]);
+
+  process.stdout.write(output);
+}
+```
+
+### RenderOptions
+
+| Option | Type | Description |
+|---|---|---|
+| `pointer` | `{ x, y, down }` | Pointer position and button state for hit testing |
+| `deltaTime` | `number` | Seconds since last frame (for transitions). Auto-computed if omitted |
+| `mode` | `"line"` | Render into a line region instead of full screen |
+| `row` | `number` | Starting row for line mode (1-based, DSR format) |
+
+### Pointer detection
+
+Pass pointer state to get hit-testing events alongside output:
+
+```ts twoslash
+import { close, createTerm, fixed, grow, open, text } from "@bomb.sh/tty";
+
+async function main() {
+  let term = await createTerm({ width: 80, height: 24 });
+
+  let { output, events } = term.render(
+    [
+      open("root", { layout: { width: grow(), height: grow(), direction: "ltr" } }),
+      open("sidebar", { layout: { width: fixed(20), height: grow() } }),
+      text("Sidebar"),
+      close(),
+      open("main", { layout: { width: grow(), height: grow() } }),
+      text("Main content"),
+      close(),
+      close(),
+    ],
+    { pointer: { x: 5, y: 2, down: false } },
+  );
+
+  for (let event of events) {
+    // { type: "pointerenter", id: "sidebar" }
+    // { type: "pointerleave", id: "sidebar" }
+    // { type: "pointerclick", id: "main" }
+  }
+}
+```
+
+### RenderResult
+
+| Property | Type | Description |
+|---|---|---|
+| `output` | `Uint8Array` | ANSI bytes to write to stdout |
+| `events` | `PointerEvent[]` | Pointer enter/leave/click events |
+| `info` | `RenderInfo` | Element bounds lookup |
+| `errors` | `ClayError[]` | Layout errors from Clay |
+| `animating` | `boolean` | `true` when transitions are still running |
+
+### RenderInfo.get(id)
+
+Returns element bounds for a given id, or `undefined` if not found:
+
+```ts twoslash
+import { close, createTerm, open, text, grow } from "@bomb.sh/tty";
+
+async function main() {
+  let term = await createTerm({ width: 80, height: 24 });
+  let { info } = term.render([
+    open("root", { layout: { width: grow(), height: grow() } }),
+    text("Hello"),
+    close(),
+  ]);
+  let bounds = info.get("root")?.bounds;
+}
+```
+
+### PointerEvent
+
+| Type | Shape |
+|---|---|
+| `pointerenter` | `{ type: "pointerenter", id: string }` |
+| `pointerleave` | `{ type: "pointerleave", id: string }` |
+| `pointerclick` | `{ type: "pointerclick", id: string }` |
+
+### ClayError
+
+Layout errors include a `type` and `message`. Known error types:
+
+- `TEXT_MEASUREMENT_FUNCTION_NOT_PROVIDED`
+- `ARENA_CAPACITY_EXCEEDED`
+- `ELEMENTS_CAPACITY_EXCEEDED`
+- `TEXT_MEASUREMENT_CAPACITY_EXCEEDED`
+- `DUPLICATE_ID`
+- `FLOATING_CONTAINER_PARENT_NOT_FOUND`
+- `PERCENTAGE_OVER_1`
+- `INTERNAL_ERROR`
+- `UNBALANCED_OPEN_CLOSE`
+- `CLIP_DEPTH_EXCEEDED`
+
+## Frame loop with transitions
+
+When using transitions, gate your render loop on `animating`:
+
+```ts twoslash
+import { close, createTerm, open, text, grow } from "@bomb.sh/tty";
+
+async function main() {
+  let term = await createTerm({ width: 80, height: 24 });
+
+  function frame() {
+    let { output, animating } = term.render([
+      open("root", { layout: { width: grow(), height: grow() } }),
+      text("Animating..."),
+      close(),
+    ]);
+    process.stdout.write(output);
+    if (animating) setTimeout(frame, 16);
+  }
+
+  frame();
+}
+```
+
+<Aside type="note">
+Line mode (`mode: "line"`) renders into a region of the main screen scrollback instead of the alternate buffer. See the [inline regions example](https://github.com/bombshell-dev/tty/blob/main/examples/inline-regions/index.ts).
+</Aside>
+
+## Next steps
+
+- [Ops API](/docs/tty/api/ops) (building UI directives)
+- [Input API](/docs/tty/api/input) (parsing stdin events)

@@ -1,0 +1,76 @@
+---
+title: Termcodes
+description: Low-level ANSI escape sequence builders for @bomb.sh/tty
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The termcodes module provides low-level escape sequence builders. Each function returns a `Uint8Array` you can write directly to stdout.
+
+<Aside type="tip">
+Prefer the [settings helpers](/docs/tty/api/settings) for common terminal mode changes. Use termcodes when you need custom sequences or sequences not covered by settings.
+</Aside>
+
+## ESC(str)
+
+Encode a plain escape sequence. Prepends `ESC` (`\x1b`) to the given string.
+
+```ts twoslash
+import { ESC } from "@bomb.sh/tty";
+
+process.stdout.write(ESC("7")); // save cursor (DECSC)
+```
+
+## CSI(str)
+
+Encode a Control Sequence Introducer command. Prepends `ESC[` to the given string.
+
+```ts twoslash
+import { CSI } from "@bomb.sh/tty";
+
+process.stdout.write(CSI("2J")); // clear screen
+```
+
+## DSR()
+
+Request cursor position via Device Status Report. Sends `CSI 6n`. The terminal responds with a Cursor Position Report (`CSI row ; column R`) where row and column are 1-based.
+
+```ts twoslash
+import { DSR } from "@bomb.sh/tty";
+
+process.stdout.write(DSR());
+```
+
+The response is parsed as a `cursor` event by the [input parser](/docs/tty/api/input). Used by the [inline regions example](https://github.com/bombshell-dev/tty/blob/main/examples/inline-regions/index.ts) to place animated output in scrollback.
+
+## SHOWCURSOR() / HIDECURSOR()
+
+Show or hide the cursor (DEC private mode 25, DECTCEM).
+
+```ts twoslash
+import { HIDECURSOR, SHOWCURSOR } from "@bomb.sh/tty";
+
+process.stdout.write(HIDECURSOR());
+process.stdout.write(SHOWCURSOR());
+```
+
+Equivalent to [`cursor(false)`](/docs/tty/api/settings) / [`cursor(true)`](/docs/tty/api/settings).
+
+## ALTSCREEN(options?) / MAINSCREEN()
+
+Switch between main and alternate screen buffers.
+
+```ts twoslash
+import { ALTSCREEN, MAINSCREEN } from "@bomb.sh/tty";
+
+process.stdout.write(ALTSCREEN());              // enter, clear
+process.stdout.write(ALTSCREEN({ clear: false })); // enter, preserve
+process.stdout.write(MAINSCREEN());             // return to main screen
+```
+
+Equivalent to [`alternateBuffer()`](/docs/tty/api/settings) / its revert sequence.
+
+## Next steps
+
+- [Settings API](/docs/tty/api/settings) (composable terminal mode helpers)
+- [Getting Started](/docs/tty/basics/getting-started)

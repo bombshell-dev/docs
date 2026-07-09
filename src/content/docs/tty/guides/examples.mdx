@@ -1,0 +1,120 @@
+---
+title: Examples
+description: Runnable @bomb.sh/tty demos and what to learn from each
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The best way to learn `@bomb.sh/tty` after the [getting started guide](/docs/tty/basics/getting-started) is to run the demos in the [tty repository](https://github.com/bombshell-dev/tty). Each one is a small app that shows how the pieces fit together: render loop, input parsing, terminal modes, transitions.
+
+<Aside type="note">
+Examples are **not** shipped in the npm package. Clone the repo to run them. They also require a **real terminal**. They won't run in the browser-based Clack WebContainer on this site.
+</Aside>
+
+## Get set up
+
+```bash
+git clone https://github.com/bombshell-dev/tty.git
+cd tty
+make          # build the WASM bundle
+node examples/keyboard/index.ts
+```
+
+<Aside type="note">
+Requires **Node >= 22** or **Deno**. Run all commands from the repository root (`tty/`), not from inside `examples/`.
+</Aside>
+
+## Which demo should I run?
+
+| Demo | Start here if you want to… | Key APIs |
+|---|---|---|
+| [Keyboard](#keyboard) | Wire up input, pointer hover, and terminal modes | [`createInput`](/docs/tty/api/input), [`settings`](/docs/tty/api/settings), [`render` pointer option](/docs/tty/api/term) |
+| [Transitions](#transitions) | Animate layout and color between frames | [`open` transitions](/docs/tty/api/ops), [`animating`](/docs/tty/api/term) |
+| [Inline regions](#inline-regions) | Draw animated output in scrollback, not full-screen | [`render` line mode](/docs/tty/api/term), [`DSR`](/docs/tty/api/termcodes) |
+| [2048](#2048) | See everything combined in a real app | ops, term, input, settings |
+| [Diff](#diff) | Highlight per-glyph in a layout | [`text` `bg`](/docs/tty/api/ops) |
+
+**Suggested order:** keyboard → transitions → inline regions → 2048. Diff is a focused layout exercise you can skip until you need it.
+
+## Keyboard
+
+[`examples/keyboard/index.ts`](https://github.com/bombshell-dev/tty/blob/main/examples/keyboard/index.ts)
+
+```bash
+node examples/keyboard/index.ts
+```
+
+This is the best first demo. It shows the full loop most apps follow:
+
+1. Apply [terminal settings](/docs/tty/api/settings) (alternate buffer, hidden cursor, mouse tracking)
+2. Create a [term](/docs/tty/api/term) and feed [pointer state](/docs/tty/api/term) each frame
+3. Parse stdin through [`createInput`](/docs/tty/api/input) and dispatch events
+4. Revert settings on exit
+
+Type on the keyboard to see decoded key events. Move the mouse to see hover styles. Clay handles hit testing, so you don't need manual coordinate math.
+
+![Keyboard events demo](/src/assets/tty/keyboard-key-events.gif)
+
+![Pointer events demo](/src/assets/tty/keyboard-pointer-events.gif)
+
+## Transitions
+
+[`examples/transitions/sidebar.ts`](https://github.com/bombshell-dev/tty/blob/main/examples/transitions/sidebar.ts) · [`examples/transitions/notecards.ts`](https://github.com/bombshell-dev/tty/blob/main/examples/transitions/notecards.ts)
+
+```bash
+node examples/transitions/sidebar.ts
+node examples/transitions/notecards.ts
+```
+
+Change layout or style properties between frames and attach a [`transition`](/docs/tty/api/ops) to elements. Gate your render loop on [`animating`](/docs/tty/api/term) so you only redraw while motion is in progress.
+
+The sidebar demo animates width with keyboard shortcuts. Notecards interpolates layout and background color.
+
+{/* TODO: add transitions-sidebar.gif (record `node examples/transitions/sidebar.ts`) */}
+{/* TODO: add transitions-notecards.gif (record `node examples/transitions/notecards.ts`) */}
+
+## Inline regions
+
+[`examples/inline-regions/index.ts`](https://github.com/bombshell-dev/tty/blob/main/examples/inline-regions/index.ts)
+
+```bash
+node examples/inline-regions/index.ts
+```
+
+Renders spinners, progress bars, and small animations into **normal scrollback** instead of taking over the screen. Uses [`DSR`](/docs/tty/api/termcodes) to query cursor position and [`render` in line mode](/docs/tty/api/term) to update a fixed region.
+
+Reach for this pattern when you want live output inside a regular CLI workflow (build logs, install progress, status lines) without switching to the alternate buffer.
+
+{/* TODO: add inline-regions.gif (record `node examples/inline-regions/index.ts`) */}
+
+## 2048
+
+[`examples/2048/index.ts`](https://github.com/bombshell-dev/tty/blob/main/examples/2048/index.ts)
+
+```bash
+node examples/2048/index.ts
+```
+
+A complete game combining transitions, keyboard focus, pointer clicks, live resize, and an fps counter. Good reference once you understand the basics.
+
+**Controls:** arrows or `wasd` to move · `Tab`/`Shift+Tab` for focus · `Enter`/`Space` to activate · `n` new game · `u` undo · `q` or `Ctrl+C` to quit
+
+{/* TODO: add 2048.gif (record `node examples/2048/index.ts`) */}
+
+## Diff
+
+[`examples/diff/index.ts`](https://github.com/bombshell-dev/tty/blob/main/examples/diff/index.ts)
+
+```bash
+node examples/diff/index.ts
+```
+
+A code-review diff view with per-glyph `bg` highlighting on [`text`](/docs/tty/api/ops) nodes. Useful if you're building structured, read-only output rather than interactive UI.
+
+{/* TODO: add diff.gif (record `node examples/diff/index.ts`) */}
+
+## Next steps
+
+- [Getting Started](/docs/tty/basics/getting-started) (install, architecture, quick starts)
+- [Term API](/docs/tty/api/term) (render loop and pointer events)
+- [Input API](/docs/tty/api/input) (stdin event parsing)
