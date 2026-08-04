@@ -16,6 +16,8 @@ import {
 
 ## Modules
 
+The module split mirrors the zero-I/O [architecture](/docs/tty/basics/getting-started#architecture): ops describe frames, term and input are the two pipelines, and settings/termcodes build the escape bytes you write to the terminal yourself.
+
 | Module | Description |
 |---|---|
 | [Ops](/docs/tty/api/ops) | UI directive builders: `open`, `text`, `close`, sizing, colors, transitions |

@@ -5,7 +5,7 @@ description: Terminal input parser API for @bomb.sh/tty
 
 import { Aside } from '@astrojs/starlight/components';
 
-The input module decodes raw terminal bytes into structured events. All parsing logic lives in WASM. The TypeScript layer is a thin wrapper.
+The input module decodes raw terminal bytes into structured events. All parsing logic lives in WASM. The TypeScript layer is a thin wrapper. See [Architecture](/docs/tty/basics/getting-started#architecture) for why parsing is pure computation and reading stdin is up to you.
 
 ## createInput(options?)
 

@@ -65,6 +65,29 @@ Node >= 22. Also works in Deno, Bun, and browsers.
 
 ## Architecture
 
+The whole design follows from one principle: **zero I/O**. The engine never reads stdin or writes stdout, you feed it bytes and it hands bytes back. Because the WASM module is pure computation with no I/O, it runs anywhere WebAssembly does: Node, Deno, Bun, or the browser, and it can serve as the foundation for higher-level frameworks.
+
+That principle splits the system into two independent data flows: an **output pipeline** that turns your UI description into ANSI bytes, and an **input pipeline** that turns raw terminal bytes into structured events. Your app sits on the outside, owning all I/O:
+
+```mermaid
+flowchart LR
+  subgraph app ["Your app (owns I/O)"]
+    Stdin["stdin.read"]
+    Loop["event loop"]
+    Stdout["stdout.write"]
+  end
+  subgraph tty ["@bomb.sh/tty (pure computation)"]
+    Term["term.render"]
+    Input["input.scan"]
+    Settings["settings / termcodes"]
+  end
+  Loop -->|"ops"| Term
+  Term -->|"ANSI bytes"| Stdout
+  Stdin -->|"raw bytes"| Input
+  Input -->|"events"| Loop
+  Settings -->|"mode bytes"| Stdout
+```
+
 ### Output
 
 ```mermaid
@@ -84,6 +107,8 @@ flowchart LR
   Esc -->|"ANSI bytes"| Stdout
 ```
 
+Each frame's ops flatten into a single `Uint32Array` sent to WASM in one call. Clay performs layout, walks the render commands into a cell buffer, and diffs it against the previous frame. Only changed cells become ANSI escape sequences, so stdout writes stay small even for busy full-screen UIs.
+
 ### Input
 
 ```mermaid
@@ -102,6 +127,17 @@ flowchart LR
 ```
 
 Raw bytes are fed into a WASM parser that recognizes VT/ANSI escape sequences, UTF-8 codepoints, and mouse protocols. Partial sequences that arrive across read boundaries are reassembled automatically. A lone ESC byte is held for a configurable latency window (default 25ms) before being emitted.
+
+### Why the API is split this way
+
+Each of the five [API modules](/docs/tty/api/) maps directly onto this architecture:
+
+- **[Ops](/docs/tty/api/ops):** Pure data builders that describe a frame. Calling `open`, `text`, or `close` has no side effects — it only produces the directives the output pipeline consumes
+- **[Term](/docs/tty/api/term):** The output pipeline. Ops go in; ANSI bytes and pointer events come out
+- **[Input](/docs/tty/api/input):** The input pipeline. Raw bytes go in; structured keyboard and mouse events come out
+- **[Settings](/docs/tty/api/settings) and [Termcodes](/docs/tty/api/termcodes):** Because you own stdin/stdout, you also own terminal state. These build the escape bytes to apply and revert modes (alternate buffer, cursor, mouse tracking) yourself
+
+Every module is either pure computation or byte construction — none of them touches I/O. That's what keeps the whole API surface identical across runtimes, and what lets you swap `process.stdout` for any byte sink you like.
 
 ## Quick start: rendering
 
