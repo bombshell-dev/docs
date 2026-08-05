@@ -16,6 +16,7 @@
   "dependencies": {
     "@astrojs/starlight": "^0.37.1",
     "@bomb.sh/args": "^0.3.1",
+    "@bomb.sh/tty": "^0.8.0",
     "@clack/core": "^1.4.3",
     "@clack/prompts": "^1.7.0",
     "@types/node": "^22.19.3",
@@ -26,7 +27,9 @@
     "@xterm/xterm": "^6.0.0",
     "arktype": "^2.2.0",
     "astro": "^5.16.6",
+    "astro-mermaid": "^2.1.0",
     "expressive-code-twoslash": "^0.5.3",
+    "mermaid": "^11.16.0",
     "sharp": "^0.33.5",
     "starlight-markdown": "^0.1.5",
     "starlight-sidebar-topics": "^0.6.2"

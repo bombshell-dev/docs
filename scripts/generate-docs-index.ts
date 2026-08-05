@@ -103,7 +103,7 @@ function generateLlmsTxt(pages: DocPage[]): string {
 	const lines = [
 		'# Bombshell Documentation',
 		'',
-		'> Effortlessly build beautiful command-line apps. Docs for Clack, Args, and Tab.',
+		'> Effortlessly build beautiful command-line apps. Docs for Clack, Args, Tab, and TTY.',
 		'',
 		`Canonical docs: ${BASE_URL}/`,
 		'',
