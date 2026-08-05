@@ -1,0 +1,142 @@
+---
+title: Settings
+description: Terminal mode helpers for @bomb.sh/tty
+---
+
+The settings module provides composable terminal mode changes. Each setting produces `apply` and `revert` byte sequences you write to stdout.
+
+## `Setting`
+
+Every setting helper returns:
+
+```ts
+interface Setting {
+  apply: Uint8Array;
+  revert: Uint8Array;
+}
+```
+
+Write `apply` on startup and `revert` on exit to restore the terminal.
+
+## `settings(...sequence)`
+
+Compose multiple settings into one. Revert runs in reverse order.
+
+```ts twoslash
+import {
+  alternateBuffer,
+  cursor,
+  mouseTracking,
+  settings,
+} from "@bomb.sh/tty";
+
+let tty = settings(
+  alternateBuffer(),
+  cursor(false),
+  mouseTracking(),
+);
+
+process.stdout.write(tty.apply);
+
+// on exit:
+process.stdout.write(tty.revert);
+```
+
+## `alternateBuffer(options?)`
+
+Switch to the alternate screen buffer.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `clear` | `boolean` | `true` | Clear the alternate buffer on entry |
+
+```ts twoslash
+import { alternateBuffer } from "@bomb.sh/tty";
+
+alternateBuffer();              // enter, clear
+alternateBuffer({ clear: false }); // enter, preserve contents
+```
+
+Revert switches back to the main screen with scrollback intact.
+
+## `cursor(visible)`
+
+Show or hide the terminal cursor (DEC private mode 25).
+
+```ts twoslash
+import { cursor } from "@bomb.sh/tty";
+
+cursor(false); // hide
+cursor(true);  // show
+```
+
+## `saveCursorPosition()`
+
+Save and restore cursor position using DECSC (`ESC 7`) / DECRC (`ESC 8`).
+
+```ts twoslash
+import { saveCursorPosition } from "@bomb.sh/tty";
+
+let pos = saveCursorPosition();
+process.stdout.write(pos.apply);
+// ... render ...
+process.stdout.write(pos.revert);
+```
+
+## `progressiveInput(level)`
+
+Enable the progressive keyboard enhancement protocol.
+
+```ts twoslash
+import { progressiveInput } from "@bomb.sh/tty";
+
+progressiveInput(2); // Kitty enhancement level 2+
+```
+
+Revert sends `CSI <u` to disable the protocol.
+
+## `mouseTracking()`
+
+Enable SGR mouse reporting (modes 1003 and 1006). Required for pointer hit testing with [`term.render()`](/docs/tty/api/term).
+
+```ts twoslash
+import { mouseTracking } from "@bomb.sh/tty";
+
+let mouse = mouseTracking();
+process.stdout.write(mouse.apply);
+```
+
+Pair with the [input parser](/docs/tty/api/input) to receive mouse events from stdin.
+
+## Typical lifecycle
+
+```ts twoslash
+import {
+  alternateBuffer,
+  cursor,
+  mouseTracking,
+  settings,
+  createTerm,
+  createInput,
+} from "@bomb.sh/tty";
+
+async function main() {
+  let tty = settings(alternateBuffer(), cursor(false), mouseTracking());
+  process.stdout.write(tty.apply);
+
+  let term = await createTerm({ width: 80, height: 24 });
+  let input = await createInput();
+
+  process.stdin.setRawMode(true);
+
+  // ... app loop ...
+
+  process.stdin.setRawMode(false);
+  process.stdout.write(tty.revert);
+}
+```
+
+## Next steps
+
+- [Termcodes API](/docs/tty/api/termcodes) (low-level escape sequences)
+- [Getting Started](/docs/tty/basics/getting-started) (full quick start)

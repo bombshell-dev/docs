@@ -4,6 +4,10 @@ import starlight from "@astrojs/starlight";
 import ecTwoSlash from "expressive-code-twoslash";
 import topics from "starlight-sidebar-topics";
 import starlightMarkdown from "starlight-markdown";
+import mermaid from "astro-mermaid";
+import { fileURLToPath } from "node:url";
+
+const docsRoot = fileURLToPath(new URL(".", import.meta.url));
 
 const site = "https://bomb.sh/docs/";
 
@@ -21,6 +25,7 @@ export default defineConfig({
 		}
 	},
 	integrations: [
+		mermaid({ autoTheme: true }),
 		starlight({
 			title: "Bombshell",
 			logo: {
@@ -40,7 +45,18 @@ export default defineConfig({
 						cursorColor: 'rgba(255 0 210)'
 					}
 				},
-				plugins: [ecTwoSlash()],
+				plugins: [ecTwoSlash({
+					twoslashOptions: {
+						compilerOptions: {
+							module: 99,
+							moduleResolution: 100,
+							baseUrl: docsRoot,
+							paths: {
+								"@bomb.sh/tty": ["node_modules/@bomb.sh/tty/esm/mod.d.ts"],
+							},
+						},
+					},
+				})],
 			},
 			editLink: {
 				baseUrl: "https://github.com/bombshell-dev/docs/edit/main/",
@@ -123,6 +139,27 @@ export default defineConfig({
 						icon: "right-caret",
 						link: "/tab/",
 						items: [],
+					},
+					{
+						label: "TTY",
+						id: "tty",
+						icon: "seti:config",
+						link: "/tty/basics/getting-started",
+						items: [
+							{ label: "Basics", autogenerate: { directory: "tty/basics" } },
+							{ label: "Guides", autogenerate: { directory: "tty/guides" } },
+							{
+								label: "API",
+								items: [
+									{ label: "Overview", link: "/tty/api/" },
+									{ label: "Ops", link: "/tty/api/ops" },
+									{ label: "Term", link: "/tty/api/term" },
+									{ label: "Input", link: "/tty/api/input" },
+									{ label: "Settings", link: "/tty/api/settings" },
+									{ label: "Termcodes", link: "/tty/api/termcodes" },
+								],
+							},
+						],
 					},
 				]),
 			],

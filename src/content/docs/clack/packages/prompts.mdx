@@ -198,7 +198,7 @@ Options:
 
 ### Selection
 
-`select`, `multiselect`, and `groupMultiselect` show persistent keyboard hint footers while active (v1.6.0), matching `autocomplete`. There is no option to disable them.
+`select`, `multiselect`, and `groupMultiselect` show persistent keyboard hint footers while active (v1.6.0), matching `autocomplete`. Pass `showInstructions: false` to hide them (v1.7.0). Default: `true`.
 
 #### Simple value
 
@@ -222,6 +222,29 @@ const framework = await select({
 <font color="#06989A">│</font>  ○ Astro (Content-focused)
 <font color="#06989A">│</font>  ○ SvelteKit (Compile-time framework)
 <font color="#06989A">│</font>  <font color="#AAAAAA">↑/↓ to navigate • Enter: confirm</font>
+<font color="#06989A">└</font></pre>
+
+#### Hide instructions
+
+```ts twoslash
+import { select } from '@clack/prompts';
+
+const framework = await select({
+  message: 'Pick a framework',
+  options: [
+    { value: 'next', label: 'Next.js', hint: 'React framework' },
+    { value: 'astro', label: 'Astro', hint: 'Content-focused' },
+    { value: 'svelte', label: 'SvelteKit', hint: 'Compile-time framework' },
+  ],
+  showInstructions: false,
+});
+```
+
+<pre class="cli-preview"><font color="#555753">│</font>
+<font color="#06989A">◆</font>  Pick a framework
+<font color="#06989A">│</font>  <font color="#4E9A06">●</font> Next.js (React framework)
+<font color="#06989A">│</font>  ○ Astro (Content-focused)
+<font color="#06989A">│</font>  ○ SvelteKit (Compile-time framework)
 <font color="#06989A">└</font></pre>
 
 #### Complex value
@@ -607,6 +630,7 @@ Options:
 - `cursorAt`: The value the cursor should be positioned at initially.
 - `selectableGroups`: Whether entire groups can be selected at once (default: `true`).
 - `groupSpacing`: Number of blank lines between groups (default: `0`).
+- `showInstructions`: Whether to show keyboard instructions below the option list (default: `true`) (v1.7.0).
 - All [Common Options](#common-options)
 
 ### Group

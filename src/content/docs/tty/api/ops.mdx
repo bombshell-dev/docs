@@ -1,0 +1,168 @@
+---
+title: Ops
+description: UI directive builders for @bomb.sh/tty
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The ops module provides builders for describing terminal UI as a flat array of directives. Each frame is a complete snapshot. Build ops, pass them to [`term.render()`](/docs/tty/api/term), and write the output bytes.
+
+## Building a frame
+
+```ts twoslash
+import { close, open, rgba, text, grow } from "@bomb.sh/tty";
+
+let ops = [
+  open("root", {
+    layout: { width: grow(), height: grow(), direction: "ttb" },
+  }),
+  open("panel", {
+    layout: { padding: { left: 1, right: 1, top: 1, bottom: 1 } },
+    border: { color: rgba(0, 255, 0), left: 1, right: 1, top: 1, bottom: 1 },
+    cornerRadius: { tl: 1, tr: 1, bl: 1, br: 1 },
+  }),
+  text("Hello, World!"),
+  close(),
+  close(),
+];
+```
+
+## open(id, props?)
+
+Opens a layout element. Every element needs a unique string `id` for pointer hit-testing and layout queries.
+
+### Layout
+
+| Property | Type | Description |
+|---|---|---|
+| `width` | `SizingAxis` | Horizontal sizing (`fit`, `grow`, `percent`, `fixed`) |
+| `height` | `SizingAxis` | Vertical sizing |
+| `padding` | `{ left?, right?, top?, bottom? }` | Inner padding in cells |
+| `gap` | `number` | Gap between children |
+| `direction` | `"ltr"` \| `"ttb"` | Child layout direction |
+| `alignX` | `"left"` \| `"center"` \| `"right"` | Horizontal alignment |
+| `alignY` | `"top"` \| `"center"` \| `"bottom"` | Vertical alignment |
+
+### Style
+
+| Property | Type | Description |
+|---|---|---|
+| `bg` | `number` | Background color (packed RGBA via `rgba()`) |
+| `cornerRadius` | `{ tl?, tr?, bl?, br? }` | Rounded corners |
+| `border` | `{ color, bg?, left?, right?, top?, bottom? }` | Border sides (number or `{ width, color?, bg? }`) |
+| `clip` | `{ horizontal?, vertical? }` | Clip overflowing content |
+
+### Floating
+
+| Property | Type | Description |
+|---|---|---|
+| `floating.x`, `floating.y` | `number` | Position offset |
+| `floating.expand` | `{ width?, height? }` | Expand floating bounds |
+| `floating.attachTo` | `"none"` \| `"parent"` \| `"element"` \| `"root"` | Attachment target |
+| `floating.attachPoints` | `{ element?, parent? }` | Anchor points |
+| `floating.pointerCaptureMode` | `"capture"` \| `"passthrough"` | Pointer event capture |
+| `floating.clipTo` | `"none"` \| `"attached-parent"` | Clip to attached parent |
+| `floating.zIndex` | `number` | Stacking order |
+
+### Transitions
+
+```ts twoslash
+import { open, rgba } from "@bomb.sh/tty";
+
+open("sidebar", {
+  layout: { width: { type: "fixed", value: 20 } },
+  bg: rgba(30, 30, 40),
+  transition: {
+    duration: 0.3,
+    easing: "easeInOut",
+    properties: ["width", "bg"],
+  },
+});
+```
+
+| Property | Type | Description |
+|---|---|---|
+| `duration` | `number` | Duration in seconds |
+| `easing` | `"linear"` \| `"easeIn"` \| `"easeOut"` \| `"easeInOut"` | Easing function |
+| `properties` | `TransitionProperty[]` | Properties to animate |
+| `interactive` | `boolean` | Allow interaction during transition |
+
+Transition properties: `"x"`, `"y"`, `"position"`, `"width"`, `"height"`, `"size"`, `"bg"`, `"overlay"`, `"borderColor"`, `"borderWidth"`, `"all"`.
+
+## text(content, props?)
+
+Renders a text node inside the current open element.
+
+| Property | Type | Description |
+|---|---|---|
+| `color` | `number` | Foreground color |
+| `bg` | `number` | Background color |
+| `fontSize` | `number` | Font size |
+| `fontId` | `number` | Font identifier |
+| `wrap` | `number` | Wrap width |
+| `attrs` | `number` | Text attributes (bold, italic, etc.) |
+
+## close()
+
+Closes the current open element. Ops must be properly nested. Every `open` needs a matching `close`.
+
+## snapshot(ops)
+
+Pre-packs an op array into a reusable snapshot op. Useful when part of the UI is static across frames.
+
+```ts twoslash
+import { close, open, snapshot, text, grow } from "@bomb.sh/tty";
+
+let chrome = snapshot([
+  open("header", { layout: { width: grow(), height: { type: "fixed", value: 1 } } }),
+  text("My App"),
+  close(),
+]);
+
+// Each frame: [chrome, ...dynamicOps]
+```
+
+## rgba(r, g, b, a?)
+
+Packs an RGBA color into a 32-bit integer. Alpha defaults to 255.
+
+```ts twoslash
+import { rgba } from "@bomb.sh/tty";
+
+rgba(255, 0, 0);       // red
+rgba(0, 255, 0, 128);  // semi-transparent green
+```
+
+## Sizing helpers
+
+```ts twoslash
+import { fit, grow, percent, fixed } from "@bomb.sh/tty";
+
+fit();              // shrink to content
+fit(10, 40);        // fit with min/max
+grow();             // expand to fill available space
+grow(5, 50);        // grow with min/max
+percent(0.5);       // 50% of parent
+fixed(20);          // exactly 20 cells
+```
+
+## Types
+
+| Type | Description |
+|---|---|
+| `Op` | Union of all directive types |
+| `OpenElement` | Element opened by `open()` |
+| `Text` | Text node |
+| `CloseElement` | Element closed by `close()` |
+| `SizingAxis` | `{ type: "fit" \| "grow" \| "percent" \| "fixed", ... }` |
+| `Transition` | Transition configuration |
+| `BorderSide` | `number` or `{ width, color?, bg? }` |
+
+<Aside type="note">
+`pack()` is also exported for low-level wire-format packing. Most applications use `open`/`text`/`close` and let `term.render()` handle packing internally.
+</Aside>
+
+## Next steps
+
+- [Term API](/docs/tty/api/term) (rendering ops to the terminal)
+- [Examples](/docs/tty/guides/examples) (transitions and layout demos)
