@@ -7,6 +7,14 @@ import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
 `@bomb.sh/tty` is a low-level, platform-independent terminal renderer and event parser for JavaScript. Use it directly to build full-screen or inline terminal UIs, or as the foundation for your own framework.
 
+<Aside title="Why “tty”?">
+	TTY is short for <strong>teletypewriter</strong>, the electromechanical
+	typewriters that served as the first terminals on Unix systems. The hardware
+	is long gone, but the name stuck: Unix still calls terminal devices TTYs
+	(`/dev/tty`), and the term now refers to any text terminal, which is exactly
+	what this package renders to.
+</Aside>
+
 ## Features
 
 - **Declarative terminal UI:** Flexbox-like layout powered by [Clay](https://github.com/nicbarker/clay), with borders, colors, floating elements, scroll containers, and pointer hit-testing
