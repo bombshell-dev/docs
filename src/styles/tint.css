@@ -130,6 +130,14 @@
   --space-card-gap: var(--space-400);
   --space-card-padding: var(--space-400);
   --space-cell-padding: var(--space-150);
+
+  /* bomb.sh page chrome: page background + viewport frame grid */
+  --background: var(--color-white-100);
+  --c-grid: var(--color-gray-30);
+  --c-grid-muted: var(--color-gray-20);
+  --s-grid-width: 1px;
+  --s-grid-padding: 8px;
+  --panel-grad-start: var(--color-gray-20);
 }
 
 :root[data-theme=dark] {
@@ -148,6 +156,11 @@
     --accent-fill: var(--color-pink-100);
     --accent-muted: var(--color-pink-90);
     --accent-highlight: var(--color-pink-100);
+
+    --background: #000;
+    --c-grid: var(--color-gray-80);
+    --c-grid-muted: var(--color-gray-90);
+    --panel-grad-start: var(--color-gray-90);
 }
 
 :root[data-theme=light] {

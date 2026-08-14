@@ -2,19 +2,23 @@
 
 @layer user.overrides {
   :root {
-    --sl-font: system-ui, sans-serif;
+    --font-fallback: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+      sans-serif;
+    --sl-font: "Inter Variable", var(--font-fallback);
     --sl-font-heading: "polymath-display", sans-serif;
+    --sl-font-mono: "dm-mono", ui-monospace, monospace;
 
     --sl-color-text-heading: var(--heading-fill);
     --sl-text-h1: var(--sl-text-6xl);
     --sl-color-accent-hsl: 311 100% 50%;
-    --sl-color-accent-low: hsl(var(--sl-color-accent-hsl) / 0.5);
+    --sl-color-accent-low: hsl(var(--sl-color-accent-hsl) / 0.1);
     --sl-color-accent: hsl(var(--sl-color-accent-hsl) / 0.9);
     --sl-color-accent-high: hsl(var(--sl-color-accent-hsl) / 1);
 
-    --sl-color-bg: var(--container-fill);
-    --sl-color-bg-nav: var(--container-fill);
-    --sl-color-bg-sidebar: var(--container-fill);
+    --sl-color-bg: var(--background);
+    --sl-color-bg-nav: var(--background);
+    --sl-color-bg-sidebar: var(--background);
     --sl-color-bg-inline-code: var(--surface-inner-fill);
     --sl-color-bg-accent: var(--sl-color-accent-high);
     --sl-color-hairline-light: var(--surface-border-fill);
@@ -22,6 +26,84 @@
     --sl-color-hairline-shade: var(--surface-border-fill);
 
     --sl-icon-color: var(--heading-fill);
+
+    /* extra room for the hatched separator strip under the navbar */
+    --hatch-height: 0.75rem;
+    --sl-nav-height: 4.25rem;
+
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+    scrollbar-color: var(--color-cyan-100) var(--surface-fill);
+  }
+
+  ::selection {
+    background-color: var(--color-pink-100);
+    color: var(--color-gray-100);
+  }
+
+  /* bomb.sh viewport frame: 8px background strips + 1px grid border, drawn
+     over everything (pointer-events: none) so scrolled content passes
+     "behind" the frame exactly like on the marketing site */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 101;
+    pointer-events: none;
+    background-image: /* fill strips */
+      linear-gradient(var(--background), var(--background)),
+      linear-gradient(var(--background), var(--background)),
+      linear-gradient(var(--background), var(--background)),
+      linear-gradient(var(--background), var(--background)),
+      /* border lines */ linear-gradient(var(--c-grid), var(--c-grid)),
+      linear-gradient(var(--c-grid), var(--c-grid)),
+      linear-gradient(var(--c-grid), var(--c-grid)),
+      linear-gradient(var(--c-grid), var(--c-grid));
+    background-size:
+      /* fill: top, bottom, left, right */
+      100% var(--s-grid-padding),
+      100% var(--s-grid-padding),
+      var(--s-grid-padding) 100%,
+      var(--s-grid-padding) 100%,
+      /* border: top, bottom, left, right */ 100% var(--s-grid-width),
+      100% var(--s-grid-width),
+      var(--s-grid-width) 100%,
+      var(--s-grid-width) 100%;
+    background-position:
+      top left,
+      bottom left,
+      top left,
+      top right,
+      0 var(--s-grid-padding),
+      0 calc(100% - var(--s-grid-padding)),
+      var(--s-grid-padding) 0,
+      calc(100% - var(--s-grid-padding)) 0;
+    background-repeat: no-repeat;
+  }
+
+  /* bomb.sh hatched separator strip along the bottom of the navbar */
+  header.header {
+    padding-bottom: calc(var(--sl-nav-pad-y) + var(--hatch-height));
+  }
+
+  header.header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--hatch-height);
+    border-top: var(--s-grid-width) solid var(--c-grid);
+    --_size: var(--s-grid-width);
+    --_space: 6px;
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent var(--_space),
+      var(--c-grid-muted) var(--_space),
+      var(--c-grid-muted) calc(var(--_space) + var(--_size))
+    );
+    pointer-events: none;
   }
 
   :is(h1, h2, h3, h4, h5, h6) {
@@ -55,16 +137,17 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-image: linear-gradient(to right, var(--c-start), var(--c-end));
-    letter-spacing: 1px;
+    letter-spacing: 0.1ch;
   }
 
   :is(h2, h3, h4, h5, h6) {
     --c-start: var(--heading-fill);
-    --c-end: var(--heading-muted);
+    --c-end: color-mix(in srgb, var(--heading-fill) 35%, transparent);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-image: linear-gradient(to right, var(--c-start), var(--c-end));
+    letter-spacing: 0.1ch;
   }
 
   /* Target specific elements */
@@ -79,9 +162,16 @@
     color: var(--heading-fill);
   }
 
+  /* Right sidebar (TOC) background gradient */
+  .right-sidebar {
+    background: linear-gradient(
+      to bottom,
+      var(--panel-grad-start) 0%,
+      var(--background) 100%
+    );
+  }
+
   starlight-toc nav > ul {
-    --c-start: var(--heading-muted);
-    --c-end: var(--separator-fill);
     border-left: 1px solid transparent;
     position: relative;
 
@@ -92,7 +182,11 @@
       bottom: 0;
       left: 0;
       width: var(--border-050);
-      background: linear-gradient(to bottom, var(--c-start), var(--c-end));
+      background: linear-gradient(
+        to bottom,
+        var(--surface-border-highlight),
+        var(--surface-border-fill)
+      );
     }
 
     a {
@@ -101,7 +195,32 @@
     }
 
     [aria-current] {
-      border-left-color: var(--sl-color-accent);
+      border-left-color: hsl(var(--sl-color-accent-hsl) / 0.9);
+      font-weight: 600;
+      color: var(--separator-fill);
+    }
+
+    /* When the animated marker is active, the static per-link border is
+       replaced by a single sliding indicator (injected by Head.astro). */
+    &.has-marker [aria-current] {
+      border-left-color: transparent;
+    }
+
+    .toc-marker {
+      position: absolute;
+      left: 0;
+      width: 2px;
+      background: hsl(var(--sl-color-accent-hsl) / 0.9);
+      transition:
+        top 250ms cubic-bezier(0.23, 1, 0.32, 1),
+        height 250ms cubic-bezier(0.23, 1, 0.32, 1);
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toc-marker {
+        transition: none;
+      }
     }
   }
 
@@ -114,33 +233,115 @@
       sans-serif;
   }
 
+  /* Buttons — match the bomb.sh homepage hero CTAs */
+  .sl-link-button {
+    border-radius: 0.33em;
+    corner-shape: bevel;
+    font-family: var(--sl-font);
+    font-weight: 500;
+    transition:
+      color 120ms cubic-bezier(0.23, 1, 0.32, 1),
+      background-color 120ms cubic-bezier(0.23, 1, 0.32, 1),
+      border-color 120ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
   .sl-link-button.primary {
-    background: linear-gradient(
-      to right in oklab,
-      var(--color-pink-90),
-      var(--color-pink-100)
-    );
+    background: var(--color-white-100);
     color: var(--color-gray-100);
-    border-color: var(--color-pink-100);
-    border-radius: 0px;
+    border: var(--s-grid-width) solid var(--c-grid);
+
+    &:is(:hover, :focus-visible) {
+      background: color-mix(in srgb, var(--color-pink-100) 30%, transparent);
+      color: var(--color-pink-100);
+      border-color: var(--color-pink-100);
+    }
+  }
+
+  .sl-link-button:not(.primary) {
+    background: transparent;
+    color: var(--color-gray-40);
+    border: var(--s-grid-width) solid var(--color-gray-40);
+
+    &:is(:hover, :focus-visible) {
+      background: var(--color-gray-80);
+      color: var(--color-white-100);
+      border-color: var(--color-white-100);
+    }
   }
 
   .sl-link-button > svg {
-    fill: var(--color-gray-100);
+    fill: currentColor;
+  }
+
+  /* Inline code — bomb.sh gradient chip, tinted by the topic accent */
+  .sl-markdown-content code:not(:where(.not-content *)):not(pre *) {
+    --color: hsl(var(--sl-color-accent-hsl));
+    font-family: var(--sl-font-mono);
+    color: var(--color);
+    transition: color 120ms cubic-bezier(0.23, 1, 0.32, 1);
+    font-size-adjust: 0.5;
+    background: linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--color) 25%, transparent) 0%,
+      color-mix(in srgb, var(--color) 12%, transparent) 100%
+    );
+    padding-inline: 0.25em;
+    padding-block: 0.1em;
+    border-radius: 4px;
+  }
+
+  /* Search bar — pill shape */
+  site-search > button {
+    border-radius: var(--radius-full);
+    border: 1px solid var(--surface-border-highlight);
   }
 
   .cli-preview {
     padding: 1em;
-    border: 1px solid #292929;
+    border: 1px solid var(--surface-border-fill);
     border-radius: 0.5em;
     white-space: pre;
     line-height: 1.2em;
-    font-family: monospace;
-    background-color: #181818;
+    font-family: var(--sl-font-mono);
+    background-color: var(--container-fill);
     color: var(--color-white-100);
   }
 
+  /* Code frames — subtle gradient fade on terminal/editor title bars,
+     matching the hatch-and-hairline chrome of the rest of the site */
+  .expressive-code .frame.is-terminal .header,
+  .expressive-code .frame.has-title:not(.is-terminal) .header {
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      color-mix(in srgb, var(--heading-fill) 7%, transparent)
+    );
+    border-bottom: 1px solid var(--surface-border-fill);
+  }
+
+  /* Twoslash hovercards — same panel language as the rest of the chrome */
+  .expressive-code .twoslash-popup-container {
+    border-radius: var(--radius-100);
+    box-shadow: 0 8px 24px color-mix(in srgb, #000 35%, transparent);
+  }
+
+  .expressive-code .twoslash-popup-docs,
+  .expressive-code .twoslash-popup-docs-tags {
+    font-family: var(--sl-font);
+    font-size: var(--sl-text-xs);
+  }
+
+  .expressive-code .twoslash-popup-code {
+    font-family: var(--sl-font-mono);
+  }
+
   .sidebar-pane {
+    background: linear-gradient(
+      to bottom,
+      var(--panel-grad-start) 0%,
+      var(--background) 100%
+    );
+
     a {
       border: 1px solid transparent;
     }
@@ -201,14 +402,28 @@
 
     --sl-icon-color: var(--color-gray-100);
 
-    .sl-link-button {
-      background-color: var(--color-gray-100);
+    .sl-link-button.primary {
+      background: var(--color-gray-100);
       color: var(--color-white-100);
       border-color: var(--color-gray-100);
+
+      &:is(:hover, :focus-visible) {
+        background: color-mix(in srgb, var(--color-pink-100) 12%, transparent);
+        color: var(--color-gray-100);
+        border-color: var(--color-pink-100);
+      }
     }
 
-    .sl-link-button > svg {
-      fill: var(--color-white-100);
+    .sl-link-button:not(.primary) {
+      background: transparent;
+      color: var(--color-gray-70);
+      border-color: var(--color-gray-40);
+
+      &:is(:hover, :focus-visible) {
+        background: var(--color-gray-20);
+        color: var(--color-gray-100);
+        border-color: var(--color-gray-100);
+      }
     }
   }
 

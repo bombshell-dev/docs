@@ -1,6 +1,7 @@
 ---
 import Default from "@astrojs/starlight/components/Head.astro";
 import VtbotStarlight from "astro-vtbot/components/starlight/Base.astro";
+import "@fontsource-variable/inter";
 import "/src/styles/starlight.css";
 
 // Per-topic accent colors, matching the bomb.sh project cards
@@ -36,9 +37,57 @@ const accent = ACCENTS[Astro.locals.starlightRoute.id.split("/")[0]];
 	h4,
 	h5,
 	h6,
-	.site-title,
 	.sl-doc-title,
 	.sl-nav-link {
 		font-family: var(--sl-font-heading);
 	}
 </style>
+
+{/* bomb.sh is dark-only, so first-time visitors get dark docs for a seamless
+    hand-off; the theme toggle still works and is remembered. This must run
+    before Starlight's ThemeProvider script (rendered later in <head>). */}
+<script is:inline>
+	try {
+		if (!localStorage.getItem("starlight-theme"))
+			localStorage.setItem("starlight-theme", "dark");
+	} catch {}
+</script>
+
+<script>
+	// Animated table-of-contents marker: replaces the static per-link
+	// border with one bar that slides between items as scrolling (or
+	// clicking) moves aria-current.
+	function initTocMarker() {
+		const list = document.querySelector(
+			".right-sidebar starlight-toc nav > ul",
+		);
+		if (!(list instanceof HTMLElement) || list.classList.contains("has-marker"))
+			return;
+		const marker = document.createElement("span");
+		marker.className = "toc-marker";
+		list.classList.add("has-marker");
+		list.append(marker);
+
+		const move = () => {
+			const current = list.querySelector("a[aria-current]");
+			if (!(current instanceof HTMLElement)) {
+				marker.style.height = "0px";
+				return;
+			}
+			const listRect = list.getBoundingClientRect();
+			const rect = current.getBoundingClientRect();
+			marker.style.top = `${rect.top - listRect.top}px`;
+			marker.style.height = `${rect.height}px`;
+		};
+
+		move();
+		new MutationObserver(move).observe(list, {
+			subtree: true,
+			attributeFilter: ["aria-current"],
+		});
+		window.addEventListener("resize", move);
+	}
+
+	document.addEventListener("astro:page-load", initTocMarker);
+	initTocMarker();
+</script>

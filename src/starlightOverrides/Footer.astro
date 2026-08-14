@@ -1,0 +1,100 @@
+---
+import Default from '@astrojs/starlight/components/Footer.astro';
+import { Icon } from '@astrojs/starlight/components';
+---
+
+<Default><slot /></Default>
+<footer class="site-footer">
+	<ul class="links">
+		<li class="copy">&copy; 2026</li>
+		<li>
+			<ul class="text-links">
+				<li><a href="/docs/">docs</a></li>
+				<li><a href="/blog/">blog</a></li>
+				<li><a href="/shortcuts">shortcuts</a></li>
+			</ul>
+		</li>
+		<li>
+			<ul class="icon-links">
+				<li>
+					<a href="/chat" aria-label="Discord"><Icon name="discord" /></a>
+				</li>
+				<li>
+					<a href="/on/bluesky" aria-label="Bluesky"><Icon name="blueSky" /></a>
+				</li>
+				<li>
+					<a href="/on/github" aria-label="GitHub"><Icon name="github" /></a>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</footer>
+
+<style>
+	.site-footer {
+		margin-top: var(--space-800);
+		padding-block: var(--space-300);
+		color: var(--color-gray-60);
+		border-top: 1px solid var(--surface-border-fill);
+		font-family: var(--sl-font);
+	}
+	.site-footer:hover {
+		color: var(--color-gray-50);
+	}
+	.site-footer ul,
+	.site-footer li {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-150);
+		width: 100%;
+	}
+	.links > :nth-child(2) {
+		margin-inline-start: auto;
+	}
+	.copy {
+		color: var(--color-gray-70);
+		white-space: nowrap;
+	}
+	.text-links,
+	.icon-links {
+		display: flex;
+		gap: 0;
+	}
+	.text-links a {
+		display: flex;
+		align-items: center;
+		padding-inline: var(--space-150);
+	}
+	.site-footer a {
+		text-decoration: none;
+		color: inherit;
+	}
+	.site-footer a:hover {
+		color: var(--color-pink-100);
+	}
+	.site-footer a:focus-visible {
+		outline: 2px solid var(--color-pink-100);
+		border-radius: 4px;
+	}
+	.icon-links a {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		aspect-ratio: 1;
+		padding: 0.4em;
+		border-radius: 50%;
+		font-size: 1.1em;
+		transition: all 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	}
+	.icon-links a:hover {
+		background: var(--surface-fill);
+		color: var(--heading-highlight);
+		transform: scale(1.05);
+	}
+</style>
