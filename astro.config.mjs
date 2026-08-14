@@ -80,7 +80,7 @@ export default defineConfig({
 						background: byTheme("#191b23", "#ffffff"),
 						textColor: byTheme("#f4f5f9", "#0a0a0d"),
 						hoverUnderlineColor: byTheme("#8a8e9b", "#a9abb6"),
-						tagColor: byTheme("#e8cf27", "#a37e00"),
+						tagColor: byTheme("#00e5ff", "#00798a"),
 						linkColor: byTheme("#00e5ff", "#00798a"),
 						linkColorHover: byTheme("#ffffff", "#0a0a0d"),
 						errorColor: byTheme("#ff3e47", "#d21f28"),
