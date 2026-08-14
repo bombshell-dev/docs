@@ -17,9 +17,26 @@ function docsOrigin(host: string): string {
 	return "https://docs.bomb.sh/";
 }
 
+// Bare project roots don't have their own index page and should redirect to
+// their actual landing page instead of 404ing.
+const PROJECT_LANDING_PAGES: Record<string, string> = {
+	clack: "/docs/clack/basics/getting-started/",
+	tab: "/docs/tab/",
+	args: "/docs/args/getting-started/",
+	tty: "/docs/tty/basics/getting-started/",
+};
+
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const url = new URL(request.url);
+
+		const projectMatch = url.pathname.match(/^\/docs\/([^/]+)\/?$/);
+		if (projectMatch) {
+			const landingPage = PROJECT_LANDING_PAGES[projectMatch[1]];
+			if (landingPage && url.pathname !== landingPage) {
+				return Response.redirect(new URL(landingPage, url).toString(), 308);
+			}
+		}
 
 		if (url.pathname.startsWith("/docs")) {
 			const origin = docsOrigin(url.host);

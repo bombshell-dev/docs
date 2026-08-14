@@ -4,3 +4,8 @@
   Cross-Origin-Resource-Policy: cross-origin
   Referrer-Policy: strict-origin-when-cross-origin
   Vary: Accept
+  Cache-Control: public, max-age=86400, stale-while-revalidate=86400
+
+/docs/_astro/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
