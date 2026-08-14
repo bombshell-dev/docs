@@ -1,0 +1,268 @@
+/* Bombshell card asides.
+   Restyles Starlight's aside markup (`:::note` directives and the `<Aside>`
+   component both render `.starlight-aside`) with the bombshell card design.
+   Unlayered, so it wins over Starlight's @layer styles. */
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@property --x {
+  syntax: "<percentage>";
+  initial-value: 35%;
+  inherits: false;
+}
+
+@property --shine {
+  syntax: "<color>";
+  initial-value: transparent;
+  inherits: false;
+}
+
+@property --shadow-strength {
+  syntax: "<percentage>";
+  initial-value: 0%;
+  inherits: false;
+}
+
+.starlight-aside {
+  --c-space: srgb;
+  --c-blue:   var(--c-space) 0 90% 1;
+  --c-green:  var(--c-space) 0 1   25%;
+  --c-yellow: var(--c-space) 1 90% 15%;
+  --c-red:    var(--c-space) 1 25% 25%;
+
+  /* surfaces for the gleam/shine overlay */
+  --h: 240;
+  --s: 0%;
+  --l: 100%;
+  --surface-1: hsl(var(--h) var(--s) calc(var(--l) + 4%) / 0);
+  --surface-2: hsl(var(--h) var(--s) calc(var(--l) + 8%) / 0);
+  --surface-3: hsl(var(--h) var(--s) calc(var(--l) + 15%) / 1);
+  --shadow-color: var(--h) var(--s) 15%;
+  --shadow-strength: 1%;
+  --shadow: 0 -2px 5px 0 hsl(var(--shadow-color) /
+          calc(var(--shadow-strength) + 2%)),
+    0 1px 1px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 3%)),
+    0 2px 2px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 3%)),
+    0 5px 5px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 4%)),
+    0 9px 9px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 5%)),
+    0 16px 16px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 6%));
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 16px;
+
+  position: relative;
+  isolation: isolate;
+
+  border: 0;
+  border-radius: 0;
+  color: var(--sl-color-white);
+
+  --_border-width: 2px;
+  --_corner: 12px;
+
+  background: linear-gradient(to bottom, color(var(--color) / 90%), color(var(--color) / 50%));
+  box-shadow: 0px 1px 1px color(var(--color) / 0.07),
+    0px 5px 4px color(var(--color) / 0.06),
+    0px 12px 9px color(var(--color) / 0.04),
+    0px 20px 15px color(var(--color) / 0.03),
+    0px 32px 24px color(var(--color) / 0.01);
+}
+
+@media (dynamic-range: high) {
+  @supports (color: color(display-p3 1 1 1)) {
+    .starlight-aside {
+      --c-space: display-p3;
+    }
+  }
+}
+
+.starlight-aside--note {
+  --color: var(--c-blue);
+  --symbol: '●';
+}
+.starlight-aside--tip {
+  --color: var(--c-green);
+  --symbol: '◆';
+}
+.starlight-aside--caution {
+  --color: var(--c-yellow);
+  --symbol: '▲';
+}
+.starlight-aside--danger {
+  --color: var(--c-red);
+  --symbol: '■';
+}
+
+.starlight-aside::before {
+  content: '';
+  inset: var(--_border-width);
+  clip-path: polygon(var(--_corner) 0, calc(100% - var(--_corner)) 0, 100% var(--_corner), 100% calc(100% - var(--_corner)), calc(100% - var(--_corner)) 100%, var(--_corner) 100%, 0 calc(100% - var(--_corner)), 0 var(--_corner));
+  pointer-events: none;
+
+  background: var(--sl-color-bg, #0a0a0d) radial-gradient(400% 200% at center top, color(var(--color) / 50%), color(var(--color) / 10%));
+
+  position: absolute;
+  z-index: -1;
+}
+
+.starlight-aside__title,
+.starlight-aside code:not(pre *, .expressive-code *) {
+  --_mod: 0.67;
+  --text: color(from color(var(--color)) srgb calc(r + var(--_mod)) calc(g + var(--_mod)) calc(b + var(--_mod)) / 100%);
+  font-size: 1rem;
+  color: var(--text);
+  margin: 0;
+  position: relative;
+}
+
+.starlight-aside code:not(pre *, .expressive-code *) {
+  --text-10: color(from var(--text) srgb r g b / 10%);
+  --text-50: color(from var(--text) srgb r g b / 50%);
+  border-top: 2px solid var(--text-10);
+  padding: 0.05ch 0.33ch;
+  border-radius: 4px;
+  background: var(--text-10);
+  /* https://smoothshadows.com/#djEsMiw1LDAuMDcsMjQsMzIsMCwjMDMwNzEyLCNmM2Y0ZjYsI2ZmZmZmZiwy */
+  box-shadow: 0px 1px 1px rgba(3, 7, 18, 0.07),
+    0px 5px 4px rgba(3, 7, 18, 0.06),
+    0px 12px 9px rgba(3, 7, 18, 0.04),
+    0px 20px 15px rgba(3, 7, 18, 0.03),
+    0px 32px 24px rgba(3, 7, 18, 0.01);
+}
+
+.starlight-aside__title {
+  display: flex;
+  align-items: center;
+  gap: 1ch;
+  line-height: 1;
+  text-transform: uppercase;
+  font-family: "covik-sans-mono", monospace;
+  font-feature-settings: 'salt' on;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.starlight-aside__title .starlight-aside__icon {
+  display: none;
+}
+
+.starlight-aside__title::before {
+  content: var(--symbol);
+}
+
+/* trailing hatched rule; flex-grows so custom titles never collide with it */
+.starlight-aside__title::after {
+  --_s-line: 1px;
+  --_s-gap: 2px;
+
+  content: '';
+  flex: 1;
+  align-self: stretch;
+  background: repeating-linear-gradient(to right, transparent 0,
+    var(--text) var(--_s-line),
+    transparent var(--_s-line),
+    transparent calc(var(--_s-line) + var(--_s-gap)));
+  mask-image: linear-gradient(in lab to right, rgb(0 0 0 / 0%), rgb(0 0 0 / 90%));
+}
+
+.starlight-aside__content {
+  margin: 0;
+}
+
+/* gleam/shine overlay */
+.starlight-aside::after {
+  content: '';
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+
+  --_gleam: linear-gradient(
+      60deg,
+      transparent 40%,
+      var(--surface-3),
+      transparent 70%
+    )
+    var(--x) 0 / 600% 100% padding-box;
+  --_gleam-cover: radial-gradient(
+      circle at center,
+      var(--surface-1),
+      transparent
+    )
+    padding-box;
+  --_cover: linear-gradient(var(--surface-1), var(--surface-1)) padding-box;
+  --_shine: conic-gradient(
+      from var(--angle) at 20px 32px,
+      var(--shine),
+      transparent 20% 80%,
+      var(--shine)
+    )
+    border-box;
+  --_edges: linear-gradient(
+      30deg,
+      var(--surface-3),
+      var(--surface-2) 20% 80%,
+      var(--surface-3)
+    )
+    border-box;
+
+  display: grid;
+  border: 2px solid transparent;
+  background: var(--_gleam-cover), var(--_gleam), var(--_cover), var(--_shine), var(--_edges);
+  mix-blend-mode: overlay;
+  opacity: 33%;
+}
+
+@supports (animation-timeline: view()) {
+  .starlight-aside::after {
+    animation: linear both;
+    animation-name: aside-gleam, aside-shine, aside-shadow;
+    animation-timeline: view();
+    animation-range: cover -10% cover 100%, entry 0% cover 65%,
+      entry 0% exit 150%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starlight-aside::after {
+    animation: none !important;
+  }
+}
+
+@keyframes aside-gleam {
+  from {
+    --angle: -1turn;
+    --x: 0%;
+  }
+  to {
+    --angle: 1turn;
+    --x: 100%;
+  }
+}
+
+@keyframes aside-shadow {
+  from,
+  to {
+    box-shadow: none;
+  }
+  50%,
+  65% {
+    box-shadow: var(--shadow);
+  }
+}
+
+@keyframes aside-shine {
+  0%,
+  45% {
+    --shine: transparent;
+  }
+  80% {
+    --shine: hsl(var(--h) var(--s) calc(var(--l) + 38%));
+  }
+}

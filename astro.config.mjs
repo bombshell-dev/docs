@@ -38,7 +38,8 @@ export default defineConfig({
 				light: "./src/assets/light.svg",
 			},
 			customCss: [
-				'./src/styles/tint.css'
+				'./src/styles/tint.css',
+				'./src/styles/asides.css'
 			],
 			components: {
 				Head: "./src/starlightOverrides/Head.astro",
