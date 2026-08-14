@@ -1,9 +1,13 @@
 ---
 import Default from "@astrojs/starlight/components/Head.astro";
+import VtbotStarlight from "astro-vtbot/components/starlight/Base.astro";
 import "/src/styles/starlight.css";
 ---
 
-<Default><slot /></Default>
+{/* replaceSidebarContent: sidebar content differs per topic (starlight-sidebar-topics) */}
+<VtbotStarlight replaceSidebarContent transition:animate="fade">
+	<Default><slot /></Default>
+</VtbotStarlight>
 <style is:global>
 	/* Remove the general html font-family override to prevent it from overriding our specific rules */
 	h1,
