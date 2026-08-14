@@ -233,7 +233,7 @@
   .starlight-sidebar-topics
     a:is(.starlight-sidebar-topics-current, :hover, :focus-visible)
     > div:not(.starlight-sidebar-topics-icon) {
-    transform: translateX(2px);
+    transform: translateX(3px);
     opacity: 1;
   }
 
@@ -303,7 +303,7 @@
   --sl-color-accent-hsl: 142 100% 47%;
 }
 .starlight-sidebar-topics a[href*="/tty/"] {
-  --sl-color-accent-hsl: 268 100% 52%;
+  --sl-color-accent-hsl: 357 100% 62%;
 }
 
 :root[data-theme="light"] {
@@ -317,7 +317,7 @@
     --sl-color-accent-hsl: 142 100% 28%;
   }
   .starlight-sidebar-topics a[href*="/tty/"] {
-    --sl-color-accent-hsl: 268 100% 45%;
+    --sl-color-accent-hsl: 357 100% 42%;
   }
 }
 
