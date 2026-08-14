@@ -303,7 +303,7 @@
   --sl-color-accent-hsl: 142 100% 47%;
 }
 .starlight-sidebar-topics a[href*="/tty/"] {
-  --sl-color-accent-hsl: 357 100% 62%;
+  --sl-color-accent-hsl: 300 100% 55%;
 }
 
 :root[data-theme="light"] {
@@ -317,7 +317,7 @@
     --sl-color-accent-hsl: 142 100% 28%;
   }
   .starlight-sidebar-topics a[href*="/tty/"] {
-    --sl-color-accent-hsl: 357 100% 42%;
+    --sl-color-accent-hsl: 300 100% 38%;
   }
 }
 
