@@ -198,6 +198,37 @@
       fill: var(--color-white-100);
     }
   }
+
+  /* Custom per-topic sidebar icons, replacing starlight-sidebar-topics' built-in
+     Iconify icons. The plugin has no native custom-icon API (see
+     https://github.com/HiDeoo/starlight-sidebar-topics/issues/5), so we hide its
+     rendered <svg> and swap in our own via background-image, matched by the
+     topic's link path (the only per-topic hook the plugin exposes). */
+  .starlight-sidebar-topics-icon svg {
+    display: none;
+  }
+
+  .starlight-sidebar-topics-icon {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  a[href*="/clack/"] .starlight-sidebar-topics-icon {
+    background-image: url("../assets/topics/clack.svg");
+  }
+
+  a[href*="/args/"] .starlight-sidebar-topics-icon {
+    background-image: url("../assets/topics/args.svg");
+  }
+
+  a[href*="/tab/"] .starlight-sidebar-topics-icon {
+    background-image: url("../assets/topics/tab.svg");
+  }
+
+  a[href*="/tty/"] .starlight-sidebar-topics-icon {
+    background-image: url("../assets/topics/tty.svg");
+  }
 }
 
 /* these rules must not be layered because the Starlight Sidebar Topics plugin doesn't use Cascade Layers */
