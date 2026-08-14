@@ -8,9 +8,9 @@
     --sl-color-text-heading: var(--heading-fill);
     --sl-text-h1: var(--sl-text-6xl);
     --sl-color-accent-hsl: 311 100% 50%;
-    --sl-color-accent-low: hsl(311 100% 50% / 0.5);
-    --sl-color-accent: hsl(311 100% 50% / 0.9);
-    --sl-color-accent-high: hsl(311 100% 50% / 1);
+    --sl-color-accent-low: hsl(var(--sl-color-accent-hsl) / 0.5);
+    --sl-color-accent: hsl(var(--sl-color-accent-hsl) / 0.9);
+    --sl-color-accent-high: hsl(var(--sl-color-accent-hsl) / 1);
 
     --sl-color-bg: var(--container-fill);
     --sl-color-bg-nav: var(--container-fill);
@@ -134,20 +134,20 @@
       border: 1px solid transparent;
     }
 
+    ul.top-level a:not([aria-current="page"]):is(:hover, :focus-visible) {
+      --c-start: hsl(var(--sl-color-accent-hsl) / 100%);
+      --c-end: hsl(var(--sl-color-accent-hsl) / 50%);
+      border-color: var(--sl-color-accent);
+      color: var(--color-gray-100);
+      background: linear-gradient(to right, var(--c-start), var(--c-end));
+    }
+
     [aria-current="page"] {
       --c-start: hsl(var(--sl-color-accent-hsl) / 5%);
       --c-end: hsl(var(--sl-color-accent-hsl) / 30%);
       color: var(--sl-color-accent);
       background: linear-gradient(to right, var(--c-start), var(--c-end));
       border-color: var(--sl-color-accent);
-
-      &:hover {
-        --c-start: hsl(var(--sl-color-accent-hsl) / 100%);
-        --c-end: hsl(var(--sl-color-accent-hsl) / 50%);
-        border-color: var(--sl-color-accent);
-        color: var(--color-gray-100);
-        background: linear-gradient(to right, var(--c-start), var(--c-end));
-      }
     }
   }
 
@@ -182,6 +182,10 @@
       color: var(--color-gray-50);
     }
 
+    ul.top-level a:not([aria-current="page"]):is(:hover, :focus-visible) {
+      color: var(--color-white-100);
+    }
+
     --sl-icon-color: var(--color-gray-100);
 
     .sl-link-button {
@@ -196,10 +200,36 @@
   }
 }
 
-/* this rule must not be layered because the Starlight Sidebar Topics plugin doesn't use Cascade Layers */
+/* these rules must not be layered because the Starlight Sidebar Topics plugin doesn't use Cascade Layers */
+
+/* each topic link carries its own accent so hover/current always shows the
+   topic's color, not the current page's accent */
+.starlight-sidebar-topics a[href*="/clack/"] { --sl-color-accent-hsl: 184 100% 48%; }
+.starlight-sidebar-topics a[href*="/args/"] { --sl-color-accent-hsl: 52 100% 56%; }
+.starlight-sidebar-topics a[href*="/tab/"] { --sl-color-accent-hsl: 142 100% 47%; }
+.starlight-sidebar-topics a[href*="/tty/"] { --sl-color-accent-hsl: 268 100% 52%; }
+
+:root[data-theme="light"] {
+  .starlight-sidebar-topics a[href*="/clack/"] { --sl-color-accent-hsl: 184 100% 30%; }
+  .starlight-sidebar-topics a[href*="/args/"] { --sl-color-accent-hsl: 45 100% 33%; }
+  .starlight-sidebar-topics a[href*="/tab/"] { --sl-color-accent-hsl: 142 100% 28%; }
+  .starlight-sidebar-topics a[href*="/tty/"] { --sl-color-accent-hsl: 268 100% 45%; }
+}
+
+ul.starlight-sidebar-topics a:is(.starlight-sidebar-topics-current, :hover, :focus-visible) {
+  color: hsl(var(--sl-color-accent-hsl) / 1);
+
+  .starlight-sidebar-topics-icon {
+    background-color: hsl(var(--sl-color-accent-hsl) / 1);
+    border-color: hsl(var(--sl-color-accent-hsl) / 1);
+    color: var(--color-gray-100);
+    --sl-icon-color: var(--color-gray-100);
+  }
+}
+
 :root[data-theme="light"] {
   a:is(.starlight-sidebar-topics-current, :hover, :focus-visible)
     .starlight-sidebar-topics-icon {
-    background-color: var(--sl-color-accent-low);
+    background-color: hsl(var(--sl-color-accent-hsl) / 0.5);
   }
 }
