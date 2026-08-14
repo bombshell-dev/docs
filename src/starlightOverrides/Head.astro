@@ -1,6 +1,7 @@
 ---
 import Default from "@astrojs/starlight/components/Head.astro";
 import VtbotStarlight from "astro-vtbot/components/starlight/Base.astro";
+import "@fontsource-variable/inter";
 import "/src/styles/starlight.css";
 
 // Per-topic accent colors, matching the bomb.sh project cards
@@ -36,9 +37,116 @@ const accent = ACCENTS[Astro.locals.starlightRoute.id.split("/")[0]];
 	h4,
 	h5,
 	h6,
-	.site-title,
 	.sl-doc-title,
 	.sl-nav-link {
 		font-family: var(--sl-font-heading);
 	}
 </style>
+
+{/* The site is dark-only, like bomb.sh: there is no theme switcher, and the
+    stored preference is pinned to dark (covering visitors who picked light
+    before the switcher was removed). This must run before Starlight's
+    ThemeProvider script (rendered later in <head>). */}
+<script is:inline>
+	try {
+		localStorage.setItem("starlight-theme", "dark");
+	} catch {}
+</script>
+
+<script>
+	// Animated table-of-contents marker: replaces the static per-link
+	// border with one bar that slides between items as scrolling (or
+	// clicking) moves aria-current.
+	function initTocMarker() {
+		const list = document.querySelector(
+			".right-sidebar starlight-toc nav > ul",
+		);
+		if (!(list instanceof HTMLElement) || list.classList.contains("has-marker"))
+			return;
+		const marker = document.createElement("span");
+		marker.className = "toc-marker";
+		list.classList.add("has-marker");
+		list.append(marker);
+
+		const move = () => {
+			const current = list.querySelector("a[aria-current]");
+			if (!(current instanceof HTMLElement)) {
+				marker.style.height = "0px";
+				return;
+			}
+			const listRect = list.getBoundingClientRect();
+			const rect = current.getBoundingClientRect();
+			marker.style.top = `${rect.top - listRect.top}px`;
+			marker.style.height = `${rect.height}px`;
+		};
+
+		move();
+		new MutationObserver(move).observe(list, {
+			subtree: true,
+			attributeFilter: ["aria-current"],
+		});
+		window.addEventListener("resize", move);
+	}
+
+	// Keep the topics separator and the divider under the page title on one
+	// horizontal line wherever the sidebar is visible, with both sides as
+	// compact as possible: measure each side's natural position, then pin
+	// the rule at whichever is lower — the topics list stretches only when
+	// a wrapped title needs the room, and the title panel grows only when
+	// the topics are taller. Re-measures on viewport resizes and web-font
+	// reflows.
+	const tabletRange = window.matchMedia("(min-width: 50rem)");
+	let titlePanelObserver;
+	function alignTopicsRule() {
+		titlePanelObserver?.disconnect();
+		const topics = document.querySelector(".starlight-sidebar-topics");
+		const panels = document.querySelectorAll(".content-panel");
+		if (!(topics instanceof HTMLElement) || panels.length < 2) return;
+		const titlePanel = panels[0];
+		if (!(titlePanel instanceof HTMLElement)) return;
+		const update = () => {
+			topics.style.removeProperty("--topics-rule-offset");
+			titlePanel.style.removeProperty("min-height");
+			if (!tabletRange.matches) return;
+			// The sidebar is fixed, so its rects are already scroll-independent;
+			// content rects need the scroll offset added back.
+			const topicsRect = topics.getBoundingClientRect();
+			const dividerDocY =
+				panels[1].getBoundingClientRect().top + window.scrollY;
+			// The topics rule is the BOTTOM pixel of the list; the divider is
+			// the pixel BELOW the title panel. lineY is the shared pixel row.
+			const lineY = Math.max(dividerDocY, topicsRect.bottom - 1);
+			topics.style.setProperty(
+				"--topics-rule-offset",
+				`${lineY + 1 - topicsRect.top}px`,
+			);
+			const panelDocY = titlePanel.getBoundingClientRect().top + window.scrollY;
+			if (lineY - panelDocY > titlePanel.getBoundingClientRect().height + 0.5)
+				titlePanel.style.minHeight = `${lineY - panelDocY}px`;
+
+			// Clamp the nav search so its right bar lands on the content/TOC
+			// boundary (mirroring the left bar on the sidebar boundary). The +2
+			// accounts for the button's -1px nudge and its own border width.
+			const tocContainer = document.querySelector(".right-sidebar-container");
+			const searchWrapper = document.querySelector(".search-wrapper");
+			if (tocContainer && searchWrapper instanceof HTMLElement) {
+				const max =
+					tocContainer.getBoundingClientRect().left +
+					2 -
+					searchWrapper.getBoundingClientRect().left;
+				searchWrapper.style.setProperty("--search-clamp", `${max}px`);
+			}
+		};
+		update();
+		titlePanelObserver = new ResizeObserver(update);
+		titlePanelObserver.observe(titlePanel);
+		tabletRange.addEventListener("change", update);
+	}
+
+	document.addEventListener("astro:page-load", () => {
+		initTocMarker();
+		alignTopicsRule();
+	});
+	initTocMarker();
+	alignTopicsRule();
+</script>

@@ -1,0 +1,10 @@
+---
+import "@astrojs/starlight/style/markdown.css";
+---
+
+{/* Identical to Starlight's default MarkdownContent, plus the `content` class:
+    Starlight's TOC scrollspy observes `main .content > *`, but this site's
+    heading-wrapper markup leaves headings with no observable siblings, so
+    without this class `aria-current` only updates when a heading itself
+    crosses the intersection band and goes stale on jump-scrolls. */}
+<div class="sl-markdown-content content"><slot /></div>
