@@ -3,7 +3,7 @@
 @layer user.overrides {
   :root {
     --sl-font: system-ui, sans-serif;
-    --sl-font-heading: 'polymath-display', sans-serif;
+    --sl-font-heading: "polymath-display", sans-serif;
 
     --sl-color-text-heading: var(--heading-fill);
     --sl-text-h1: var(--sl-text-6xl);
@@ -25,11 +25,16 @@
   }
 
   :is(h1, h2, h3, h4, h5, h6) {
-    font-feature-settings: 'ss03' on, 'ss12' on;
+    font-feature-settings: "ss03" on, "ss12" on;
   }
 
   :is(h1, .starlight-sidebar-topics) {
-    font-feature-settings: 'ss01' on, 'ss03' on, 'ss09' on, 'ss10' on, 'ss12' on;
+    font-feature-settings:
+      "ss01" on,
+      "ss03" on,
+      "ss09" on,
+      "ss10" on,
+      "ss12" on;
     font-family: var(--sl-font-heading);
   }
 
@@ -81,14 +86,14 @@
     color: var(--heading-fill);
   }
 
-  starlight-toc nav>ul {
+  starlight-toc nav > ul {
     --c-start: var(--heading-muted);
     --c-end: var(--separator-fill);
     border-left: 1px solid transparent;
     position: relative;
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       top: 0;
       bottom: 0;
@@ -111,11 +116,17 @@
   li,
   td,
   blockquote {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family:
+      system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      sans-serif;
   }
 
   .sl-link-button.primary {
-    background: linear-gradient(to right in oklab, var(--color-pink-90), var(--color-pink-100));
+    background: linear-gradient(
+      to right in oklab,
+      var(--color-pink-90),
+      var(--color-pink-100)
+    );
     color: var(--color-gray-100);
     border-color: var(--color-pink-100);
     border-radius: 0px;
@@ -163,9 +174,11 @@
   }
 
   starlight-menu-button button {
-      top: unset;
-      bottom: calc((var(--sl-mobile-toc-height) - var(--sl-menu-button-size)) / 2);
-      background-color: var(--color-gray-80);
+    top: unset;
+    bottom: calc(
+      (var(--sl-mobile-toc-height) - var(--sl-menu-button-size)) / 2
+    );
+    background-color: var(--color-gray-80);
   }
 
   mobile-starlight-toc nav {
@@ -174,7 +187,7 @@
   }
 
   /* Light theme specific overrides for better readability */
-  :root[data-theme=light] {
+  :root[data-theme="light"] {
     --sl-color-text: var(--color-gray-100);
     --sl-color-text-muted: var(--color-gray-70);
     --sl-color-text-accent: var(--color-gray-90);
@@ -201,9 +214,85 @@
       border-color: var(--color-gray-100);
     }
 
-    .sl-link-button>svg {
+    .sl-link-button > svg {
       fill: var(--color-white-100);
     }
+  }
+
+  /* The plugin's own component style is unlayered, so directly overriding
+     `color`/`background-color`/`border-color` here would always lose
+     regardless of specificity. Instead, override the custom properties it
+     reads (--sl-color-white, --sl-color-text-accent) scoped to this element
+     — no competing declaration targets this element directly, so no
+     layer/specificity fight happens. Hover/focus/current text color keeps
+     the plugin's own accent-color behavior (now per-topic, see below); only
+     the icon's background/border fill is disabled. */
+  .starlight-sidebar-topics {
+    --sl-text-base: 1.25em;
+    --sl-color-white: var(--heading-highlight);
+    --sl-color-text-accent: transparent;
+  }
+
+  .starlight-sidebar-topics a > div:not(.starlight-sidebar-topics-icon) {
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+  }
+
+  .starlight-sidebar-topics
+    a:is(.starlight-sidebar-topics-current, :hover, :focus-visible)
+    > div:not(.starlight-sidebar-topics-icon) {
+    transform: translateX(3px);
+    opacity: 1;
+  }
+
+  /* Custom per-topic sidebar icons, replacing starlight-sidebar-topics' built-in
+     Iconify icons. The plugin has no native custom-icon API (see
+     https://github.com/HiDeoo/starlight-sidebar-topics/issues/5), so we hide its
+     rendered <svg> and swap in our own via background-image, matched by the
+     topic's link path (the only per-topic hook the plugin exposes). */
+  .starlight-sidebar-topics-icon svg {
+    display: none;
+  }
+
+  /* Each topic's icon is stored once in --icon and consumed two ways: as a
+     `mask-image` filled with solid white at rest (a flat silhouette), and as
+     a full-color `background-image` on hover/focus/current. */
+  a[href*="/clack/"] .starlight-sidebar-topics-icon {
+    --icon: url("../assets/topics/clack.svg");
+  }
+
+  a[href*="/args/"] .starlight-sidebar-topics-icon {
+    --icon: url("../assets/topics/args.svg");
+  }
+
+  a[href*="/tab/"] .starlight-sidebar-topics-icon {
+    --icon: url("../assets/topics/tab.svg");
+  }
+
+  a[href*="/tty/"] .starlight-sidebar-topics-icon {
+    --icon: url("../assets/topics/tty.svg");
+  }
+
+  .starlight-sidebar-topics-icon {
+    --size: 1.25em;
+    width: var(--size);
+    height: var(--size);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mask-image: var(--icon);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    background-color: var(--heading-highlight);
+    opacity: 0.7;
+  }
+
+  a:is(.starlight-sidebar-topics-current, :hover, :focus-visible)
+    .starlight-sidebar-topics-icon {
+    mask-image: none;
+    background-color: transparent;
+    background-image: var(--icon);
+    opacity: 1;
   }
 }
 
@@ -211,32 +300,47 @@
 
 /* each topic link carries its own accent so hover/current always shows the
    topic's color, not the current page's accent */
-.starlight-sidebar-topics a[href*="/clack/"] { --sl-color-accent-hsl: 184 100% 48%; }
-.starlight-sidebar-topics a[href*="/args/"] { --sl-color-accent-hsl: 52 100% 56%; }
-.starlight-sidebar-topics a[href*="/tab/"] { --sl-color-accent-hsl: 142 100% 47%; }
-.starlight-sidebar-topics a[href*="/tty/"] { --sl-color-accent-hsl: 268 100% 52%; }
-
-:root[data-theme="light"] {
-  .starlight-sidebar-topics a[href*="/clack/"] { --sl-color-accent-hsl: 184 100% 30%; }
-  .starlight-sidebar-topics a[href*="/args/"] { --sl-color-accent-hsl: 45 100% 33%; }
-  .starlight-sidebar-topics a[href*="/tab/"] { --sl-color-accent-hsl: 142 100% 28%; }
-  .starlight-sidebar-topics a[href*="/tty/"] { --sl-color-accent-hsl: 268 100% 45%; }
+.starlight-sidebar-topics a[href*="/clack/"] {
+  --sl-color-accent-hsl: 184 100% 48%;
+}
+.starlight-sidebar-topics a[href*="/args/"] {
+  --sl-color-accent-hsl: 52 100% 56%;
+}
+.starlight-sidebar-topics a[href*="/tab/"] {
+  --sl-color-accent-hsl: 142 100% 47%;
+}
+.starlight-sidebar-topics a[href*="/tty/"] {
+  --sl-color-accent-hsl: 300 100% 55%;
 }
 
-ul.starlight-sidebar-topics a:is(.starlight-sidebar-topics-current, :hover, :focus-visible) {
+:root[data-theme="light"] {
+  .starlight-sidebar-topics a[href*="/clack/"] {
+    --sl-color-accent-hsl: 184 100% 30%;
+  }
+  .starlight-sidebar-topics a[href*="/args/"] {
+    --sl-color-accent-hsl: 45 100% 33%;
+  }
+  .starlight-sidebar-topics a[href*="/tab/"] {
+    --sl-color-accent-hsl: 142 100% 28%;
+  }
+  .starlight-sidebar-topics a[href*="/tty/"] {
+    --sl-color-accent-hsl: 300 100% 38%;
+  }
+}
+
+ul.starlight-sidebar-topics
+  a:is(.starlight-sidebar-topics-current, :hover, :focus-visible) {
   color: hsl(var(--sl-color-accent-hsl) / 1);
-
-  .starlight-sidebar-topics-icon {
-    background-color: hsl(var(--sl-color-accent-hsl) / 1);
-    border-color: hsl(var(--sl-color-accent-hsl) / 1);
-    color: var(--color-gray-100);
-    --sl-icon-color: var(--color-gray-100);
-  }
 }
 
-:root[data-theme="light"] {
-  a:is(.starlight-sidebar-topics-current, :hover, :focus-visible)
-    .starlight-sidebar-topics-icon {
-    background-color: hsl(var(--sl-color-accent-hsl) / 0.5);
-  }
+.starlight-sidebar-topics .starlight-sidebar-topics-icon {
+  border: none;
+}
+
+.starlight-sidebar-topics a {
+  padding-block: 0.125em;
+}
+
+.starlight-sidebar-topics li + li {
+  margin-top: 0;
 }
