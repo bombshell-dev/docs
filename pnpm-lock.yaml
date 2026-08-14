@@ -66,6 +66,9 @@ importers:
         specifier: ^0.6.2
         version: 0.6.2(@astrojs/starlight@0.37.1(astro@5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2)))
     devDependencies:
+      astro-vtbot:
+        specifier: ^3.1.0
+        version: 3.1.0
       tinyexec:
         specifier: ^1.0.2
         version: 1.0.2
@@ -1269,6 +1272,21 @@ packages:
   '@upsetjs/venn.js@2.0.0':
     resolution: {integrity: sha512-WbBhLrooyePuQ1VZxrJjtLvTc4NVfpOyKx0sKqioq9bX1C1m7Jgykkn8gLrtwumBioXIqam8DLxp88Adbue6Hw==}
 
+  '@vtbag/cam-shaft@1.0.6':
+    resolution: {integrity: sha512-Xy1bmJJLXuCqxmY2agwPfhGNv1XZViqh54H0VGK4mouGsItFsh8Mz/wWAP6mZwAOEuu9bEOJ1mJ+oNoaczZ1zw==}
+
+  '@vtbag/element-crossing@1.1.0':
+    resolution: {integrity: sha512-1YL609KPwhHUKRrVNfoogQCVJPfFrE5DubOLcCJZLHVCjWZ2ZAPcaq1wR2OP6nXD0Ok9JLX41YsEtYBYzw6CxQ==}
+
+  '@vtbag/inspection-chamber@1.0.24':
+    resolution: {integrity: sha512-L6CrMbzJ0gdG/P5WnGyVgRxHVeLhlQgXh3mp+OI4JdJjFiwIhh9+sG/FXM2DneBs5HQvaWUq4qf6NiSlgVbyvQ==}
+
+  '@vtbag/turn-signal@1.3.1':
+    resolution: {integrity: sha512-6rWkG+ik3U+KQGI94yNOrOh5QedB9zmP/8H51X5WQwrJz8m2MAU5YwGRRcweO/dJ6wW/Bn7OsgC1vRURnwrvCg==}
+
+  '@vtbag/utensil-drawer@1.2.18':
+    resolution: {integrity: sha512-Veg1J8lviA2g878otiEHoyiGR2f4PZ5Rc40UyIR4YS95QnD+1+oAZsprhUPR+YudgZPrqWx5chyPNwjkHyA0uw==}
+
   '@webcontainer/api@1.6.1':
     resolution: {integrity: sha512-2RS2KiIw32BY1Icf6M1DvqSmcon9XICZCDgS29QJb2NmF12ZY2V5Ia+949hMKB3Wno+P/Y8W+sPP59PZeXSELg==}
 
@@ -1351,6 +1369,9 @@ packages:
     peerDependenciesMeta:
       '@mermaid-js/layout-elk':
         optional: true
+
+  astro-vtbot@3.1.0:
+    resolution: {integrity: sha512-YZX+Sv3EHRaAryyEJ28N9ausnAG4JxM9ivY+BeRJEa/neWBHmZaQ3onMcdxBFg/u7e+8+YOepuQC8Bt2lx8fKg==}
 
   astro@5.16.6:
     resolution: {integrity: sha512-6mF/YrvwwRxLTu+aMEa5pwzKUNl5ZetWbTyZCs9Um0F12HUmxUiF5UHiZPy4rifzU3gtpM3xP2DfdmkNX9eZRg==}
@@ -3892,6 +3913,16 @@ snapshots:
       d3-selection: 3.0.0
       d3-transition: 3.0.1(d3-selection@3.0.0)
 
+  '@vtbag/cam-shaft@1.0.6': {}
+
+  '@vtbag/element-crossing@1.1.0': {}
+
+  '@vtbag/inspection-chamber@1.0.24': {}
+
+  '@vtbag/turn-signal@1.3.1': {}
+
+  '@vtbag/utensil-drawer@1.2.18': {}
+
   '@webcontainer/api@1.6.1': {}
 
   '@webcontainer/snapshot@0.1.0':
@@ -3957,6 +3988,14 @@ snapshots:
       mdast-util-to-string: 4.0.0
       mermaid: 11.16.0
       unist-util-visit: 5.0.0
+
+  astro-vtbot@3.1.0:
+    dependencies:
+      '@vtbag/cam-shaft': 1.0.6
+      '@vtbag/element-crossing': 1.1.0
+      '@vtbag/inspection-chamber': 1.0.24
+      '@vtbag/turn-signal': 1.3.1
+      '@vtbag/utensil-drawer': 1.2.18
 
   astro@5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2):
     dependencies:
