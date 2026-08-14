@@ -2,12 +2,33 @@
 import Default from "@astrojs/starlight/components/Head.astro";
 import VtbotStarlight from "astro-vtbot/components/starlight/Base.astro";
 import "/src/styles/starlight.css";
+
+// Per-topic accent colors, matching the bomb.sh project cards (issue #15).
+// Light variants darken lightness so the accent stays readable as text.
+const ACCENTS = {
+	clack: { dark: "184 100% 48%", light: "184 100% 30%" },
+	args: { dark: "52 100% 56%", light: "45 100% 33%" },
+	tab: { dark: "142 100% 47%", light: "142 100% 28%" },
+	tty: { dark: "268 100% 52%", light: "268 100% 45%" },
+};
+const accent = ACCENTS[Astro.locals.starlightRoute.id.split("/")[0]];
 ---
 
 {/* replaceSidebarContent: sidebar content differs per topic (starlight-sidebar-topics) */}
 <VtbotStarlight replaceSidebarContent transition:animate="fade">
 	<Default><slot /></Default>
 </VtbotStarlight>
+{
+	accent && (
+		<style
+			is:inline
+			set:html={
+				`:root{--sl-color-accent-hsl:${accent.dark}}` +
+				`:root[data-theme=light]{--sl-color-accent-hsl:${accent.light}}`
+			}
+		/>
+	)
+}
 <style is:global>
 	/* Remove the general html font-family override to prevent it from overriding our specific rules */
 	h1,
