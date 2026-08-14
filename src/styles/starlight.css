@@ -62,6 +62,13 @@
     background-image: linear-gradient(to right, var(--c-start), var(--c-end));
   }
 
+  :is(h1, h2, h3, h4, h5, h6) code {
+    background-clip: border-box;
+    -webkit-background-clip: border-box;
+    -webkit-text-fill-color: var(--heading-fill);
+    color: var(--heading-fill);
+  }
+
   /* Target specific elements */
   .sl-nav-link,
   .site-title,
