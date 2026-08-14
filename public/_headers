@@ -6,6 +6,6 @@
   Vary: Accept
   Cache-Control: public, max-age=86400, stale-while-revalidate=86400
 
-/_astro/*
+/docs/_astro/*
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
