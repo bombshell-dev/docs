@@ -203,7 +203,7 @@
 /* these rules must not be layered because the Starlight Sidebar Topics plugin doesn't use Cascade Layers */
 
 /* each topic link carries its own accent so hover/current always shows the
-   topic's color, not the current page's accent (issue #15) */
+   topic's color, not the current page's accent */
 .starlight-sidebar-topics a[href*="/clack/"] { --sl-color-accent-hsl: 184 100% 48%; }
 .starlight-sidebar-topics a[href*="/args/"] { --sl-color-accent-hsl: 52 100% 56%; }
 .starlight-sidebar-topics a[href*="/tab/"] { --sl-color-accent-hsl: 142 100% 47%; }
