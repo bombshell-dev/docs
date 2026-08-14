@@ -1,7 +1,6 @@
 ---
 import Search from '@astrojs/starlight/components/Search.astro';
 import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
-import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
 import SiteTitle from './SiteTitle.astro';
 ---
 
@@ -20,7 +19,6 @@ import SiteTitle from './SiteTitle.astro';
 		<div class="sl-flex social-icons">
 			<SocialIcons />
 		</div>
-		<ThemeSelect />
 	</div>
 </div>
 
@@ -49,18 +47,30 @@ import SiteTitle from './SiteTitle.astro';
 
 	.search-wrapper {
 		flex-grow: 1;
-		justify-content: flex-end;
+		/* Stretch through the nav's block padding so the search runs the full
+		   nav height — its side borders become vertical grid bars. */
+		align-self: stretch;
+		margin-block: calc(-1 * var(--sl-nav-pad-y));
+	}
+
+	@media (min-width: 50rem) {
+		/* Size the title column so the search's left bar lands exactly on the
+		   sidebar/content boundary. The trailing +0.5rem compensates for this
+		   element's own negative margins (focus-ring clipping trick above),
+		   which otherwise pull the row 8px tighter. */
+		.title-wrapper {
+			width: calc(
+				var(--sl-sidebar-width) - var(--sl-nav-pad-x) - var(--sl-nav-gap) +
+					0.5rem
+			);
+			flex-shrink: 0;
+		}
 	}
 
 	.right-group,
 	.social-icons {
 		gap: 1rem;
 		align-items: center;
-	}
-	.social-icons::after {
-		content: '';
-		height: 2rem;
-		border-inline-end: 1px solid var(--sl-color-gray-5);
 	}
 
 	.text-links {

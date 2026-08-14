@@ -46,6 +46,7 @@ export default defineConfig({
 				SiteTitle: "./src/starlightOverrides/SiteTitle.astro",
 				Footer: "./src/starlightOverrides/Footer.astro",
 				MarkdownContent: "./src/starlightOverrides/MarkdownContent.astro",
+				MobileMenuFooter: "./src/starlightOverrides/MobileMenuFooter.astro",
 			},
 			expressiveCode: {
 				themes: ecThemes,

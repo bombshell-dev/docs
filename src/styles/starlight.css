@@ -10,7 +10,13 @@
     --sl-font-mono: "dm-mono", ui-monospace, monospace;
 
     --sl-color-text-heading: var(--heading-fill);
-    --sl-text-h1: var(--sl-text-6xl);
+
+    /* Heading baseline: one notch smaller than Starlight's wide-viewport
+       scale; the full-size scale only applies at desktop widths (below) */
+    --sl-text-h1: var(--sl-text-5xl);
+    --sl-text-h2: var(--sl-text-2xl);
+    --sl-text-h3: var(--sl-text-xl);
+    --sl-text-h4: var(--sl-text-lg);
     --sl-color-accent-hsl: 311 100% 50%;
     --sl-color-accent-low: hsl(var(--sl-color-accent-hsl) / 0.1);
     --sl-color-accent: hsl(var(--sl-color-accent-hsl) / 0.9);
@@ -33,7 +39,7 @@
 
     scrollbar-width: thin;
     scrollbar-gutter: stable;
-    scrollbar-color: var(--color-cyan-100) var(--surface-fill);
+    scrollbar-color: hsl(var(--sl-color-accent-hsl)) var(--surface-fill);
   }
 
   ::selection {
@@ -81,11 +87,9 @@
     background-repeat: no-repeat;
   }
 
-  /* bomb.sh hatched separator strip along the bottom of the navbar */
-  header.header {
-    padding-bottom: calc(var(--sl-nav-pad-y) + var(--hatch-height));
-  }
-
+  /* bomb.sh hatched separator strip along the bottom of the navbar.
+     Nav content stays centered across the full nav height; the strip
+     overlays the bottom edge like the homepage separator. */
   header.header::after {
     content: "";
     position: absolute;
@@ -104,6 +108,16 @@
       var(--c-grid-muted) calc(var(--_space) + var(--_size))
     );
     pointer-events: none;
+  }
+
+  /* Full-size heading scale on desktop viewports only */
+  @media (min-width: 72rem) {
+    :root {
+      --sl-text-h1: var(--sl-text-6xl);
+      --sl-text-h2: var(--sl-text-4xl);
+      --sl-text-h3: var(--sl-text-3xl);
+      --sl-text-h4: var(--sl-text-2xl);
+    }
   }
 
   :is(h1, h2, h3, h4, h5, h6) {
@@ -290,10 +304,42 @@
     border-radius: 4px;
   }
 
-  /* Search bar — pill shape */
-  site-search > button {
-    border-radius: var(--radius-full);
-    border: 1px solid var(--surface-border-highlight);
+  /* Search — a full-height section of the nav, delimited by vertical
+     hairline bars, aligned with the main content column */
+  site-search {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Desktop with a TOC column: cap the search at the main content area so
+     its right bar aligns with the content/TOC boundary (measured value from
+     Head.astro; the calc is a close fallback that ignores scrollbar width) */
+  @media (min-width: 72rem) {
+    :root[data-has-toc] site-search {
+      max-width: var(
+        --search-clamp,
+        calc((100vw - 2 * var(--sl-sidebar-width) + var(--sl-content-width)) / 2)
+      );
+    }
+  }
+
+  @media (min-width: 50rem) {
+    site-search button[data-open-modal] {
+      border-radius: 0;
+      max-width: 100%;
+      height: 100%;
+      border-block: none;
+      border-inline: 1px solid var(--surface-border-fill);
+      /* No fill — the nav's hatch strip stays visible through the section */
+      background-color: transparent;
+      /* Stack above the nav's hatch strip so the bars stay unbroken, and
+         nudge 1px left so the left bar overlaps the sidebar border exactly */
+      position: relative;
+      z-index: 1;
+      translate: -1px 0;
+    }
   }
 
   .cli-preview {
@@ -551,4 +597,53 @@ ul.starlight-sidebar-topics
 
 .starlight-sidebar-topics li + li {
   margin-top: 0;
+}
+
+/* Run the topics separator on the same horizontal line as the divider under
+   the page title, so it reads as one continuous rule across sidebar and
+   content. The min-height mirrors the first content panel's box: mobile-toc
+   bar + panel padding (2 × 1.5rem) + h1 margin (1rem) + one h1 line
+   (--sl-text-6xl × 1.2 line-height), minus the sidebar's own 1rem top
+   padding. Applies wherever the sidebar is visible. */
+@media (min-width: 50rem) {
+  .starlight-sidebar-topics {
+    display: flex;
+    flex-direction: column;
+    /* Measured offset set by Head.astro (no static fallback — it would act
+       as a floor and defeat the natural-height measurement; without JS the
+       two rules are simply compact and unaligned). */
+    min-height: var(--topics-rule-offset, auto);
+  }
+
+  .starlight-sidebar-topics::after {
+    margin-top: auto;
+  }
+
+  /* When the title panel grows to meet a taller topics column, anchor the
+     title to the bottom of the available space, just above the shared rule */
+  main .content-panel:first-of-type {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    /* As a flex item the inner container would otherwise shrink to fit and
+       its auto margins would center it */
+    & > .sl-container {
+      width: 100%;
+    }
+  }
+}
+
+/* Tablet only: drop the title panel's top padding and the h1's default top
+   margin — they only add dead space above the title and force the topics
+   list to stretch further to keep the shared rule aligned. Desktop keeps
+   its larger title spacing. */
+@media (min-width: 50rem) and (max-width: 71.9375rem) {
+  main .content-panel:first-of-type {
+    padding-block-start: 0;
+  }
+
+  main h1#_top {
+    margin-top: 0;
+  }
 }
