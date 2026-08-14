@@ -199,6 +199,16 @@
     }
   }
 
+  /* The plugin's own component style is unlayered, so directly overriding
+     `color` here would always lose regardless of specificity. Instead,
+     override the custom property it reads (--sl-color-white) scoped to this
+     element — no competing declaration targets this element directly, so no
+     layer/specificity fight happens. Hover/focus/current states keep the
+     plugin's own accent-color behavior untouched. */
+  .starlight-sidebar-topics {
+    --sl-color-white: var(--heading-highlight);
+  }
+
   /* Custom per-topic sidebar icons, replacing starlight-sidebar-topics' built-in
      Iconify icons. The plugin has no native custom-icon API (see
      https://github.com/HiDeoo/starlight-sidebar-topics/issues/5), so we hide its
@@ -209,9 +219,16 @@
   }
 
   .starlight-sidebar-topics-icon {
+    --size: 1.25em;
+    width: var(--size);
+    height: var(--size);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+  }
+
+  .starlight-sidebar-topics-current .starlight-sidebar-topics-icon {
+    filter: none;
   }
 
   a[href*="/clack/"] .starlight-sidebar-topics-icon {
@@ -263,4 +280,18 @@ ul.starlight-sidebar-topics a:is(.starlight-sidebar-topics-current, :hover, :foc
     .starlight-sidebar-topics-icon {
     background-color: hsl(var(--sl-color-accent-hsl) / 0.5);
   }
+
+.starlight-sidebar-topics .starlight-sidebar-topics-icon {
+  border: none;
+}
+
+.starlight-sidebar-topics li + li {
+  margin-top: 0;
+}
+
+.starlight-sidebar-topics
+  a:is(.starlight-sidebar-topics-current, :hover, :focus-visible)
+  .starlight-sidebar-topics-icon {
+  background-color: transparent;
+  border-color: transparent;
 }
