@@ -11,7 +11,18 @@ const ACCENTS = {
 	tty: { dark: "300 100% 55%", light: "300 100% 38%" },
 };
 const accent = ACCENTS[Astro.locals.starlightRoute.id.split("/")[0]];
+
+// Advertise the markdown twin of this page to agents (404 has none).
+const routeId = Astro.locals.starlightRoute.id;
+const markdownHref =
+	routeId === "404"
+		? null
+		: `/docs/${routeId && routeId !== "index" ? `${routeId}/` : ""}index.md`;
 ---
+
+{markdownHref && (
+	<link rel="alternate" type="text/markdown" href={markdownHref} />
+)}
 
 {/* replaceSidebarContent: sidebar content differs per topic (starlight-sidebar-topics) */}
 <VtbotStarlight replaceSidebarContent transition:animate="fade">
