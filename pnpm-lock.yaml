@@ -62,9 +62,6 @@ importers:
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
-      starlight-markdown:
-        specifier: ^0.1.5
-        version: 0.1.5(astro@5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2))
       starlight-sidebar-topics:
         specifier: ^0.6.2
         version: 0.6.2(@astrojs/starlight@0.37.1(astro@5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2)))
@@ -72,6 +69,15 @@ importers:
       astro-vtbot:
         specifier: ^3.1.0
         version: 3.1.0
+      remark:
+        specifier: ^15.0.1
+        version: 15.0.1
+      remark-gfm:
+        specifier: ^4.0.1
+        version: 4.0.1
+      remark-mdx:
+        specifier: ^3.1.1
+        version: 3.1.1
       tinyexec:
         specifier: ^1.0.2
         version: 1.0.2
@@ -2476,6 +2482,9 @@ packages:
   remark-stringify@11.0.0:
     resolution: {integrity: sha512-1OSmLd3awB/t8qdoEOMazZkNsfVTeY4fTsgzcQFdXNq8ToTN4ZGwrMnlda4K6smTFKD+GRV6O48i6Z4iKgPPpw==}
 
+  remark@15.0.1:
+    resolution: {integrity: sha512-Eht5w30ruCXgFmxVUSlNWQ9iiimq07URKeFS3hNc8cUWy1llX4KDWfyEDZRycMc+znsN9Ux5/tJ/BFdgdOwA3A==}
+
   restructure@3.0.2:
     resolution: {integrity: sha512-gSfoiOEA0VPE6Tukkrr7I0RBdE0s7H1eFCDBk05l1KIQT1UIKNc5JZy6jdyW6eYH3aR3g5b3PuL77rq0hvwtAw==}
 
@@ -2552,11 +2561,6 @@ packages:
 
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
-
-  starlight-markdown@0.1.5:
-    resolution: {integrity: sha512-23LXRaZp7pyE+r/HP6rxHfwic8HfvUBT4EImECA6encs/eTtrF0Z+7svANofdtfbiNt31D5q26i03B6FtcSmGg==}
-    peerDependencies:
-      astro: ^5.0.0
 
   starlight-sidebar-topics@0.6.2:
     resolution: {integrity: sha512-SNCTUZS/hcVor0ZcaXbaSVU37+V+qtvzNirkvnOg3Mqu/awuGpthkH5+uKpiZqWxLffp6TrOlsv5E5QsxrndNg==}
@@ -5758,6 +5762,15 @@ snapshots:
       mdast-util-to-markdown: 2.1.2
       unified: 11.0.5
 
+  remark@15.0.1:
+    dependencies:
+      '@types/mdast': 4.0.4
+      remark-parse: 11.0.0
+      remark-stringify: 11.0.0
+      unified: 11.0.5
+    transitivePeerDependencies:
+      - supports-color
+
   restructure@3.0.2: {}
 
   retext-latin@4.0.0:
@@ -5921,10 +5934,6 @@ snapshots:
   source-map@0.7.6: {}
 
   space-separated-tokens@2.0.2: {}
-
-  starlight-markdown@0.1.5(astro@5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2)):
-    dependencies:
-      astro: 5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2)
 
   starlight-sidebar-topics@0.6.2(@astrojs/starlight@0.37.1(astro@5.16.6(@types/node@22.19.3)(rollup@4.55.1)(typescript@5.8.2))):
     dependencies:

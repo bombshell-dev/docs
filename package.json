@@ -10,6 +10,7 @@
     "build": "astro build && cp public/_headers dist/_headers",
     "preview": "astro preview",
     "astro": "astro",
+    "test": "node --test \"src/**/*.test.ts\"",
     "snapshot": "node --experimental-strip-types ./scripts/snapshot.ts",
     "generate:docs-index": "node --experimental-strip-types ./scripts/generate-docs-index.ts"
   },
@@ -32,11 +33,13 @@
     "expressive-code-twoslash": "^0.5.3",
     "mermaid": "^11.16.0",
     "sharp": "^0.33.5",
-    "starlight-markdown": "^0.1.5",
     "starlight-sidebar-topics": "^0.6.2"
   },
   "devDependencies": {
     "astro-vtbot": "^3.1.0",
+    "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-mdx": "^3.1.1",
     "tinyexec": "^1.0.2",
     "wrangler": "^4.97.0"
   },
