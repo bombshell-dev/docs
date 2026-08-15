@@ -1,6 +1,6 @@
 /**
- * Walks `src/content/docs` and emits `public/llms.txt` plus
- * `public/docs-index.json` for agent discoverability and offline search.
+ * Walks `src/content/docs` and emits `public/docs-index.json`, a
+ * machine-readable page index for offline search and local agent tooling.
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -98,42 +98,6 @@ function isIndexed(page: DocPage): boolean {
 	return true;
 }
 
-function generateLlmsTxt(pages: DocPage[]): string {
-	const indexed = pages.filter(isIndexed);
-	const lines = [
-		'# Bombshell Documentation',
-		'',
-		'> Effortlessly build beautiful command-line apps. Docs for Clack, Args, Tab, and TTY.',
-		'',
-		`Canonical docs: ${BASE_URL}/`,
-		'',
-	];
-
-	const homepage = indexed.find((page) => page.slug === '');
-	if (homepage) {
-		lines.push(`- [${homepage.title}](${homepage.url}): ${homepage.description}`, '');
-	}
-
-	const sections = new Map<string, DocPage[]>();
-	for (const page of indexed) {
-		if (page.slug === '') continue;
-		const section = page.slug.split('/')[0];
-		if (!sections.has(section)) sections.set(section, []);
-		sections.get(section)!.push(page);
-	}
-
-	for (const [section, sectionPages] of [...sections.entries()].sort()) {
-		const label = section.charAt(0).toUpperCase() + section.slice(1);
-		lines.push(`## ${label}`, '');
-		for (const page of sectionPages.sort((a, b) => a.slug.localeCompare(b.slug))) {
-			lines.push(`- [${page.title}](${page.url}): ${page.description}`);
-		}
-		lines.push('');
-	}
-
-	return `${lines.join('\n').trimEnd()}\n`;
-}
-
 async function main() {
 	const pages = await walkDocs(docsDir);
 	const indexed = pages.filter(isIndexed);
@@ -150,8 +114,6 @@ async function main() {
 			2,
 		)}\n`,
 	);
-	await fs.writeFile(path.join(rootDir, 'public/llms.txt'), generateLlmsTxt(pages));
-
 	console.log(`Generated docs index with ${indexed.length} pages`);
 }
 
