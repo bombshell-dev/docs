@@ -1,26 +1,9 @@
-// Content negotiation for agent-facing markdown, per
-// https://cra.mr/optimizing-content-for-agents: agents signal themselves with
-// `Accept: text/markdown`; humans never do.
-
-/** Parse the quality value for a media type out of an Accept header. */
-function quality(accept: string, type: string): number {
-	for (const part of accept.split(",")) {
-		const [media, ...params] = part.trim().split(";");
-		if (media.trim().toLowerCase() !== type) continue;
-		for (const param of params) {
-			const [key, value] = param.trim().split("=");
-			if (key === "q") return Number.parseFloat(value) || 0;
-		}
-		return 1;
-	}
-	return 0;
-}
-
+/**
+ * Any client that lists text/markdown in Accept wants markdown. Browsers never
+ * send it, so a substring check is enough.
+ */
 export function prefersMarkdown(accept: string | null): boolean {
-	if (!accept) return false;
-	const markdown = quality(accept, "text/markdown");
-	if (markdown === 0) return false;
-	return markdown >= quality(accept, "text/html");
+	return accept?.toLowerCase().includes("text/markdown") ?? false;
 }
 
 /**

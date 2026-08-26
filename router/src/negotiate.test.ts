@@ -23,12 +23,8 @@ test("prefersMarkdown: markdown preferred over html", () => {
 	assert.equal(prefersMarkdown("text/markdown,text/html;q=0.8"), true);
 });
 
-test("prefersMarkdown: markdown listed but html preferred", () => {
-	assert.equal(prefersMarkdown("text/html,text/markdown;q=0.5"), false);
-});
-
-test("prefersMarkdown: markdown explicitly refused", () => {
-	assert.equal(prefersMarkdown("text/markdown;q=0"), false);
+test("prefersMarkdown: case-insensitive", () => {
+	assert.equal(prefersMarkdown("Text/Markdown"), true);
 });
 
 test("prefersMarkdown: wildcard only is not markdown", () => {
