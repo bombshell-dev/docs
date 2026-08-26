@@ -81,6 +81,20 @@ function replaceElement(node: Node): Node[] {
 	}
 }
 
+/** Remove twoslash compiler directives (`// @errors: …`, `// @noErrors`) that
+ * only make sense to the twoslash renderer, not to a markdown reader. */
+function stripTwoslash(node: Node): void {
+	node.meta = node.meta
+		.split(/\s+/)
+		.filter((word: string) => word !== "twoslash")
+		.join(" ") || undefined;
+	node.value = node.value
+		.split("\n")
+		.filter((line: string) => !/^\s*\/\/\s*@\S/.test(line))
+		.join("\n")
+		.replace(/^\n+/, "");
+}
+
 function transformChildren(children: Node[]): Node[] {
 	const result: Node[] = [];
 	for (const child of children) {
@@ -92,6 +106,10 @@ function transformChildren(children: Node[]): Node[] {
 			case "mdxJsxFlowElement":
 			case "mdxJsxTextElement":
 				result.push(...replaceElement(child));
+				break;
+			case "code":
+				if (child.meta?.includes("twoslash")) stripTwoslash(child);
+				result.push(child);
 				break;
 			default:
 				if (Array.isArray(child.children)) {

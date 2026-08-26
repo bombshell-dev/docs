@@ -79,3 +79,20 @@ test("drops JSX expressions and unwraps unknown components", () => {
 	assert.ok(out.includes("Inner *content* here."));
 	assert.ok(!out.includes("{x}"), `expression leaked:\n${out}`);
 });
+
+test("strips twoslash directives from code fences", () => {
+	const out = mdxToMarkdown(
+		[
+			"```ts twoslash",
+			"// @errors: 2339 18048",
+			"import { text } from '@clack/prompts';",
+			"",
+			"const name = await text({ message: 'Name?' });",
+			"```",
+		].join("\n"),
+	);
+	assert.ok(!out.includes("@errors"), `directive leaked:\n${out}`);
+	assert.ok(!out.includes("twoslash"), `twoslash meta leaked:\n${out}`);
+	assert.ok(out.includes("```ts\n"), `language lost:\n${out}`);
+	assert.ok(out.includes("import { text } from '@clack/prompts';"));
+});
