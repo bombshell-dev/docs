@@ -10,7 +10,7 @@
     "build": "astro build && cp public/_headers dist/_headers",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "node --test \"src/**/*.test.ts\"",
+    "test": "node --experimental-strip-types --test \"src/**/*.test.ts\"",
     "snapshot": "node --experimental-strip-types ./scripts/snapshot.ts",
     "generate:docs-index": "node --experimental-strip-types ./scripts/generate-docs-index.ts"
   },
