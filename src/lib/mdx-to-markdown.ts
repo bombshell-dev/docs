@@ -1,0 +1,139 @@
+/**
+ * Convert MDX doc source into plain markdown for agent consumption: strip
+ * imports/exports and JS expressions, and flatten Starlight components into
+ * markdown equivalents so no JSX reaches the output.
+ */
+import { remark } from "remark";
+import remarkMdx from "remark-mdx";
+import remarkGfm from "remark-gfm";
+
+type Node = Record<string, any>;
+
+const ASIDE_LABELS: Record<string, string> = {
+	note: "Note",
+	tip: "Tip",
+	caution: "Caution",
+	danger: "Danger",
+};
+
+function attribute(node: Node, name: string): string | undefined {
+	for (const attr of node.attributes ?? []) {
+		if (attr.type === "mdxJsxAttribute" && attr.name === name) {
+			if (typeof attr.value === "string") return attr.value;
+		}
+	}
+	return undefined;
+}
+
+/** Collect the plain-text content of a node tree (flow children wrap text in
+ * paragraphs, so a shallow `.value` lookup isn't enough). */
+function textContent(node: Node): string {
+	if (typeof node.value === "string") return node.value;
+	return (node.children ?? []).map(textContent).join("");
+}
+
+function bold(text: string): Node {
+	return {
+		type: "paragraph",
+		children: [{ type: "strong", children: [{ type: "text", value: text }] }],
+	};
+}
+
+/** Replace a JSX element with plain markdown nodes (or [] to drop it). */
+function replaceElement(node: Node): Node[] {
+	const children = transformChildren(node.children ?? []);
+	switch (node.name) {
+		case "Aside": {
+			const label =
+				attribute(node, "title") ??
+				ASIDE_LABELS[attribute(node, "type") ?? "note"] ??
+				"Note";
+			return [
+				{ type: "blockquote", children: [bold(`${label}:`), ...children] },
+			];
+		}
+		case "TabItem": {
+			const label = attribute(node, "label");
+			return label ? [bold(label), ...children] : children;
+		}
+		case "Card": {
+			const title = attribute(node, "title");
+			return title ? [bold(title), ...children] : children;
+		}
+		case "LinkCard":
+		case "LinkButton": {
+			const href = attribute(node, "href");
+			const title =
+				attribute(node, "title") ??
+				(textContent({ children }).trim() || undefined);
+			if (href) {
+				return [
+					{
+						type: "paragraph",
+						children: [
+							{
+								type: "link",
+								url: href,
+								children: [{ type: "text", value: title ?? href }],
+							},
+						],
+					},
+				];
+			}
+			return children;
+		}
+		// Tabs, Steps, CardGrid, FileTree, and anything unrecognized: unwrap.
+		default:
+			return children;
+	}
+}
+
+/** Remove twoslash compiler directives (`// @errors: …`, `// @noErrors`) that
+ * only make sense to the twoslash renderer, not to a markdown reader. */
+function stripTwoslash(node: Node): void {
+	node.meta = node.meta
+		.split(/\s+/)
+		.filter((word: string) => word !== "twoslash")
+		.join(" ") || undefined;
+	node.value = node.value
+		.split("\n")
+		.filter((line: string) => !/^\s*\/\/\s*@\S/.test(line))
+		.join("\n")
+		.replace(/^\n+/, "");
+}
+
+function transformChildren(children: Node[]): Node[] {
+	const result: Node[] = [];
+	for (const child of children) {
+		switch (child.type) {
+			case "mdxjsEsm":
+			case "mdxFlowExpression":
+			case "mdxTextExpression":
+				break;
+			case "mdxJsxFlowElement":
+			case "mdxJsxTextElement":
+				result.push(...replaceElement(child));
+				break;
+			case "code":
+				if (child.meta?.includes("twoslash")) stripTwoslash(child);
+				result.push(child);
+				break;
+			default:
+				if (Array.isArray(child.children)) {
+					child.children = transformChildren(child.children);
+				}
+				result.push(child);
+		}
+	}
+	return result;
+}
+
+const parser = remark().use(remarkMdx).use(remarkGfm);
+// Stringify without the MDX extensions so output uses plain markdown escaping.
+const printer = remark().use(remarkGfm);
+
+export function mdxToMarkdown(source: string): string {
+	const tree = parser.parse(source) as Node;
+	tree.children = transformChildren(tree.children);
+	return printer.stringify(tree as any);
+}

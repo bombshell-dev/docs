@@ -1,4 +1,16 @@
+import { prefersMarkdown, toMarkdownPath } from "./negotiate";
+
 export interface Env { }
+
+// Public origin used in Link headers (canonical/alternate) so agents always
+// discover the proxied bomb.sh URLs, never the internal workers.dev ones.
+const SITE = "https://bomb.sh";
+
+const MARKDOWN_404 = `# 404: Not Found
+
+This page does not exist. An index of all Bombshell documentation is
+available at ${SITE}/docs/index.md
+`;
 
 // Where to proxy docs requests. In production this is the live site. On
 // Cloudflare branch previews both Workers share the same branch slug
@@ -40,6 +52,47 @@ export default {
 
 		if (url.pathname.startsWith("/docs")) {
 			const origin = docsOrigin(url.host);
+
+			// Plenty of agent tooling still probes /llms.txt by convention and
+			// never reads Link headers. /docs/index.md is an llms.txt in all but
+			// name, so alias it.
+			if (url.pathname === "/docs/llms.txt") url.pathname = "/docs/index.md";
+
+			// Agent-facing markdown: explicit `.md` paths always serve markdown;
+			// extensionless page routes negotiate on `Accept: text/markdown`.
+			// Negotiation rewrites to a distinct origin URL, so HTML and markdown
+			// variants get distinct cache keys — Cloudflare's cache ignores `Vary`.
+			const markdownPath = toMarkdownPath(url.pathname);
+			const wantsMarkdown =
+				markdownPath !== null &&
+				(url.pathname.endsWith(".md") ||
+					prefersMarkdown(request.headers.get("Accept")));
+
+			if (wantsMarkdown && markdownPath) {
+				const response = await fetch(new URL(markdownPath, origin));
+				if (response.status === 404) {
+					return new Response(MARKDOWN_404, {
+						status: 404,
+						headers: {
+							"Content-Type": "text/markdown; charset=utf-8",
+							"Vary": "Accept",
+						},
+					});
+				}
+				// Other origin errors (500, 502 HTML error pages) pass through
+				// untouched instead of being relabelled as markdown.
+				if (!response.ok) return response;
+				const headers = new Headers(response.headers);
+				headers.set("Content-Type", "text/markdown; charset=utf-8");
+				headers.set("Vary", "Accept");
+				const htmlPath = markdownPath.slice(0, -"index.md".length);
+				headers.set("Link", `<${SITE}${htmlPath}>; rel="canonical"`);
+				return new Response(response.body, {
+					status: response.status,
+					headers,
+				});
+			}
+
 			let response = await fetch(new URL(url.pathname, docsOrigin(url.host)));
 			console.log({ from: url, to: new URL(url.pathname, docsOrigin(url.host)) });
 
@@ -56,7 +109,15 @@ export default {
 			headers.set("Cross-Origin-Resource-Policy", "cross-origin");
 			headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
-			// If we got 404, return the HTML, but set status to 404 manually, 
+			// Advertise the markdown twin to agents crawling the HTML variant.
+			if (markdownPath && status === 200) {
+				headers.set(
+					"Link",
+					`<${SITE}${markdownPath}>; rel="alternate"; type="text/markdown"`,
+				);
+			}
+
+			// If we got 404, return the HTML, but set status to 404 manually,
 			// because the response status would be 200
 			return new Response(response.body, {
 				status: status,
