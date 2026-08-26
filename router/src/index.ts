@@ -74,6 +74,9 @@ export default {
 						},
 					});
 				}
+				// Other origin errors (500, 502 HTML error pages) pass through
+				// untouched instead of being relabelled as markdown.
+				if (!response.ok) return response;
 				const headers = new Headers(response.headers);
 				headers.set("Content-Type", "text/markdown; charset=utf-8");
 				headers.set("Vary", "Accept");
