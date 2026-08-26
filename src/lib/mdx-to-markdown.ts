@@ -25,6 +25,13 @@ function attribute(node: Node, name: string): string | undefined {
 	return undefined;
 }
 
+/** Collect the plain-text content of a node tree (flow children wrap text in
+ * paragraphs, so a shallow `.value` lookup isn't enough). */
+function textContent(node: Node): string {
+	if (typeof node.value === "string") return node.value;
+	return (node.children ?? []).map(textContent).join("");
+}
+
 function bold(text: string): Node {
 	return {
 		type: "paragraph",
@@ -58,7 +65,7 @@ function replaceElement(node: Node): Node[] {
 			const href = attribute(node, "href");
 			const title =
 				attribute(node, "title") ??
-				(node.children?.[0]?.value as string | undefined);
+				(textContent({ children }).trim() || undefined);
 			if (href) {
 				return [
 					{

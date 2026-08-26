@@ -96,3 +96,17 @@ test("strips twoslash directives from code fences", () => {
 	assert.ok(out.includes("```ts\n"), `language lost:\n${out}`);
 	assert.ok(out.includes("import { text } from '@clack/prompts';"));
 });
+
+test("LinkButton with flow children still extracts the link text", () => {
+	const out = mdxToMarkdown(
+		'<LinkButton href="/docs/clack/">\n\nGet started\n\n</LinkButton>\n',
+	);
+	assert.ok(out.includes("[Get started](/docs/clack/)"), `title lost:\n${out}`);
+});
+
+test("LinkCard uses the title attribute", () => {
+	const out = mdxToMarkdown(
+		'<LinkCard title="Prompts" href="/docs/clack/packages/prompts/" />\n',
+	);
+	assert.ok(out.includes("[Prompts](/docs/clack/packages/prompts/)"), out);
+});
