@@ -53,6 +53,11 @@ export default {
 		if (url.pathname.startsWith("/docs")) {
 			const origin = docsOrigin(url.host);
 
+			// Plenty of agent tooling still probes /llms.txt by convention and
+			// never reads Link headers. /docs/index.md is an llms.txt in all but
+			// name, so alias it.
+			if (url.pathname === "/docs/llms.txt") url.pathname = "/docs/index.md";
+
 			// Agent-facing markdown: explicit `.md` paths always serve markdown;
 			// extensionless page routes negotiate on `Accept: text/markdown`.
 			// Negotiation rewrites to a distinct origin URL, so HTML and markdown
