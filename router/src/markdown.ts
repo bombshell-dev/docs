@@ -17,6 +17,12 @@ available at ${SITE}/docs/index.md
 export function markdownNegotiation(upstream: Upstream): MiddlewareHandler {
 	return async (c, next) => {
 		const url = new URL(c.req.url);
+
+		// Plenty of agent tooling still probes /llms.txt by convention and
+		// never reads Link headers. /docs/index.md is an llms.txt in all but
+		// name, so alias it.
+		if (url.pathname === "/docs/llms.txt") url.pathname = "/docs/index.md";
+
 		const markdownPath = toMarkdownPath(url.pathname);
 		const wantsMarkdown =
 			markdownPath !== null &&
@@ -36,6 +42,9 @@ export function markdownNegotiation(upstream: Upstream): MiddlewareHandler {
 				},
 			});
 		}
+		// Other origin errors (500, 502 HTML error pages) pass through
+		// untouched instead of being relabelled as markdown.
+		if (!response.ok) return response;
 
 		const headers = new Headers(response.headers);
 		headers.set("Content-Type", "text/markdown; charset=utf-8");
