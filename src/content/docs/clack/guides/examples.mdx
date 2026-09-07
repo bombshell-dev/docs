@@ -821,9 +821,9 @@ async function selectConfigFile() {
 }
 ```
 
-With `directory: true`, only folders appear in suggestions; with an existing directory as `initialValue`, **Enter** submits that folder directly (v1.2.0).
+With `directory: true`, only folders appear in suggestions; with an existing directory as `initialValue`, **Enter** submits that folder directly (v1.2.0). Press **Tab** to complete the focused suggestion, then type `/` and press Tab again to descend into it (v1.8.0).
 
-### Autocomplete Tab and placeholder
+### Autocomplete Tab: placeholder and completion
 
 When the search box is empty and `placeholder` is set, **Tab** inserts the placeholder string—useful for default tokens:
 
@@ -845,6 +845,29 @@ async function pickWithDefaultQuery() {
     return null;
   }
   return tag;
+}
+```
+
+With `completeOnTab: true`, **Tab** fills the input with the focused option instead, and the footer shows a `Tab: complete` hint. Single-select only; `path()` enables it by default (v1.8.0):
+
+```ts twoslash
+import { autocomplete, isCancel } from '@clack/prompts';
+
+async function pickBranch() {
+  const branch = await autocomplete({
+    message: 'Check out a branch:',
+    completeOnTab: true,
+    options: [
+      { value: 'main', label: 'main' },
+      { value: 'feat/accessible-mode', label: 'feat/accessible-mode' },
+      { value: 'fix/path-completion', label: 'fix/path-completion' },
+    ],
+  });
+
+  if (isCancel(branch)) {
+    return null;
+  }
+  return branch;
 }
 ```
 
