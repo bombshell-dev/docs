@@ -53,6 +53,26 @@ const age = await text({
 });
 ```
 
+Validators can be asynchronous (v1.8.0). Return a `Promise` to check against a remote source; the prompt blocks input and shows a validating state until it settles:
+
+```ts twoslash
+import { text } from '@clack/prompts';
+
+declare function fetchTakenNames(): Promise<string[]>;
+
+async function validateProjectName(value: string | undefined): Promise<string | undefined> {
+  if (!value) return 'Please enter a name';
+  const taken = await fetchTakenNames();
+  if (taken.includes(value)) return `"${value}" is already taken`;
+  return undefined;
+}
+
+const projectName = await text({
+  message: 'Project name:',
+  validate: validateProjectName,
+});
+```
+
 A [Standard Schema](https://github.com/standard-schema/standard-schema) can be used, for example using [Arktype](https://arktype.io/):
 
 ```ts twoslash
@@ -64,6 +84,8 @@ const name = await text({
   validate: type('string.alpha').describe('Name can only contain letters'),
 });
 ```
+
+Async schemas work the same way (v1.8.0): a schema whose validation returns a `Promise`, such as an Arktype or Zod async refinement, is awaited before the prompt resolves.
 
 ### 3. Consistent Messaging
 
