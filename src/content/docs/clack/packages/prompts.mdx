@@ -377,7 +377,8 @@ Options:
 - `message`: The message or question shown to the user above the input.
 - `options`: The options to present, or a function that returns the options to present allowing for custom search/filtering. [Learn more below](#dynamic-options-getter).
 - `maxItems`: The maximum number of items/options to display in the autocomplete list at once.
-- `placeholder`: Placeholder text displayed when the search field is empty. When set, pressing tab copies the placeholder into the input.
+- `placeholder`: Placeholder text displayed when the search field is empty. When set, pressing Tab on an empty input copies the placeholder into the input. This takes precedence over `completeOnTab`.
+- `completeOnTab`: When `true`, pressing Tab fills the input with the focused option's value and adds a `Tab: complete` hint to the footer. Single-select only; ignored with `multiple: true`. Default: `false` (v1.8.0).
 - `validate`: A function that validates user input. Return a `string` or `Error` to show as a validation error, or `undefined` to accept the result.
 - `filter`: Custom filter function to match options against the search input.
 - `initialValue`: The initially selected option from the list.
@@ -474,7 +475,7 @@ Options:
 
 ### Path Selection
 
-The `path` prompt extends [`autocomplete`](#autocomplete) to provide file and directory suggestions.
+The `path` prompt extends [`autocomplete`](#autocomplete) to provide file and directory suggestions. Press **Tab** to complete the focused suggestion, then type `/` and press Tab again to descend into it (v1.8.0).
 
 ```ts twoslash
 import { path } from '@clack/prompts';
