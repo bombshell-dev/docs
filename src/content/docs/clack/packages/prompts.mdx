@@ -779,6 +779,8 @@ Options:
 
 - All [Common Options](#common-options)
 
+To detect a cancelled prompt, use `isCancel()`. The raw sentinel it checks for, `CANCEL_SYMBOL`, is also exported from both `@clack/prompts` and `@clack/core` for cases where you need the value itself, such as returning it from a custom `Prompt` or comparing against it in tests (v1.8.0).
+
 ### Spinner
 
 The `spinner` function provides a loading indicator for long-running operations.
