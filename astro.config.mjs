@@ -103,6 +103,7 @@ export default defineConfig({
 							baseUrl: docsRoot,
 							paths: {
 								"@bomb.sh/tty": ["node_modules/@bomb.sh/tty/esm/mod.d.ts"],
+								"@clack/core": ["src/types/clack-core.d.ts"],
 							},
 						},
 					},
