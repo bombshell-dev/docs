@@ -384,7 +384,6 @@
     font-family: var(--sl-font-mono);
     background-color: var(--container-fill);
     color: var(--color-white-100);
-
     overflow-x: auto;
     max-width: 100%;
   }
