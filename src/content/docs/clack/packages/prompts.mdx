@@ -48,7 +48,7 @@ All prompts share these common options:
 
 ### Guide Lines
 
-The `withGuide` option (boolean **option**, not a separate API) turns Clack’s border/guide lines on or off. Every prompt accepts it alongside `message` and friends. You can set it globally with `updateSettings` or override it per call.
+The `withGuide` option (boolean **option**, not a separate API) turns Clack’s border/guide lines on or off. Every prompt accepts it alongside `message` and friends, and so do the output helpers that draw their own gutter, such as [`box`](#box). You can set it globally with `updateSettings` or override it per call.
 
 ```ts twoslash
 import { text, updateSettings } from '@clack/prompts';
@@ -69,7 +69,7 @@ Session helpers use the same option on their **second argument**: `intro(title, 
 
 ### AbortController Support
 
-All prompts accept a `signal` option for programmatic cancellation:
+All prompts accept a `signal` option for programmatic cancellation, and so does the [spinner](#spinner):
 
 ```ts twoslash
 import { confirm } from '@clack/prompts';
@@ -863,6 +863,19 @@ if (spin.isCancelled) {
 }
 ```
 
+The spinner also accepts a `signal` option. Aborting the signal stops the spinner exactly as Ctrl+C does. The cancel message is printed, `isCancelled` becomes `true`, and `onCancel` runs. The process itself keeps going, so you decide what happens next.
+
+```ts twoslash
+import { spinner } from '@clack/prompts';
+
+const controller = new AbortController();
+const spin = spinner({ signal: controller.signal });
+
+spin.start('Fetching data');
+// Abort from elsewhere, such as a timeout or a failing parent task
+controller.abort();
+```
+
 #### Customization Options
 
 ```ts twoslash
@@ -1042,6 +1055,7 @@ Options:
 - `contentPadding`: Padding around the content (default: `2`).
 - `rounded`: Use rounded corners when `true` (default), square corners when `false` (default: `true`).
 - `formatBorder`: Custom function to style the border characters.
+- `withGuide`: Draw the guide bar to the left of the box (default: follows the global `withGuide` setting, which is `true`). As of v1.8.0 the bar is grey, matching the gutter drawn by `log`, `note` and the spinner.
 
 ### Task Log
 
