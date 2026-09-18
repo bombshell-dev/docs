@@ -21,7 +21,7 @@ Clack is a modern, flexible and powerful CLI library that helps you build beauti
 
 ## Installation
 
-You can install Clack using npm, yarn, or pnpm:
+You can install Clack using npm, pnpm, Yarn, or Deno:
 
 <Tabs>
 	<TabItem label="npm" icon="seti:npm">
@@ -39,7 +39,14 @@ You can install Clack using npm, yarn, or pnpm:
 		yarn add @clack/prompts
 		```
 	</TabItem>
+	<TabItem label="Deno" icon="deno">
+		```bash
+		deno add npm:@clack/prompts
+		```
+	</TabItem>
 </Tabs>
+
+<Aside type="note">On Deno, Clack reads environment variables such as `TERM` to detect terminal capabilities, so your CLI needs the `--allow-env` (`-E`) permission.</Aside>
 
 ## Quick Start
 
