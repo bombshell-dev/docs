@@ -16,7 +16,7 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 export const GET: APIRoute = async () => {
-	const docs = await getCollection("docs");
+	const docs = await getCollection("docs", ({ data }) => import.meta.env.DEV || !data.draft);
 
 	const sections = new Map<string, { title: string; description: string; url: string }[]>();
 	for (const doc of docs) {

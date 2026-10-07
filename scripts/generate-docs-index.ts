@@ -77,6 +77,7 @@ async function walkDocs(dir: string, base = ''): Promise<DocPage[]> {
 
 		const content = await fs.readFile(path.join(dir, entry.name), 'utf8');
 		const frontmatter = parseFrontmatter(content);
+		if (frontmatter.draft === 'true') continue;
 		const slug = filePathToSlug(rel);
 
 		pages.push({
