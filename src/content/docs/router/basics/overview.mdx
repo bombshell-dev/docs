@@ -26,7 +26,15 @@ Every reachable intent appears in the result type of `parse()`. Narrow `method` 
 
 ```ts twoslash
 import process from "node:process";
-import { command, name, option, parse, routes, schema, toggle } from "@bomb.sh/router";
+import {
+  command,
+  name,
+  option,
+  parse,
+  routes,
+  schema,
+  toggle,
+} from "@bomb.sh/router";
 import * as z from "zod";
 
 const app = command(
@@ -42,7 +50,11 @@ const app = command(
 
 const result = parse(app, { argv: process.argv.slice(2) });
 
-if (result.ok && result.method === "execute" && result.route === "/serve") {
+if (
+  result.ok &&
+  result.method === "execute" &&
+  result.route === "/serve"
+) {
   const model = result.model;
   //    ^?
 }
