@@ -13,6 +13,7 @@ const SECTION_LABELS: Record<string, string> = {
 	args: "Args — argument parsing",
 	tab: "Tab — autocomplete",
 	tty: "TTY — layout & rendering",
+	router: "Router — entry-point routing",
 };
 
 export const GET: APIRoute = async () => {

@@ -561,6 +561,10 @@
     --icon: url("../assets/topics/tty.svg");
   }
 
+  a[href*="/router/"] .starlight-sidebar-topics-icon {
+    --icon: url("../assets/topics/router.svg");
+  }
+
   .starlight-sidebar-topics-icon {
     --size: 1.25em;
     width: var(--size);
@@ -601,6 +605,9 @@
 .starlight-sidebar-topics a[href*="/tty/"] {
   --sl-color-accent-hsl: 300 100% 55%;
 }
+.starlight-sidebar-topics a[href*="/router/"] {
+  --sl-color-accent-hsl: 357 100% 62%;
+}
 
 :root[data-theme="light"] {
   .starlight-sidebar-topics a[href*="/clack/"] {
@@ -614,6 +621,9 @@
   }
   .starlight-sidebar-topics a[href*="/tty/"] {
     --sl-color-accent-hsl: 300 100% 38%;
+  }
+  .starlight-sidebar-topics a[href*="/router/"] {
+    --sl-color-accent-hsl: 357 100% 46%;
   }
 }
 
