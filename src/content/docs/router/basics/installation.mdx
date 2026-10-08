@@ -1,0 +1,77 @@
+---
+title: Installation
+description: Install @bomb.sh/router with your package manager
+draft: true
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Install `@bomb.sh/router` with your package manager:
+
+<Tabs syncKey="pkg">
+	<TabItem label="npm" icon="seti:npm">
+		```bash
+		npm install @bomb.sh/router
+		```
+	</TabItem>
+	<TabItem label="pnpm" icon="pnpm">
+		```bash
+		pnpm add @bomb.sh/router
+		```
+	</TabItem>
+	<TabItem label="Yarn" icon="seti:yarn">
+		```bash
+		yarn add @bomb.sh/router
+		```
+	</TabItem>
+	<TabItem label="Bun" icon="bun">
+		```bash
+		bun add @bomb.sh/router
+		```
+	</TabItem>
+	<TabItem label="Deno" icon="deno">
+		```bash
+		deno add npm:@bomb.sh/router
+		```
+	</TabItem>
+</Tabs>
+
+## Requirements
+
+- **ES modules:** The package ships ES modules only.
+- **Node.js 20 or later:** Deno and Bun run it too.
+- **TypeScript types included:** No separate `@types` package is needed.
+
+## Add a schema library
+
+The router validates option and argument values with any [Standard Schema](https://standardschema.dev/) library, such as Zod, ArkType, or Valibot. The examples in these docs use Zod:
+
+<Tabs syncKey="pkg">
+	<TabItem label="npm" icon="seti:npm">
+		```bash
+		npm install zod
+		```
+	</TabItem>
+	<TabItem label="pnpm" icon="pnpm">
+		```bash
+		pnpm add zod
+		```
+	</TabItem>
+	<TabItem label="Yarn" icon="seti:yarn">
+		```bash
+		yarn add zod
+		```
+	</TabItem>
+	<TabItem label="Bun" icon="bun">
+		```bash
+		bun add zod
+		```
+	</TabItem>
+	<TabItem label="Deno" icon="deno">
+		```bash
+		deno add npm:zod
+		```
+	</TabItem>
+</Tabs>

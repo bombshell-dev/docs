@@ -15,6 +15,9 @@ const docsRoot = fileURLToPath(new URL(".", import.meta.url));
 
 const site = "https://bomb.sh/docs/";
 
+// Topics whose pages are all still drafts render under `astro dev` only.
+const showDrafts = process.argv.includes("dev");
+
 // https://astro.build/config
 export default defineConfig({
 	site: "https://bomb.sh/",
@@ -103,6 +106,8 @@ export default defineConfig({
 							baseUrl: docsRoot,
 							paths: {
 								"@bomb.sh/tty": ["node_modules/@bomb.sh/tty/esm/mod.d.ts"],
+								// Router examples import zod; reuse the copy Astro ships instead of a direct dependency.
+								zod: ["node_modules/.pnpm/node_modules/zod"],
 							},
 						},
 					},
@@ -210,6 +215,19 @@ export default defineConfig({
 							},
 						],
 					},
+					...(showDrafts
+						? [
+								{
+									label: "Router",
+									id: "router",
+									icon: "random",
+									link: "/router/basics/overview",
+									items: [
+										{ label: "Basics", autogenerate: { directory: "router/basics" } },
+									],
+								},
+							]
+						: []),
 				]),
 			],
 		}),

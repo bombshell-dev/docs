@@ -14,6 +14,9 @@ importers:
       '@bomb.sh/args':
         specifier: ^0.3.1
         version: 0.3.1
+      '@bomb.sh/router':
+        specifier: ^0.7.1
+        version: 0.7.1
       '@bomb.sh/tty':
         specifier: ^0.8.0
         version: 0.8.0
@@ -163,6 +166,10 @@ packages:
 
   '@bomb.sh/args@0.3.1':
     resolution: {integrity: sha512-CwxKrfgcorUPP6KfYD59aRdBYWBTsfsxT+GmoLVnKo5Tmyoqbpo0UNcjngRMyU+6tiPbd18RuIYxhgAn44wU/Q==}
+
+  '@bomb.sh/router@0.7.1':
+    resolution: {integrity: sha512-/KbtFidAJ1hjbeii2Geg7oXLj5QhVcO6I2cQHThBOSPoCWr3Qg1Syg6itm4W7Z4zcliCoccvN3kKI3wFxjKb2Q==}
+    engines: {node: '>= 20'}
 
   '@bomb.sh/tty@0.8.0':
     resolution: {integrity: sha512-tEE0mtqnEp2uJt4kQS5AjdghCD5KN4BobqHOlfhaiNyrigxFBKk61XkDy//4D7V/AejrTvubh44B4NV35lsnxw==}
@@ -1128,6 +1135,9 @@ packages:
 
   '@speed-highlight/core@1.2.15':
     resolution: {integrity: sha512-BMq1K3DsElxDWawkX6eLg9+CKJrTVGCBAWVuHXVUV2u0s2711qiChLSId6ikYPfxhdYocLNt3wWwSvDiTvFabw==}
+
+  '@standard-schema/spec@1.1.0':
+    resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
   '@swc/helpers@0.5.18':
     resolution: {integrity: sha512-TXTnIcNJQEKwThMMqBXsZ4VGAza6bvN4pa41Rkqoio6QBKMvo+5lexeTMScGCIxtzgQJzElcvIltani+adC5PQ==}
@@ -3105,6 +3115,10 @@ snapshots:
 
   '@bomb.sh/args@0.3.1': {}
 
+  '@bomb.sh/router@0.7.1':
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+
   '@bomb.sh/tty@0.8.0': {}
 
   '@braintree/sanitize-url@7.1.2': {}
@@ -3746,6 +3760,8 @@ snapshots:
   '@sindresorhus/is@7.2.0': {}
 
   '@speed-highlight/core@1.2.15': {}
+
+  '@standard-schema/spec@1.1.0': {}
 
   '@swc/helpers@0.5.18':
     dependencies:
