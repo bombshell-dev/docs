@@ -1,0 +1,250 @@
+---
+title: API reference
+description: Every export of @bomb.sh/router 0.7.1, grouped by what it does
+draft: true
+---
+
+This page lists every export of `@bomb.sh/router` 0.7.1. Signatures leave out generic parameters, because TypeScript infers them from your definitions.
+
+## Definitions
+
+### command(name, ...elements)
+
+Declares a route that supports `help` and `execute`. Returns a route. Same as `route(name, executable(), ...elements)`. See [Routes and methods](/docs/router/guides/routes-and-methods/).
+
+### route(name, ...elements)
+
+Declares a route that supports `help` only. Returns a route.
+
+### routes(...children)
+
+Attaches child routes to the route it is passed to.
+
+### name(value)
+
+Returns a `Definition` with the given name. The first argument of `command()`, `route()`, `option()`, `toggle()`, `argument()`, and `param()`.
+
+### description(text)
+
+Adds a description to a route or parameter. Shown in help output. See [Help, version, and errors](/docs/router/guides/help-version-and-errors/#describe-routes-and-parameters).
+
+### version(semver)
+
+Adds the `version` method to a route and sets the version string `printVersion()` prints. Does not apply to child routes.
+
+### executable()
+
+Adds the `execute` method to a route.
+
+## Parameters
+
+### option(name, ...elements)
+
+Declares a named parameter read from `--kebab-name <value>` or `--kebab-name=<value>`. See [Parameters](/docs/router/guides/parameters/).
+
+### toggle(name, ...elements)
+
+Declares a boolean parameter read from `--kebab-name` and `--no-kebab-name`. Defaults to `false`.
+
+### argument(name, ...elements)
+
+Declares a positional parameter.
+
+### schema(standardSchema)
+
+Validates a parameter with a [Standard Schema](https://standardschema.dev/). Sets the parameter's type, default, and whether it is required.
+
+### multiple()
+
+Turns a parameter into a list. An option collects every occurrence. An argument collects every positional value.
+
+### cli(names, options?)
+
+Replaces the flags a parameter reads. With `{ switch: true }`, the parameter takes no value and reads `true` when present.
+
+### env(key)
+
+Replaces the environment variable a parameter reads.
+
+## Sources
+
+### withValues(sources)
+
+Attaches value sources to a route. Values are addressed from that route. See [Value and environment sources](/docs/router/guides/sources/).
+
+### withEnvs(sources)
+
+Attaches environment sources to a route.
+
+## Composition
+
+### extend(...elements)
+
+Bundles elements into one reusable element:
+
+```ts twoslash
+import {
+  command,
+  extend,
+  name,
+  option,
+  schema,
+  toggle,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const logging = extend(
+  toggle(name("verbose")),
+  option(name("logLevel"), schema(z.string().default("info"))),
+);
+
+const app = command(name("simulacrum"), logging);
+```
+
+### transform(schema)
+
+Validates and reshapes a route's whole model with a schema. The schema's output becomes the model type:
+
+```ts twoslash
+import {
+  command,
+  name,
+  option,
+  schema,
+  transform,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const serve = command(
+  name("serve"),
+  option(name("port"), schema(z.number().default(4000))),
+  transform(
+    z
+      .object({ port: z.number() })
+      .transform((m) => ({ ...m, url: `http://localhost:${m.port}` })),
+  ),
+);
+```
+
+### checkpoint()
+
+Pauses parsing so the application can load configuration before parsing continues. `parse()` returns a step whose `resume()` takes a `Result` with a list of value sources.
+
+## Running
+
+### parse(app, input)
+
+Matches `input.argv`, plus optional `input.values` and `input.envs`, against the route tree. Returns an intent or a failure. Never prints, exits, or performs I/O.
+
+### printHelp(intent)
+
+Returns the help text for a `help` intent.
+
+### printVersion(intent)
+
+Returns the version text for a `version` intent.
+
+### printErrors(failure)
+
+Returns the error text for a `method-not-allowed` or `unprocessable-content` failure. An `unprocessable-content` failure prints one line per issue.
+
+## Low-level functions
+
+These build custom parameter kinds and elements. Applications do not need them.
+
+| Export | Description |
+| --- | --- |
+| `param(name, ...elements)` | Returns a bare parameter object, the base that `option()`, `toggle()`, and `argument()` build on. |
+| `mark(element)` | Brands a function as a custom transform element. |
+
+## Types
+
+### Results
+
+| Type | Description |
+| --- | --- |
+| `Outcome<T>` | `T`, or a `MethodNotAllowed` or `UnprocessableContent` failure. |
+| `AnyIntent` | Any help, version, or execute intent. |
+| `Intent<M, P>` | A successful match: `ok`, `method`, `route`, `definition`, `path`, and the `literals` that came after `--`. |
+| `Help<P>` | A help intent for route `P`. |
+| `Version<P>` | A version intent for route `P`. |
+| `Execute<P, Models>` | An execute intent with `model`, `models`, and `issues`. |
+| `MethodNotAllowed` | A failure with the requested `method` and the `allowed` methods. |
+| `UnprocessableContent` | A failure with a list of `issues`. |
+| `Issue` | A Standard Schema issue: a `message` and an optional `path`. |
+| `Method` | `"help"`, `"version"`, or `"execute"`. |
+| `Result<T>` | `{ ok: true, value }` or `{ ok: false, issues }`. |
+
+### Inference helpers
+
+| Type | Description |
+| --- | --- |
+| `ModelOf<R, P>` | The model of route `P` in route tree `R`. `P` defaults to `"/"`. |
+| `IntentsOf<R>` | Every intent route tree `R` can produce. |
+| `MethodsOf<R>` | The methods route `R` supports. |
+| `ModelsByRoute` | Models keyed by route path. |
+| `RoutePath` | A route path such as `"/database/clean"`. |
+| `PathOf<P>` | A route path split into segments. `"/database/clean"` becomes `["database", "clean"]`. |
+| `Path` | A list of route segments. |
+
+For example, `ModelOf` gives you a route's model type without calling `parse()`:
+
+```ts twoslash
+import {
+  command,
+  name,
+  option,
+  routes,
+  schema,
+  type ModelOf,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("simulacrum"),
+  routes(
+    command(
+      name("serve"),
+      option(name("port"), schema(z.number().default(4000))),
+    ),
+  ),
+);
+
+type ServeModel = ModelOf<typeof app, "/serve">; // { port: number }
+```
+
+### Inputs
+
+| Type | Description |
+| --- | --- |
+| `Input` | The second argument of `parse()`: `argv`, plus optional `values` and `envs`. |
+| `ValueSource` | A named value source: `{ name, value }`. |
+| `EnvSource` | A named environment source: `{ name, value }`. |
+| `Environment` | A record of environment variable names to string values. |
+| `Schema` | A Standard Schema. |
+
+### Definitions
+
+| Type | Description |
+| --- | --- |
+| `Definition<N>` | A name and an optional description. |
+| `Route<N, M, P>` | A route named `N` that supports methods `M`. |
+| `AnyRoute` | Any route. |
+| `CommandZero` | The type of a `command()` before any elements are applied. |
+| `RouteZero` | The type of a `route()` before any elements are applied. |
+| `Param<K, T, C>` | A parameter named `K` with value type `T`. |
+| `Literal` | A token that came after `--`, with its `text` and its `index` in `argv`. An intent's `literals` lists them in order. |
+
+### Low-level types
+
+These describe the parser's internals. Applications do not need them.
+
+| Type | Description |
+| --- | --- |
+| `CLIOptions` | The options of `cli()`. |
+| `CLIRead` | The result of reading one parameter from the command line. |
+| `ReadCLI` | A function that reads one parameter from the command line. |
+| `CLISymbol` | A command-line token: a flag, a setter, or a word. |
+| `Rest` | The input left after a parse phase. |
+| `Transform` | The input and output types of a custom transform. |
+| `TransformElement<F>` | An element created with `mark()`. |
