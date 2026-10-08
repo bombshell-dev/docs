@@ -15,9 +15,6 @@ const docsRoot = fileURLToPath(new URL(".", import.meta.url));
 
 const site = "https://bomb.sh/docs/";
 
-// Topics whose pages are all still drafts render under `astro dev` only.
-const showDrafts = process.argv.includes("dev");
-
 // https://astro.build/config
 export default defineConfig({
 	site: "https://bomb.sh/",
@@ -215,21 +212,17 @@ export default defineConfig({
 							},
 						],
 					},
-					...(showDrafts
-						? [
-								{
-									label: "Router",
-									id: "router",
-									icon: "random",
-									link: "/router/basics/overview",
-									items: [
-										{ label: "Basics", autogenerate: { directory: "router/basics" } },
-										{ label: "Guides", autogenerate: { directory: "router/guides" } },
-										{ label: "API", items: [{ label: "Reference", link: "/router/api/" }] },
-									],
-								},
-							]
-						: []),
+					{
+						label: "Router",
+						id: "router",
+						icon: "random",
+						link: "/router/basics/overview",
+						items: [
+							{ label: "Basics", autogenerate: { directory: "router/basics" } },
+							{ label: "Guides", autogenerate: { directory: "router/guides" } },
+							{ label: "API", items: [{ label: "Reference", link: "/router/api/" }] },
+						],
+					},
 				]),
 			],
 		}),

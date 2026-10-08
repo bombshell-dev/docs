@@ -9,4 +9,5 @@ export const PROJECT_LANDING_PAGES: Record<string, string> = {
 	tab: "/docs/tab/",
 	args: "/docs/args/getting-started/",
 	tty: "/docs/tty/basics/getting-started/",
+	router: "/docs/router/basics/overview/",
 };

@@ -40,7 +40,7 @@ export const GET: APIRoute = async () => {
 		"# Bombshell Documentation",
 		"",
 		"> Effortlessly build beautiful command-line apps. Documentation for",
-		"> Clack, Args, Tab, and TTY — an ecosystem of terminal primitives for",
+		"> Clack, Args, Tab, TTY, and Router — an ecosystem of terminal primitives for",
 		"> Node.js CLIs and TUIs.",
 		"",
 		`Every page is available as markdown at \`{page}/index.md\`, or by`,
