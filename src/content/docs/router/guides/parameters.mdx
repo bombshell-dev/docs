@@ -1,0 +1,178 @@
+---
+title: Parameters
+description: Read options, toggles, and positional arguments, and validate them with a schema
+draft: true
+sidebar:
+  order: 2
+---
+
+Parameters are the values a route reads from the command line. There are three kinds:
+
+- `option()` reads a named value, such as `--port 4100`.
+- `toggle()` reads an on or off switch, such as `--dry-run`.
+- `argument()` reads a positional value, such as the `file.txt` in `open file.txt`.
+
+Each parameter belongs to the route that declares it, and its value appears in that route's `model`.
+
+## Add an option
+
+`option(name("host"))` reads `--host <value>` or `--host=<value>`. The flag is the kebab-case form of the name, so `option(name("logLevel"))` reads `--log-level`. When the flag is absent, the value is `undefined`.
+
+## Validate with a schema
+
+Without a schema, a parameter's type is `unknown`. Add `schema()` with any [Standard Schema](https://standardschema.dev/) library to give it a type, a default, or a requirement:
+
+```ts twoslash
+import process from "node:process";
+import { command, name, option, parse, schema } from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("serve"),
+  option(name("host")),
+  option(name("port"), schema(z.number().default(4000))),
+  option(name("zip"), schema(z.string())),
+);
+
+const result = parse(app, { argv: process.argv.slice(2) });
+
+if (result.ok && result.method === "execute") {
+  result.model.host; // unknown
+  result.model.port; // number
+  result.model.zip; // string
+}
+```
+
+A schema that rejects `undefined` makes the parameter required. Here `--zip` is required, so `serve` alone fails with `unprocessable-content`:
+
+```text
+zip: Invalid input: expected string, received undefined
+```
+
+Invalid values fail the same way, and they never reach your application.
+
+## Know how values are decoded
+
+Command-line text is decoded before the schema sees it. The router tries a number first, then the original text, and the schema picks the first candidate it accepts. Without a schema, the first candidate wins:
+
+| Input | No schema | `schema(z.string())` |
+| --- | --- | --- |
+| `--zip 94110` | `94110` | `"94110"` |
+| `--zip 007` | `7` | `"007"` |
+| `--zip 1e3` | `1000` | `"1e3"` |
+| `--zip abc` | `"abc"` | `"abc"` |
+
+To keep text that looks like a number, such as a postal code or a version, use a string schema.
+
+## Add a toggle
+
+`toggle(name("dryRun"))` reads a switch. It is `true` with `--dry-run`, `false` with `--no-dry-run`, and `false` when absent. Its type is always `boolean`, so it needs no schema. `--dry-run=false` is not accepted.
+
+## Read positional arguments
+
+`argument(name("file"))` reads one positional value. A second positional value fails with ``unexpected: `b.txt` ``. As with options, add a schema to make the argument required or typed:
+
+```ts twoslash
+import { argument, command, name, schema } from "@bomb.sh/router";
+import * as z from "zod";
+
+const open = command(
+  name("open"),
+  argument(name("file"), schema(z.string())),
+);
+```
+
+## Accept repeated values
+
+`multiple()` turns a parameter into a list. An option collects every occurrence, so `--tag a --tag b` reads `["a", "b"]`. An argument collects every positional value. With `multiple()`, the schema validates the whole list:
+
+```ts twoslash
+import process from "node:process";
+import {
+  argument,
+  command,
+  multiple,
+  name,
+  option,
+  parse,
+  schema,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("cat"),
+  option(
+    name("tag"),
+    multiple(),
+    schema(z.array(z.string()).default([])),
+  ),
+  argument(
+    name("files"),
+    multiple(),
+    schema(z.array(z.string())),
+  ),
+);
+
+const result = parse(app, { argv: process.argv.slice(2) });
+
+if (result.ok && result.method === "execute") {
+  result.model.tag; // string[]
+  result.model.files; // string[]
+}
+```
+
+## Rename a flag
+
+`cli()` replaces the flags an option reads. After `cli(["--listen", "-l"])`, the option reads `--listen` and `-l`, and `--port` is no longer accepted:
+
+```ts twoslash
+import { cli, command, name, option, schema } from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("serve"),
+  option(name("port"), cli(["--listen", "-l"]), schema(z.number())),
+  option(name("force"), cli(["--force", "-f"], { switch: true })),
+);
+```
+
+`{ switch: true }` makes an option take no value. `--force` or `-f` reads `true`, and the value is `undefined` when absent. Use `toggle()` instead when you also want `--no-force` and a `false` default.
+
+## Read a different environment variable
+
+When you pass the environment to `parse()`, each parameter also reads a variable named after its route and its name. The `port` option of the `/serve` route reads `SERVE_PORT`. `env()` replaces that name:
+
+```ts twoslash
+import process from "node:process";
+import {
+  command,
+  env,
+  name,
+  option,
+  parse,
+  routes,
+  schema,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("simulacrum"),
+  routes(
+    command(
+      name("serve"),
+      option(
+        name("port"),
+        env("PORT"),
+        schema(z.number().default(4000)),
+      ),
+    ),
+  ),
+);
+
+const result = parse(app, {
+  argv: process.argv.slice(2),
+  envs: [{ name: "process", value: process.env }],
+});
+```
+
+With `env("PORT")`, `PORT=9000 simulacrum serve` sets the port, and `SERVE_PORT` is ignored.
