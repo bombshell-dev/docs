@@ -1,0 +1,116 @@
+---
+title: Value and environment sources
+description: Bind configuration values and environment variables onto the same typed model as command-line arguments
+draft: true
+sidebar:
+  order: 3
+---
+
+Command-line arguments are one source of configuration. `@bomb.sh/router` also binds JavaScript values, such as the contents of a configuration file, and environment variables onto the same route models. Every source goes through the same schema, so a value from the environment is validated exactly like a value from `argv`.
+
+## Pass values and environment variables
+
+Give `parse()` a list of value sources and a list of environment sources. The `name` of each source labels where its data came from:
+
+```ts twoslash
+import process from "node:process";
+import {
+  command,
+  name,
+  option,
+  parse,
+  routes,
+  schema,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("simulacrum"),
+  routes(
+    command(
+      name("serve"),
+      option(name("port"), schema(z.number().default(4000))),
+    ),
+  ),
+);
+
+declare const config: unknown;
+
+const result = parse(app, {
+  argv: process.argv.slice(2),
+  values: [{ name: "config.json", value: config }],
+  envs: [{ name: "process", value: process.env }],
+});
+```
+
+## Address a parameter
+
+A value source nests parameters under their route path. Parameters of the root route sit at the top level. An environment variable joins the route path and the parameter name in upper snake case:
+
+| Route | Parameter | Value source | Environment variable |
+| --- | --- | --- | --- |
+| `/` | `verbose` | `{ verbose: true }` | `VERBOSE` |
+| `/serve` | `port` | `{ serve: { port: 4200 } }` | `SERVE_PORT` |
+| `/database/clean` | `dryRun` | `{ database: { clean: { dryRun: true } } }` | `DATABASE_CLEAN_DRY_RUN` |
+
+To read a different environment variable for one parameter, use [`env()`](/docs/router/guides/parameters/#read-a-different-environment-variable).
+
+## Know the precedence
+
+When more than one source sets a parameter, the router uses this order:
+
+```text
+CLI → environment → values → schema default
+```
+
+With a value source of `{ serve: { port: 4200 } }` and `SERVE_PORT=4300`:
+
+| Invocation | `port` |
+| --- | --- |
+| `simulacrum serve --port 4100` | `4100` |
+| `simulacrum serve` | `4300` |
+| `simulacrum serve`, without `SERVE_PORT` | `4200` |
+| `simulacrum serve`, without either source | `4000` |
+
+Within one kind of source, the first source in the list wins. Put the most specific source first, for example a project file before a user-wide file.
+
+## Know what gets decoded
+
+Command-line text and environment text are decoded before validation, as described in [how values are decoded](/docs/router/guides/parameters/#know-how-values-are-decoded). So `SERVE_PORT=4300` reaches the schema as the number `4300`.
+
+JavaScript values are used directly. A value source of `{ serve: { port: "4200" } }` fails `z.number()`, because the string is not converted.
+
+Toggles read from the environment accept exactly `true` or `false`.
+
+## Attach sources to a route
+
+`withValues()` and `withEnvs()` attach sources to a route definition instead of passing them to `parse()`. Use them for defaults that belong with a route:
+
+```ts twoslash
+import {
+  command,
+  name,
+  option,
+  routes,
+  schema,
+  withValues,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("simulacrum"),
+  routes(
+    command(
+      name("serve"),
+      withValues([{ name: "defaults", value: { port: 4300 } }]),
+      option(name("port"), schema(z.number().default(4000))),
+    ),
+  ),
+);
+```
+
+Values attached with `withValues()` are addressed from the route they belong to, so `/serve` reads `{ port: 4300 }`, not `{ serve: { port: 4300 } }`. They take precedence over values passed to `parse()`. Environment sources attached with `withEnvs()` still use the full variable name, such as `SERVE_PORT`.
+
+## Read the environment on Deno
+
+Deno asks for permission before a program reads environment variables. If you pass `process.env` to `parse()`, run your CLI with `--allow-env` (`-E`). Parsing `argv` alone needs no permission.
