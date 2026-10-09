@@ -30,7 +30,6 @@ import {
   name,
   option,
   parse,
-  routes,
   schema,
   toggle,
 } from "@bomb.sh/router";
@@ -39,11 +38,9 @@ import * as z from "zod";
 const app = command(
   name("simulacrum"),
   toggle(name("verbose")),
-  routes(
-    command(
-      name("serve"),
-      option(name("port"), schema(z.number().default(4000))),
-    ),
+  command(
+    name("serve"),
+    option(name("port"), schema(z.number().default(4000))),
   ),
 );
 

@@ -27,7 +27,6 @@ import {
   printErrors,
   printHelp,
   printVersion,
-  routes,
   toggle,
   version,
 } from "@bomb.sh/router";
@@ -37,9 +36,7 @@ const app = command(
   description("Run and manage local service simulators."),
   version("1.0.0"),
   toggle(name("verbose"), description("Print extra logs")),
-  routes(
-    command(name("serve"), description("Start the simulator server")),
-  ),
+  command(name("serve"), description("Start the simulator server")),
 );
 
 const result = parse(app, { argv: process.argv.slice(2) });

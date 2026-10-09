@@ -9,11 +9,12 @@ A **route** is an address in your CLI, such as `/` or `/database/clean`. A **met
 
 ## Declare routes
 
-Three functions build the route tree:
+Two functions build the route tree:
 
 - `route(name(...), ...)` declares an address that supports help only.
 - `command(name(...), ...)` declares an address that supports help and execute.
-- `routes(...)` attaches child routes to a parent.
+
+A child route is passed straight to its parent, next to the parent's options and other elements. To reuse a group of routes, bundle them with [`extend()`](/docs/router/api/#extendelements). Before 0.8.0, child routes went inside a `routes()` wrapper, which no longer exists.
 
 `command()` is exactly a `route()` with `executable()` added, so these two definitions are equivalent:
 
@@ -33,7 +34,6 @@ import {
   name,
   option,
   route,
-  routes,
   schema,
   version,
 } from "@bomb.sh/router";
@@ -42,30 +42,26 @@ import * as z from "zod";
 const app = command(
   name("simulacrum"),
   version("1.0.0"),
-  routes(
+  command(
+    name("serve"),
+    option(
+      name("port"),
+      schema(z.number().default(4000)),
+    ),
+  ),
+  route(
+    name("database"),
     command(
-      name("serve"),
-      option(
-        name("port"),
-        schema(z.number().default(4000)),
-      ),
+      name("clean"),
     ),
-    route(
-      name("database"),
-      routes(
-        command(
-          name("clean"),
-        ),
-      ),
-    ),
-    route(
-      name("cache"),
-      executable(),
-    ),
-    command(
-      name("plugin"),
-      version("2.3.0"),
-    ),
+  ),
+  route(
+    name("cache"),
+    executable(),
+  ),
+  command(
+    name("plugin"),
+    version("2.3.0"),
   ),
 );
 ```
@@ -106,12 +102,11 @@ import {
   parse,
   printErrors,
   route,
-  routes,
 } from "@bomb.sh/router";
 
 const app = command(
   name("simulacrum"),
-  routes(route(name("database"), routes(command(name("clean"))))),
+  route(name("database"), command(name("clean"))),
 );
 
 const result = parse(app, { argv: process.argv.slice(2) });

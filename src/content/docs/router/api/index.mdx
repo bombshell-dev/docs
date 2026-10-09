@@ -1,9 +1,9 @@
 ---
 title: API reference
-description: Every export of @bomb.sh/router 0.7.1, grouped by what it does
+description: Every export of @bomb.sh/router 0.8.0, grouped by what it does
 ---
 
-This page lists every export of `@bomb.sh/router` 0.7.1. Signatures leave out generic parameters, because TypeScript infers them from your definitions.
+This page lists every export of `@bomb.sh/router` 0.8.0. Signatures leave out generic parameters, because TypeScript infers them from your definitions.
 
 ## Definitions
 
@@ -13,11 +13,7 @@ Declares a route that supports `help` and `execute`. Returns a route. Same as `r
 
 ### route(name, ...elements)
 
-Declares a route that supports `help` only. Returns a route.
-
-### routes(...children)
-
-Attaches child routes to the route it is passed to.
+Declares a route that supports `help` only. Returns a route. Child routes are passed directly as elements of `route()` and `command()`.
 
 ### name(value)
 
@@ -79,7 +75,7 @@ Attaches environment sources to a route.
 
 ### extend(...elements)
 
-Bundles elements into one reusable element:
+Bundles elements, including child routes, into one reusable element:
 
 ```ts twoslash
 import {
@@ -127,7 +123,11 @@ const serve = command(
 
 ### checkpoint()
 
-Pauses parsing so the application can load configuration before parsing continues. `parse()` returns a step whose `resume()` takes a `Result` with a list of value sources.
+Pauses parsing so the application can load configuration before parsing continues. `parse()` returns a step whose `resume()` takes the list of value sources to load.
+
+### dynamic(schema, extension)
+
+Pauses parsing until the application supplies a value. `resume()` takes that value, `schema` validates it, and `extension` receives the validated value and returns the elements to add, such as options or child routes. An invalid value fails with `unprocessable-content`.
 
 ## Running
 
@@ -193,7 +193,6 @@ import {
   command,
   name,
   option,
-  routes,
   schema,
   type ModelOf,
 } from "@bomb.sh/router";
@@ -201,11 +200,9 @@ import * as z from "zod";
 
 const app = command(
   name("simulacrum"),
-  routes(
-    command(
-      name("serve"),
-      option(name("port"), schema(z.number().default(4000))),
-    ),
+  command(
+    name("serve"),
+    option(name("port"), schema(z.number().default(4000))),
   ),
 );
 

@@ -18,18 +18,15 @@ import {
   name,
   option,
   parse,
-  routes,
   schema,
 } from "@bomb.sh/router";
 import * as z from "zod";
 
 const app = command(
   name("simulacrum"),
-  routes(
-    command(
-      name("serve"),
-      option(name("port"), schema(z.number().default(4000))),
-    ),
+  command(
+    name("serve"),
+    option(name("port"), schema(z.number().default(4000))),
   ),
 );
 
@@ -90,7 +87,6 @@ import {
   command,
   name,
   option,
-  routes,
   schema,
   withValues,
 } from "@bomb.sh/router";
@@ -98,12 +94,10 @@ import * as z from "zod";
 
 const app = command(
   name("simulacrum"),
-  routes(
-    command(
-      name("serve"),
-      withValues([{ name: "defaults", value: { port: 4300 } }]),
-      option(name("port"), schema(z.number().default(4000))),
-    ),
+  command(
+    name("serve"),
+    withValues([{ name: "defaults", value: { port: 4300 } }]),
+    option(name("port"), schema(z.number().default(4000))),
   ),
 );
 ```
