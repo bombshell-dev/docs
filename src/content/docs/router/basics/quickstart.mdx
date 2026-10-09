@@ -18,7 +18,6 @@ import {
   name,
   option,
   route,
-  routes,
   schema,
   toggle,
   version,
@@ -30,19 +29,15 @@ const app = command(
   description("Run and manage local service simulators."),
   version("1.0.0"),
   toggle(name("verbose")),
-  routes(
+  command(
+    name("serve"),
+    option(name("port"), schema(z.number().default(4000))),
+  ),
+  route(
+    name("database"),
     command(
-      name("serve"),
-      option(name("port"), schema(z.number().default(4000))),
-    ),
-    route(
-      name("database"),
-      routes(
-        command(
-          name("clean"),
-          toggle(name("dryRun")),
-        ),
-      ),
+      name("clean"),
+      toggle(name("dryRun")),
     ),
   ),
 );
@@ -72,7 +67,6 @@ import {
   name,
   option,
   route,
-  routes,
   schema,
   toggle,
   version,
@@ -84,19 +78,15 @@ const app = command(
   description("Run and manage local service simulators."),
   version("1.0.0"),
   toggle(name("verbose")),
-  routes(
+  command(
+    name("serve"),
+    option(name("port"), schema(z.number().default(4000))),
+  ),
+  route(
+    name("database"),
     command(
-      name("serve"),
-      option(name("port"), schema(z.number().default(4000))),
-    ),
-    route(
-      name("database"),
-      routes(
-        command(
-          name("clean"),
-          toggle(name("dryRun")),
-        ),
-      ),
+      name("clean"),
+      toggle(name("dryRun")),
     ),
   ),
 );

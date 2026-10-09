@@ -151,21 +151,18 @@ import {
   name,
   option,
   parse,
-  routes,
   schema,
 } from "@bomb.sh/router";
 import * as z from "zod";
 
 const app = command(
   name("simulacrum"),
-  routes(
-    command(
-      name("serve"),
-      option(
-        name("port"),
-        env("PORT"),
-        schema(z.number().default(4000)),
-      ),
+  command(
+    name("serve"),
+    option(
+      name("port"),
+      env("PORT"),
+      schema(z.number().default(4000)),
     ),
   ),
 );

@@ -15,8 +15,8 @@ importers:
         specifier: ^0.3.1
         version: 0.3.1
       '@bomb.sh/router':
-        specifier: ^0.7.1
-        version: 0.7.1
+        specifier: ^0.8.0
+        version: 0.8.0
       '@bomb.sh/tty':
         specifier: ^0.8.0
         version: 0.8.0
@@ -167,8 +167,8 @@ packages:
   '@bomb.sh/args@0.3.1':
     resolution: {integrity: sha512-CwxKrfgcorUPP6KfYD59aRdBYWBTsfsxT+GmoLVnKo5Tmyoqbpo0UNcjngRMyU+6tiPbd18RuIYxhgAn44wU/Q==}
 
-  '@bomb.sh/router@0.7.1':
-    resolution: {integrity: sha512-/KbtFidAJ1hjbeii2Geg7oXLj5QhVcO6I2cQHThBOSPoCWr3Qg1Syg6itm4W7Z4zcliCoccvN3kKI3wFxjKb2Q==}
+  '@bomb.sh/router@0.8.0':
+    resolution: {integrity: sha512-9Y0fA76+dlFL8aRf8PVfgXrI0qHr4GQrLLv09E75tGRqCtCI5+E/ZzLnyTGJMo/j4CzYt44c4jdXDLv+m9/g9g==}
     engines: {node: '>= 20'}
 
   '@bomb.sh/tty@0.8.0':
@@ -3115,7 +3115,7 @@ snapshots:
 
   '@bomb.sh/args@0.3.1': {}
 
-  '@bomb.sh/router@0.7.1':
+  '@bomb.sh/router@0.8.0':
     dependencies:
       '@standard-schema/spec': 1.1.0
 
