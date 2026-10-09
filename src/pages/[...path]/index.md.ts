@@ -10,7 +10,7 @@ import { mdxToMarkdown } from "../../lib/mdx-to-markdown";
 const BASE_URL = "https://bomb.sh/docs";
 
 export async function getStaticPaths() {
-	const docs = await getCollection("docs");
+	const docs = await getCollection("docs", ({ data }) => import.meta.env.DEV || !data.draft);
 	return docs
 		.filter((doc) => doc.id !== "index" && doc.id !== "404")
 		.map((doc) => ({ params: { path: doc.id }, props: { doc } }));
