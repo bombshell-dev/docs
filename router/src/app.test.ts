@@ -40,6 +40,16 @@ test("redirects bare project roots to their landing page", async () => {
 	);
 });
 
+test("redirects the bare router root to its overview", async () => {
+	const { app } = appWith(() => undefined);
+	const res = await app.request("https://bomb.sh/docs/router");
+	assert.equal(res.status, 308);
+	assert.equal(
+		res.headers.get("Location"),
+		"https://bomb.sh/docs/router/basics/overview/",
+	);
+});
+
 test("serves the markdown twin on Accept: text/markdown", async () => {
 	const { app, calls } = appWith((url) =>
 		url.pathname === "/docs/args/api/index.md" ? markdown() : undefined,
