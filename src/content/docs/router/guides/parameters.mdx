@@ -135,7 +135,9 @@ const app = command(
 );
 ```
 
-`{ switch: true }` makes an option take no value. `--force` or `-f` reads `true`, and the value is `undefined` when absent. Use `toggle()` instead when you also want `--no-force` and a `false` default.
+For most on or off flags, use [`toggle()`](#add-a-toggle) instead. It reads `--force` and `--no-force`, defaults to `false`, and is always a `boolean`.
+
+`{ switch: true }` makes an option take no value. `--force` or `-f` reads `true`, the value is `undefined` when absent, and its type is `unknown` unless you add a schema. Use it only when you need something a toggle cannot do, such as a short flag like `-f`.
 
 ## Read a different environment variable
 
