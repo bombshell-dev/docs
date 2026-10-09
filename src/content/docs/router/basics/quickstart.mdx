@@ -1,0 +1,171 @@
+---
+title: Quickstart
+description: Define the routes of a CLI, parse argv, and dispatch on a typed intent
+draft: true
+sidebar:
+  order: 3
+---
+
+This page builds `simulacrum`, a small CLI with a root command, a `serve` command, and a `database clean` command. You define every way into the program, parse `argv` into a typed intent, and dispatch on it.
+
+## Define the routes
+
+`route()` declares an address. `command()` is an address that can also execute. Definitions are immutable composition pipelines, not handler registrations:
+
+```ts twoslash
+import {
+  command,
+  description,
+  name,
+  option,
+  route,
+  routes,
+  schema,
+  toggle,
+  version,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("simulacrum"),
+  description("Run and manage local service simulators."),
+  version("1.0.0"),
+  toggle(name("verbose")),
+  routes(
+    command(
+      name("serve"),
+      option(name("port"), schema(z.number().default(4000))),
+    ),
+    route(
+      name("database"),
+      routes(
+        command(
+          name("clean"),
+          toggle(name("dryRun")),
+        ),
+      ),
+    ),
+  ),
+);
+```
+
+That definition makes these entry points reachable, and no others:
+
+```text
+HELP /                  VERSION /              EXECUTE /
+HELP /serve                                    EXECUTE /serve
+HELP /database
+HELP /database/clean                           EXECUTE /database/clean
+```
+
+Every route supports help. Version exists only on the root, because only the root calls `version()`. `database` is a `route()`, not a `command()`, so it has no execute method.
+
+The root name identifies the executable and is not repeated in route IDs. `simulacrum serve` selects `/serve`, not `/simulacrum/serve`.
+
+## Route an intent
+
+`parse()` returns a discriminated union of every reachable entry point. Check `ok`, then switch on `method` and `route`. The dispatch stays flat even when the route tree is deep:
+
+```ts twoslash
+import {
+  command,
+  description,
+  name,
+  option,
+  route,
+  routes,
+  schema,
+  toggle,
+  version,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("simulacrum"),
+  description("Run and manage local service simulators."),
+  version("1.0.0"),
+  toggle(name("verbose")),
+  routes(
+    command(
+      name("serve"),
+      option(name("port"), schema(z.number().default(4000))),
+    ),
+    route(
+      name("database"),
+      routes(
+        command(
+          name("clean"),
+          toggle(name("dryRun")),
+        ),
+      ),
+    ),
+  ),
+);
+// ---cut---
+import process from "node:process";
+import {
+  parse,
+  printErrors,
+  printHelp,
+  printVersion,
+} from "@bomb.sh/router";
+
+const result = parse(app, { argv: process.argv.slice(2) });
+
+if (!result.ok) {
+  console.error(printErrors(result));
+  process.exit(1);
+}
+
+switch (result.method) {
+  case "help":
+    console.log(printHelp(result));
+    break;
+
+  case "version":
+    console.log(printVersion(result));
+    break;
+
+  case "execute":
+    switch (result.route) {
+      case "/":
+        result.model.verbose; // boolean
+        break;
+
+      case "/serve":
+        result.model.port; // number
+        result.models["/"].verbose; // boolean
+        break;
+
+      case "/database/clean":
+        result.model.dryRun; // boolean
+        result.models["/"]; // { verbose: boolean }
+        result.models["/database"]; // {}
+        break;
+    }
+}
+```
+
+Each branch sees only its own model, and `models` reaches every route along the path. Hover any identifier to see the type TypeScript infers.
+
+## Read each route's model
+
+An execute intent carries two views of configuration:
+
+- `model` holds the parameters owned by the selected route.
+- `models` holds the model for every route along the selected path, keyed by route ID. Sibling routes are absent from both the value and its type.
+
+For `simulacrum database clean --dry-run`, `model` is `{ dryRun: true }`, and `models` is `{ "/": { verbose: false }, "/database": {}, "/database/clean": { dryRun: true } }`.
+
+## What each invocation produces
+
+| Invocation | Result |
+| --- | --- |
+| `simulacrum --verbose` | `EXECUTE /` with `{ verbose: true }` |
+| `simulacrum serve --port 4100` | `EXECUTE /serve` with `{ port: 4100 }` |
+| `simulacrum database clean --dry-run` | `EXECUTE /database/clean` with `{ dryRun: true }` |
+| `simulacrum --help database clean` | `HELP /database/clean`. Help and version target the deepest selected route. |
+| `simulacrum database` | `method-not-allowed`, because `/database` does not support execution |
+| `simulacrum serve --port nope` | `unprocessable-content`. Invalid data never reaches your application. |
+
+Command literals such as `serve` and `database` are routing tokens, not positional arguments. Each option binds to the route segment that owns it, so a parent and a child route can both declare an option with the same name.
