@@ -1,0 +1,140 @@
+---
+title: Routes and methods
+description: Declare the entry points of a CLI and control which methods each one supports
+draft: true
+sidebar:
+  order: 1
+---
+
+A **route** is an address in your CLI, such as `/` or `/database/clean`. A **method** is what the user asks to do at that address: `help`, `version`, or `execute`. This guide shows how to declare routes and choose the methods each one supports.
+
+## Declare routes
+
+Three functions build the route tree:
+
+- `route(name(...), ...)` declares an address that supports help only.
+- `command(name(...), ...)` declares an address that supports help and execute.
+- `routes(...)` attaches child routes to a parent.
+
+`command()` is exactly a `route()` with `executable()` added, so these two definitions are equivalent:
+
+```ts twoslash
+import { command, executable, name, route } from "@bomb.sh/router";
+
+const a = command(name("cache"));
+const b = route(name("cache"), executable());
+```
+
+An executable route can still have children. The root of most CLIs is a `command()` that also holds subcommands:
+
+```ts twoslash
+import {
+  command,
+  executable,
+  name,
+  option,
+  route,
+  routes,
+  schema,
+  version,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("simulacrum"),
+  version("1.0.0"),
+  routes(
+    command(
+      name("serve"),
+      option(
+        name("port"),
+        schema(z.number().default(4000)),
+      ),
+    ),
+    route(
+      name("database"),
+      routes(
+        command(
+          name("clean"),
+        ),
+      ),
+    ),
+    route(
+      name("cache"),
+      executable(),
+    ),
+    command(
+      name("plugin"),
+      version("2.3.0"),
+    ),
+  ),
+);
+```
+
+The root name identifies the executable. Route IDs start below it, so `simulacrum database clean` selects `/database/clean`.
+
+## Add methods
+
+Every route supports `help`. The other two methods exist only where you add them:
+
+| Element | Adds | Request it with |
+| --- | --- | --- |
+| Built in | `help` | `--help` or `-h` |
+| `executable()` | `execute` | the route words alone |
+| `version("x.y.z")` | `version` | `--version` or `-v` |
+
+`version()` does not inherit. In the tree above, only `/` and `/plugin` declare a version, so `simulacrum plugin --version` returns `VERSION /plugin`, while `simulacrum serve --version` fails with `method-not-allowed`.
+
+## Target the deepest route
+
+`--help` and `--version` request a method. They do not stop parsing, and they always target the deepest route on the command line, wherever they appear. All three of these return `HELP /database/clean`:
+
+```text
+simulacrum --help database clean
+simulacrum database --help clean
+simulacrum database clean --help
+```
+
+## Handle unsupported methods
+
+When the user asks for a method a route does not support, `parse()` returns a failure with the code `method-not-allowed`. The failure names the method that was requested and the methods the route allows:
+
+```ts twoslash
+import process from "node:process";
+import {
+  command,
+  name,
+  parse,
+  printErrors,
+  route,
+  routes,
+} from "@bomb.sh/router";
+
+const app = command(
+  name("simulacrum"),
+  routes(route(name("database"), routes(command(name("clean"))))),
+);
+
+const result = parse(app, { argv: process.argv.slice(2) });
+
+if (!result.ok && result.code === "method-not-allowed") {
+  result.method; // the method that was requested
+  result.allowed; // the methods this route supports
+  console.error(printErrors(result));
+}
+```
+
+Running `simulacrum database` prints:
+
+```text
+database does not support EXECUTE
+
+Available methods:
+  HELP
+```
+
+## Handle unknown words
+
+A word that matches no route is not a "route not found" error. The router treats it as input that nothing claimed, so `simulacrum bogus` fails with `unprocessable-content` at `/` and the message ``unexpected: `bogus` ``.
+
+Nothing after `--` takes part in routing, methods, or options. `simulacrum serve -- --port 5` returns `EXECUTE /serve` with the default `{ port: 4000 }`.
