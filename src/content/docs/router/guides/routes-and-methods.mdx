@@ -46,11 +46,27 @@ const app = command(
   routes(
     command(
       name("serve"),
-      option(name("port"), schema(z.number().default(4000))),
+      option(
+        name("port"),
+        schema(z.number().default(4000)),
+      ),
     ),
-    route(name("database"), routes(command(name("clean")))),
-    route(name("cache"), executable()),
-    command(name("plugin"), version("2.3.0")),
+    route(
+      name("database"),
+      routes(
+        command(
+          name("clean"),
+        ),
+      ),
+    ),
+    route(
+      name("cache"),
+      executable(),
+    ),
+    command(
+      name("plugin"),
+      version("2.3.0"),
+    ),
   ),
 );
 ```
