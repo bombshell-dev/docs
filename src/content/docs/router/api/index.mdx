@@ -115,11 +115,11 @@ const list = command(
 
 ### checkpoint()
 
-Pauses parsing so the application can load configuration before parsing continues. `parse()` returns a step whose `resume()` takes the list of value sources to load.
+Pauses parsing so the application can load configuration before parsing continues. `parse()` returns a step whose `resume()` takes the list of value sources to load. See [Checkpoints and dynamic phases](/docs/router/guides/checkpoints/).
 
 ### dynamic(schema, extension)
 
-Pauses parsing until the application supplies a value. `resume()` takes that value, `schema` validates it, and `extension` receives the validated value and returns the elements to add, such as options or child routes. An invalid value fails with `unprocessable-content`.
+Pauses parsing until the application supplies a value. `resume()` takes that value, `schema` validates it, and `extension` receives the validated value and returns the elements to add, such as options or child routes. An invalid value fails with `unprocessable-content`. See [Checkpoints and dynamic phases](/docs/router/guides/checkpoints/#add-routes-at-runtime-with-dynamic).
 
 ## Running
 

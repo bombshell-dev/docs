@@ -1,0 +1,188 @@
+---
+title: Checkpoints and dynamic phases
+description: Pause parsing to load configuration or discover extensions, then resume
+sidebar:
+  order: 5
+---
+
+Some routes cannot be fully configured, or even discovered, until your application performs I/O. `parse()` never performs I/O. Instead it pauses at a phase boundary and returns a step. Your application does the I/O, then calls `resume()` on the step with the result.
+
+Two elements create a phase boundary:
+
+- `checkpoint()` pauses so you can load configuration, then resume with value sources.
+- `dynamic(schema, extension)` pauses so you can supply any value, then adds options or routes built from it.
+
+## Load configuration with checkpoint()
+
+The real `gh` reads its configuration from the directory in `GH_CONFIG_DIR`. Declare that option before `checkpoint()`, and everything after the checkpoint is parsed once the configuration is loaded:
+
+```ts twoslash
+import process from "node:process";
+import {
+  checkpoint,
+  command,
+  env,
+  name,
+  option,
+  parse,
+  printErrors,
+  route,
+  schema,
+  type ValueSource,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("gh"),
+  option(
+    name("configDir"),
+    env("GH_CONFIG_DIR"),
+    schema(z.string().default("~/.config/gh")),
+  ),
+  checkpoint(),
+  route(
+    name("pr"),
+    command(
+      name("list"),
+      option(name("limit"), schema(z.number().default(30))),
+    ),
+  ),
+);
+
+const step = parse(app, {
+  argv: process.argv.slice(2),
+  envs: [{ name: "process", value: process.env }],
+});
+
+if (!step.ok) {
+  console.error(printErrors(step));
+  process.exit(1);
+}
+
+step.model.configDir; // string, resolved before the checkpoint
+
+const result = step.resume(await loadConfig(step.model.configDir));
+
+if (
+  result.ok &&
+  result.method === "execute" &&
+  result.route === "/pr/list"
+) {
+  result.model.limit; // number
+}
+
+declare function loadConfig(dir: string): Promise<ValueSource[]>;
+```
+
+`step.model` holds the parameters declared before the checkpoint. `resume()` takes a list of value sources, the same shape as the `values` you pass to `parse()`. See [Value and environment sources](/docs/router/guides/sources/).
+
+Command-line input survives the pause, so a flag still beats the loaded file. With a `config.yml` of `{ pr: { list: { limit: 50 } } }`:
+
+| Invocation | Result |
+| --- | --- |
+| `gh pr list` | `EXECUTE /pr/list` with `{ limit: 50 }` |
+| `gh pr list --limit 5` | `EXECUTE /pr/list` with `{ limit: 5 }` |
+
+## Resume before help and version
+
+With a checkpoint at the root, `parse()` returns a step for every input, including `--help`, `--version`, and input that will fail. Help, version, and errors appear only after you resume:
+
+```text
+gh --help pr list
+  → a step at /, with configDir resolved
+  → load the configuration and resume
+  → HELP /pr/list
+```
+
+The router cannot produce a help or version intent until it knows the deepest route, and a later phase may add that route or its options. Do not inspect `argv` to skip a checkpoint. Make the I/O safe for help, version, and execute alike, and run side effects only after you receive an execute intent.
+
+## Add routes at runtime with dynamic()
+
+`gh` extensions such as `gh dash` are installed separately and only known at runtime. `dynamic()` adds them as commands:
+
+```ts twoslash
+import process from "node:process";
+import {
+  command,
+  dynamic,
+  extend,
+  name,
+  parse,
+  printErrors,
+  route,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const gh = command(
+  name("gh"),
+  dynamic(
+    z.array(z.string()),
+    (extensions) =>
+      extend(...extensions.map((ext) => command(name(ext)))),
+  ),
+  route(name("pr"), command(name("list"))),
+);
+
+const step = parse(gh, { argv: process.argv.slice(2) });
+
+if (!step.ok) {
+  console.error(printErrors(step));
+  process.exit(1);
+}
+
+const result = step.resume(await listExtensions());
+
+declare function listExtensions(): Promise<string[]>;
+```
+
+The schema validates the value you pass to `resume()`, and its input type sets what `resume()` accepts. The extension receives the validated value and returns the elements to add. Wrap several elements in `extend()`. A bare `command()` is a type error.
+
+With `["dash", "copilot"]` installed:
+
+| Invocation | Result |
+| --- | --- |
+| `gh dash` | `EXECUTE /dash` |
+| `gh dash --help` | `HELP /dash` |
+| `gh nope` | `unprocessable-content` with ``unexpected: `nope` `` |
+
+Routes added by `dynamic()` exist only at runtime, so the result type does not list them. In 0.8.0, `result.route` is typed as the statically declared routes only. To branch on an added route, read it as a `string`:
+
+```ts twoslash
+import process from "node:process";
+import { command, dynamic, extend, name, parse } from "@bomb.sh/router";
+import * as z from "zod";
+
+const gh = command(
+  name("gh"),
+  dynamic(
+    z.array(z.string()),
+    (extensions) =>
+      extend(...extensions.map((ext) => command(name(ext)))),
+  ),
+);
+
+const step = parse(gh, { argv: process.argv.slice(2) });
+
+if (step.ok) {
+  const result = step.resume(["dash", "copilot"]);
+
+  if (result.ok && result.method === "execute") {
+    const route: string = result.route;
+    if (route === "/dash") {
+      // run the dash extension
+    }
+  }
+}
+```
+
+## Handle invalid resume values
+
+`resume()` validates its input before parsing continues. Invalid input fails with `unprocessable-content`, and a dynamic extension never runs:
+
+| Call | Message |
+| --- | --- |
+| `checkpoint()` step, `resume(42)` | `expected an array of value sources` |
+| `checkpoint()` step, `resume([{ name: "x" }])` | `[0].value: expected a value` |
+| `dynamic(z.array(z.string()), …)` step, `resume(42)` | `Invalid input: expected array, received number` |
+
+Validation is synchronous. A `dynamic()` schema with an async check fails with `async schemas are not allowed`.
