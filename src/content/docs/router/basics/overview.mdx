@@ -1,0 +1,77 @@
+---
+title: Overview
+description: Learn what @bomb.sh/router is and when to use it
+draft: true
+sidebar:
+  order: 1
+---
+
+`@bomb.sh/router` is a statically typed entry-point router for command-line applications. An argument parser tells you what the user typed. The router tells you where and how they intend to enter your program, and binds a validated, statically typed model for that entry point.
+
+## Intents
+
+The router matches input to an **intent**: a method at an application-relative route.
+
+```text
+HELP    /
+VERSION /
+EXECUTE /serve
+HELP    /database/clean
+EXECUTE /database/clean
+```
+
+There are three methods: `help`, `version`, and `execute`. Every route supports help. Version and execute exist only on the routes where you add them.
+
+Every reachable intent appears in the result type of `parse()`. Narrow `method` and `route`, and TypeScript knows the exact model for that entry point:
+
+```ts twoslash
+import process from "node:process";
+import {
+  command,
+  name,
+  option,
+  parse,
+  routes,
+  schema,
+  toggle,
+} from "@bomb.sh/router";
+import * as z from "zod";
+
+const app = command(
+  name("simulacrum"),
+  toggle(name("verbose")),
+  routes(
+    command(
+      name("serve"),
+      option(name("port"), schema(z.number().default(4000))),
+    ),
+  ),
+);
+
+const result = parse(app, { argv: process.argv.slice(2) });
+
+if (
+  result.ok &&
+  result.method === "execute" &&
+  result.route === "/serve"
+) {
+  result.model.port; // number
+}
+```
+
+## What it is not
+
+`@bomb.sh/router` is not a CLI framework. It does not own handlers, effects, output, or process lifetime. It is not a flag parser whose product is a bag of flags either. Its product is a typed intent, and your application decides what that intent does.
+
+## Features
+
+- **Typed intents:** `parse()` returns a discriminated union of every reachable entry point, so a `switch` on `method` and `route` is fully type-checked.
+- **Route-scoped options:** Parent and child routes can declare the same option name without ambiguity, because each token binds to the route segment that owns it.
+- **Multiple sources:** Bind CLI arguments, environment variables, and JavaScript values onto the same model, with an explicit precedence order.
+- **Standard Schema validation:** Zod, ArkType, Valibot, and other [Standard Schema](https://standardschema.dev/) libraries work without adapters. Invalid data never reaches your application.
+- **No I/O:** The parser is synchronous. It reads only the `argv`, values, and environment records you pass to it.
+- **Runs everywhere:** No runtime-specific APIs, so it runs on Node.js, Deno, and Bun.
+
+## Next steps
+
+Head to [Installation](/docs/router/basics/installation/) to add `@bomb.sh/router` to your project.
