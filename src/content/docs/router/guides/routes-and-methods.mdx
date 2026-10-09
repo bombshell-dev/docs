@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-A **route** is an address in your CLI, such as `/` or `/database/clean`. A **method** is what the user asks to do at that address: `help`, `version`, or `execute`. This guide shows how to declare routes and choose the methods each one supports.
+A **route** is an address in your CLI, such as `/` or `/pr/list`. A **method** is what the user asks to do at that address: `help`, `version`, or `execute`. This guide shows how to declare routes and choose the methods each one supports.
 
 ## Declare routes
 
@@ -21,8 +21,8 @@ A child route is passed straight to its parent, next to the parent's options and
 ```ts twoslash
 import { command, executable, name, route } from "@bomb.sh/router";
 
-const a = command(name("cache"));
-const b = route(name("cache"), executable());
+const a = command(name("browse"));
+const b = route(name("browse"), executable());
 ```
 
 An executable route can still have children. The root of most CLIs is a `command()` that also holds subcommands:
@@ -40,33 +40,38 @@ import {
 import * as z from "zod";
 
 const app = command(
-  name("simulacrum"),
-  version("1.0.0"),
-  command(
-    name("serve"),
-    option(
-      name("port"),
-      schema(z.number().default(4000)),
-    ),
-  ),
+  name("gh"),
+  version("2.62.0"),
   route(
-    name("database"),
+    name("pr"),
     command(
-      name("clean"),
+      name("list"),
+      option(
+        name("limit"),
+        schema(z.number().default(30)),
+      ),
     ),
   ),
   route(
-    name("cache"),
+    name("repo"),
+    command(
+      name("clone"),
+    ),
+  ),
+  route(
+    name("browse"),
     executable(),
   ),
   command(
-    name("plugin"),
-    version("2.3.0"),
+    name("copilot"),
+    version("1.2.0"),
   ),
 );
 ```
 
-The root name identifies the executable. Route IDs start below it, so `simulacrum database clean` selects `/database/clean`.
+The root name identifies the executable. Route IDs start below it, so `gh pr list` selects `/pr/list`.
+
+An option belongs to the route that declares it, and it must come after that route's name. If `--repo` were declared on the `pr` route, `gh pr --repo bombshell-dev/docs list` would work and `gh pr list --repo bombshell-dev/docs` would fail. Declare options on the command that uses them, so users can put them at the end, as they expect.
 
 ## Add methods
 
@@ -78,16 +83,16 @@ Every route supports `help`. The other two methods exist only where you add them
 | `executable()` | `execute` | the route words alone |
 | `version("x.y.z")` | `version` | `--version` or `-v` |
 
-`version()` does not inherit. In the tree above, only `/` and `/plugin` declare a version, so `simulacrum plugin --version` returns `VERSION /plugin`, while `simulacrum serve --version` fails with `method-not-allowed`.
+`version()` does not inherit. In the tree above, only `/` and `/copilot` declare a version, so `gh copilot --version` returns `VERSION /copilot`, while `gh pr list --version` fails with `method-not-allowed`.
 
 ## Target the deepest route
 
-`--help` and `--version` request a method. They do not stop parsing, and they always target the deepest route on the command line, wherever they appear. All three of these return `HELP /database/clean`:
+`--help` and `--version` request a method. They do not stop parsing, and they always target the deepest route on the command line, wherever they appear. All three of these return `HELP /pr/list`:
 
 ```text
-simulacrum --help database clean
-simulacrum database --help clean
-simulacrum database clean --help
+gh --help pr list
+gh pr --help list
+gh pr list --help
 ```
 
 ## Handle unsupported methods
@@ -105,8 +110,8 @@ import {
 } from "@bomb.sh/router";
 
 const app = command(
-  name("simulacrum"),
-  route(name("database"), command(name("clean"))),
+  name("gh"),
+  route(name("pr"), command(name("list"))),
 );
 
 const result = parse(app, { argv: process.argv.slice(2) });
@@ -118,10 +123,10 @@ if (!result.ok && result.code === "method-not-allowed") {
 }
 ```
 
-Running `simulacrum database` prints:
+Running `gh pr` prints:
 
 ```text
-database does not support EXECUTE
+pr does not support EXECUTE
 
 Available methods:
   HELP
@@ -129,6 +134,6 @@ Available methods:
 
 ## Handle unknown words
 
-A word that matches no route is not a "route not found" error. The router treats it as input that nothing claimed, so `simulacrum bogus` fails with `unprocessable-content` at `/` and the message ``unexpected: `bogus` ``.
+A word that matches no route is not a "route not found" error. The router treats it as input that nothing claimed, so `gh bogus` fails with `unprocessable-content` at `/` and the message ``unexpected: `bogus` ``.
 
-Nothing after `--` takes part in routing, methods, or options. `simulacrum serve -- --port 5` returns `EXECUTE /serve` with the default `{ port: 4000 }`.
+Nothing after `--` takes part in routing, methods, or options. `gh pr list -- --limit 5` returns `EXECUTE /pr/list` with the default `{ limit: 30 }`.
