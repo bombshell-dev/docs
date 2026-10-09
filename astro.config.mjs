@@ -225,6 +225,7 @@ export default defineConfig({
 									items: [
 										{ label: "Basics", autogenerate: { directory: "router/basics" } },
 										{ label: "Guides", autogenerate: { directory: "router/guides" } },
+										{ label: "API", items: [{ label: "Reference", link: "/router/api/" }] },
 									],
 								},
 							]
