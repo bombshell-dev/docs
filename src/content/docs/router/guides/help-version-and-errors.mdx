@@ -1,0 +1,142 @@
+---
+title: Help, version, and errors
+description: Print help and version output, describe routes and parameters, and report parse failures
+draft: true
+sidebar:
+  order: 4
+---
+
+`parse()` never prints and never exits. It returns an intent or a failure, and three helpers turn that result into text:
+
+- `printHelp()` renders help for a help intent.
+- `printVersion()` renders the version for a version intent.
+- `printErrors()` renders every issue in a failure.
+
+Each helper returns a string. Your application decides where to print it and which exit code to use.
+
+## Print help and version
+
+Switch on `method` and pass the intent to its helper:
+
+```ts twoslash
+import process from "node:process";
+import {
+  command,
+  description,
+  name,
+  parse,
+  printErrors,
+  printHelp,
+  printVersion,
+  routes,
+  toggle,
+  version,
+} from "@bomb.sh/router";
+
+const app = command(
+  name("simulacrum"),
+  description("Run and manage local service simulators."),
+  version("1.0.0"),
+  toggle(name("verbose"), description("Print extra logs")),
+  routes(
+    command(name("serve"), description("Start the simulator server")),
+  ),
+);
+
+const result = parse(app, { argv: process.argv.slice(2) });
+
+if (!result.ok) {
+  console.error(printErrors(result));
+  process.exit(1);
+}
+
+if (result.method === "help") console.log(printHelp(result));
+if (result.method === "version") console.log(printVersion(result));
+```
+
+`simulacrum --version` prints:
+
+```text
+simulacrum 1.0.0
+```
+
+## Describe routes and parameters
+
+`description()` adds text to help. It works on `command()`, `route()`, `option()`, `toggle()`, and `argument()`. After adding a `database` route described as "Manage the simulator database" to the app above, `simulacrum --help` prints:
+
+```text
+simulacrum 1.0.0
+Run and manage local service simulators.
+
+Usage:
+  simulacrum [OPTIONS] [COMMAND]
+
+Commands:
+  serve     Start the simulator server
+  database  Manage the simulator database
+
+Options:
+  --verbose, --no-verbose  Print extra logs
+  -h, --help               Print help
+  -v, --version            Print version
+```
+
+Help for a child route lists its own arguments and options. For a `serve` command with a described `port` option, an undescribed `host` option, and a described `profile` argument, `simulacrum serve --help` prints:
+
+```text
+serve
+Start the simulator server
+
+Usage:
+  serve [OPTIONS] <PROFILE>
+
+Arguments:
+  <PROFILE>  Profile to load
+
+Options:
+  --port <VALUE>  Port to listen on
+  --host <VALUE>
+  -h, --help      Print help
+```
+
+Help shows every option value as `<VALUE>` and does not show schema defaults. If users need to know a default or a format, put it in the description.
+
+## Report failures
+
+A failure has one of two codes:
+
+- `method-not-allowed` means the route does not support the requested method. See [Routes and methods](/docs/router/guides/routes-and-methods/#handle-unsupported-methods).
+- `unprocessable-content` means the input could not become a valid model.
+
+`printErrors()` prints one line per issue. Unexpected input comes first, then schema issues prefixed with the parameter name. `simulacrum serve --port nope extra1 extra2` prints:
+
+```text
+unexpected: `extra2`
+port: Invalid input: expected number, received string
+host: Invalid input: expected string, received undefined
+```
+
+The router reports every issue it finds, not only the first one, so the user can fix them all at once.
+
+## Format errors yourself
+
+To format failures your own way, narrow on `code`. An `unprocessable-content` failure has an `issues` list of [Standard Schema](https://standardschema.dev/) issues, each with a `message` and an optional `path`. A `method-not-allowed` failure has the requested `method` and the `allowed` methods instead:
+
+```ts twoslash
+import process from "node:process";
+import { command, name, parse } from "@bomb.sh/router";
+
+const app = command(name("simulacrum"));
+
+const result = parse(app, { argv: process.argv.slice(2) });
+
+if (!result.ok && result.code === "unprocessable-content") {
+  for (const issue of result.issues) {
+    const key = issue.path
+      ?.map((p) => (typeof p === "object" ? p.key : p))
+      .join(".");
+    console.error(key ? `${key}: ${issue.message}` : issue.message);
+  }
+  process.exit(1);
+}
+```
