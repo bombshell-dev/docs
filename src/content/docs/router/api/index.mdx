@@ -78,22 +78,14 @@ Attaches environment sources to a route.
 Bundles elements, including child routes, into one reusable element:
 
 ```ts twoslash
-import {
-  command,
-  extend,
-  name,
-  option,
-  schema,
-  toggle,
-} from "@bomb.sh/router";
-import * as z from "zod";
+import { command, extend, name, route } from "@bomb.sh/router";
 
-const logging = extend(
-  toggle(name("verbose")),
-  option(name("logLevel"), schema(z.string().default("info"))),
+const prCommands = extend(
+  command(name("list")),
+  command(name("create")),
 );
 
-const app = command(name("simulacrum"), logging);
+const app = command(name("gh"), route(name("pr"), prCommands));
 ```
 
 ### transform(schema)
@@ -110,13 +102,13 @@ import {
 } from "@bomb.sh/router";
 import * as z from "zod";
 
-const serve = command(
-  name("serve"),
-  option(name("port"), schema(z.number().default(4000))),
+const list = command(
+  name("list"),
+  option(name("limit"), schema(z.number().default(30))),
   transform(
     z
-      .object({ port: z.number() })
-      .transform((m) => ({ ...m, url: `http://localhost:${m.port}` })),
+      .object({ limit: z.number() })
+      .transform((m) => ({ ...m, perPage: Math.min(m.limit, 100) })),
   ),
 );
 ```
@@ -182,8 +174,8 @@ These build custom parameter kinds and elements. Applications do not need them.
 | `IntentsOf<R>` | Every intent route tree `R` can produce. |
 | `MethodsOf<R>` | The methods route `R` supports. |
 | `ModelsByRoute` | Models keyed by route path. |
-| `RoutePath` | A route path such as `"/database/clean"`. |
-| `PathOf<P>` | A route path split into segments. `"/database/clean"` becomes `["database", "clean"]`. |
+| `RoutePath` | A route path such as `"/pr/list"`. |
+| `PathOf<P>` | A route path split into segments. `"/pr/list"` becomes `["pr", "list"]`. |
 | `Path` | A list of route segments. |
 
 For example, `ModelOf` gives you a route's model type without calling `parse()`:
@@ -193,20 +185,24 @@ import {
   command,
   name,
   option,
+  route,
   schema,
   type ModelOf,
 } from "@bomb.sh/router";
 import * as z from "zod";
 
 const app = command(
-  name("simulacrum"),
-  command(
-    name("serve"),
-    option(name("port"), schema(z.number().default(4000))),
+  name("gh"),
+  route(
+    name("pr"),
+    command(
+      name("list"),
+      option(name("limit"), schema(z.number().default(30))),
+    ),
   ),
 );
 
-type ServeModel = ModelOf<typeof app, "/serve">; // { port: number }
+type ListModel = ModelOf<typeof app, "/pr/list">; // { limit: number }
 ```
 
 ### Inputs

@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-This page builds `simulacrum`, a small CLI with a root command, a `serve` command, and a `database clean` command. You define every way into the program, parse `argv` into a typed intent, and dispatch on it.
+This page builds a small version of the GitHub CLI, `gh`, with a `pr list` command and a `pr create` command. You define every way into the program, parse `argv` into a typed intent, and dispatch on it.
 
 ## Define the routes
 
@@ -24,20 +24,23 @@ import {
 } from "@bomb.sh/router";
 import * as z from "zod";
 
+const states = z.enum(["open", "closed", "merged", "all"]);
+
 const app = command(
-  name("simulacrum"),
-  description("Run and manage local service simulators."),
-  version("1.0.0"),
-  toggle(name("verbose")),
-  command(
-    name("serve"),
-    option(name("port"), schema(z.number().default(4000))),
-  ),
+  name("gh"),
+  description("Work seamlessly with GitHub from the command line."),
+  version("2.62.0"),
   route(
-    name("database"),
+    name("pr"),
     command(
-      name("clean"),
-      toggle(name("dryRun")),
+      name("list"),
+      option(name("state"), schema(states.default("open"))),
+      option(name("limit"), schema(z.number().default(30))),
+    ),
+    command(
+      name("create"),
+      option(name("title"), schema(z.string())),
+      toggle(name("draft")),
     ),
   ),
 );
@@ -46,15 +49,15 @@ const app = command(
 That definition makes these entry points reachable, and no others:
 
 ```text
-HELP /                  VERSION /              EXECUTE /
-HELP /serve                                    EXECUTE /serve
-HELP /database
-HELP /database/clean                           EXECUTE /database/clean
+HELP /              VERSION /          EXECUTE /
+HELP /pr
+HELP /pr/list                          EXECUTE /pr/list
+HELP /pr/create                        EXECUTE /pr/create
 ```
 
-Every route supports help. Version exists only on the root, because only the root calls `version()`. `database` is a `route()`, not a `command()`, so it has no execute method.
+Every route supports help. Version exists only on the root, because only the root calls `version()`. `pr` is a `route()`, not a `command()`, so it has no execute method.
 
-The root name identifies the executable and is not repeated in route IDs. `simulacrum serve` selects `/serve`, not `/simulacrum/serve`.
+The root name identifies the executable and is not repeated in route IDs. `gh pr list` selects `/pr/list`, not `/gh/pr/list`.
 
 ## Route an intent
 
@@ -73,20 +76,23 @@ import {
 } from "@bomb.sh/router";
 import * as z from "zod";
 
+const states = z.enum(["open", "closed", "merged", "all"]);
+
 const app = command(
-  name("simulacrum"),
-  description("Run and manage local service simulators."),
-  version("1.0.0"),
-  toggle(name("verbose")),
-  command(
-    name("serve"),
-    option(name("port"), schema(z.number().default(4000))),
-  ),
+  name("gh"),
+  description("Work seamlessly with GitHub from the command line."),
+  version("2.62.0"),
   route(
-    name("database"),
+    name("pr"),
     command(
-      name("clean"),
-      toggle(name("dryRun")),
+      name("list"),
+      option(name("state"), schema(states.default("open"))),
+      option(name("limit"), schema(z.number().default(30))),
+    ),
+    command(
+      name("create"),
+      option(name("title"), schema(z.string())),
+      toggle(name("draft")),
     ),
   ),
 );
@@ -117,25 +123,20 @@ switch (result.method) {
 
   case "execute":
     switch (result.route) {
-      case "/":
-        result.model.verbose; // boolean
+      case "/pr/list":
+        result.model.state; // "open" | "closed" | "merged" | "all"
+        result.model.limit; // number
         break;
 
-      case "/serve":
-        result.model.port; // number
-        result.models["/"].verbose; // boolean
-        break;
-
-      case "/database/clean":
-        result.model.dryRun; // boolean
-        result.models["/"]; // { verbose: boolean }
-        result.models["/database"]; // {}
+      case "/pr/create":
+        result.model.title; // string
+        result.model.draft; // boolean
         break;
     }
 }
 ```
 
-Each branch sees only its own model, and `models` reaches every route along the path. Hover any identifier to see the type TypeScript infers.
+Each branch sees only its own model. Hover any identifier to see the type TypeScript infers.
 
 ## Read each route's model
 
@@ -144,17 +145,17 @@ An execute intent carries two views of configuration:
 - `model` holds the parameters owned by the selected route.
 - `models` holds the model for every route along the selected path, keyed by route ID. Sibling routes are absent from both the value and its type.
 
-For `simulacrum database clean --dry-run`, `model` is `{ dryRun: true }`, and `models` is `{ "/": { verbose: false }, "/database": {}, "/database/clean": { dryRun: true } }`.
+For `gh pr create --title "Fix typo" --draft`, `model` is `{ title: "Fix typo", draft: true }`, and `models` is `{ "/": {}, "/pr": {}, "/pr/create": { title: "Fix typo", draft: true } }`.
 
 ## What each invocation produces
 
 | Invocation | Result |
 | --- | --- |
-| `simulacrum --verbose` | `EXECUTE /` with `{ verbose: true }` |
-| `simulacrum serve --port 4100` | `EXECUTE /serve` with `{ port: 4100 }` |
-| `simulacrum database clean --dry-run` | `EXECUTE /database/clean` with `{ dryRun: true }` |
-| `simulacrum --help database clean` | `HELP /database/clean`. Help and version target the deepest selected route. |
-| `simulacrum database` | `method-not-allowed`, because `/database` does not support execution |
-| `simulacrum serve --port nope` | `unprocessable-content`. Invalid data never reaches your application. |
+| `gh pr list` | `EXECUTE /pr/list` with `{ state: "open", limit: 30 }` |
+| `gh pr list --state merged --limit 5` | `EXECUTE /pr/list` with `{ state: "merged", limit: 5 }` |
+| `gh pr create --title "Fix typo" --draft` | `EXECUTE /pr/create` with `{ title: "Fix typo", draft: true }` |
+| `gh --help pr list` | `HELP /pr/list`. Help and version target the deepest selected route. |
+| `gh pr` | `method-not-allowed`, because `/pr` does not support execution |
+| `gh pr list --limit lots` | `unprocessable-content`. Invalid data never reaches your application. |
 
-Command literals such as `serve` and `database` are routing tokens, not positional arguments. Each option binds to the route segment that owns it, so a parent and a child route can both declare an option with the same name.
+Command literals such as `pr` and `list` are routing tokens, not positional arguments. Each option binds to the route segment that owns it, so a parent and a child route can both declare an option with the same name.

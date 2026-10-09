@@ -14,9 +14,9 @@ The router matches input to an **intent**: a method at an application-relative r
 ```text
 HELP    /
 VERSION /
-EXECUTE /serve
-HELP    /database/clean
-EXECUTE /database/clean
+EXECUTE /pr/list
+HELP    /pr/create
+EXECUTE /pr/create
 ```
 
 There are three methods: `help`, `version`, and `execute`. Every route supports help. Version and execute exist only on the routes where you add them.
@@ -30,17 +30,19 @@ import {
   name,
   option,
   parse,
+  route,
   schema,
-  toggle,
 } from "@bomb.sh/router";
 import * as z from "zod";
 
 const app = command(
-  name("simulacrum"),
-  toggle(name("verbose")),
-  command(
-    name("serve"),
-    option(name("port"), schema(z.number().default(4000))),
+  name("gh"),
+  route(
+    name("pr"),
+    command(
+      name("list"),
+      option(name("limit"), schema(z.number().default(30))),
+    ),
   ),
 );
 
@@ -49,9 +51,9 @@ const result = parse(app, { argv: process.argv.slice(2) });
 if (
   result.ok &&
   result.method === "execute" &&
-  result.route === "/serve"
+  result.route === "/pr/list"
 ) {
-  result.model.port; // number
+  result.model.limit; // number
 }
 ```
 

@@ -18,15 +18,19 @@ import {
   name,
   option,
   parse,
+  route,
   schema,
 } from "@bomb.sh/router";
 import * as z from "zod";
 
 const app = command(
-  name("simulacrum"),
-  command(
-    name("serve"),
-    option(name("port"), schema(z.number().default(4000))),
+  name("gh"),
+  route(
+    name("pr"),
+    command(
+      name("list"),
+      option(name("limit"), schema(z.number().default(30))),
+    ),
   ),
 );
 
@@ -41,13 +45,15 @@ const result = parse(app, {
 
 ## Address a parameter
 
-A value source nests parameters under their route path. Parameters of the root route sit at the top level. An environment variable joins the route path and the parameter name in upper snake case:
+A value source nests parameters under their route path. An environment variable joins the route path and the parameter name in upper snake case:
 
 | Route | Parameter | Value source | Environment variable |
 | --- | --- | --- | --- |
-| `/` | `verbose` | `{ verbose: true }` | `VERBOSE` |
-| `/serve` | `port` | `{ serve: { port: 4200 } }` | `SERVE_PORT` |
-| `/database/clean` | `dryRun` | `{ database: { clean: { dryRun: true } } }` | `DATABASE_CLEAN_DRY_RUN` |
+| `/pr/list` | `limit` | `{ pr: { list: { limit: 50 } } }` | `PR_LIST_LIMIT` |
+| `/pr/create` | `title` | `{ pr: { create: { title: "Fix typo" } } }` | `PR_CREATE_TITLE` |
+| `/pr/create` | `draft` | `{ pr: { create: { draft: true } } }` | `PR_CREATE_DRAFT` |
+
+Parameters of the root route sit at the top level of a value source, and their environment variable is the bare name, such as `VERBOSE` for a root `verbose` toggle.
 
 To read a different environment variable for one parameter, use [`env()`](/docs/router/guides/parameters/#read-a-different-environment-variable).
 
@@ -59,22 +65,22 @@ When more than one source sets a parameter, the router uses this order:
 CLI → environment → values → schema default
 ```
 
-With a value source of `{ serve: { port: 4200 } }` and `SERVE_PORT=4300`:
+With a value source of `{ pr: { list: { limit: 50 } } }` and `PR_LIST_LIMIT=40`:
 
-| Invocation | `port` |
+| Invocation | `limit` |
 | --- | --- |
-| `simulacrum serve --port 4100` | `4100` |
-| `simulacrum serve` | `4300` |
-| `simulacrum serve`, without `SERVE_PORT` | `4200` |
-| `simulacrum serve`, without either source | `4000` |
+| `gh pr list --limit 10` | `10` |
+| `gh pr list` | `40` |
+| `gh pr list`, without `PR_LIST_LIMIT` | `50` |
+| `gh pr list`, without either source | `30` |
 
 Within one kind of source, the first source in the list wins. Put the most specific source first, for example a project file before a user-wide file.
 
 ## Know what gets decoded
 
-Command-line text and environment text are decoded before validation, as described in [how values are decoded](/docs/router/guides/parameters/#know-how-values-are-decoded). So `SERVE_PORT=4300` reaches the schema as the number `4300`.
+Command-line text and environment text are decoded before validation, as described in [how values are decoded](/docs/router/guides/parameters/#know-how-values-are-decoded). So `PR_LIST_LIMIT=40` reaches the schema as the number `40`.
 
-JavaScript values are used directly. A value source of `{ serve: { port: "4200" } }` fails `z.number()`, because the string is not converted.
+JavaScript values are used directly. A value source of `{ pr: { list: { limit: "50" } } }` fails `z.number()`, because the string is not converted.
 
 Toggles read from the environment accept exactly `true` or `false`.
 
@@ -87,22 +93,26 @@ import {
   command,
   name,
   option,
+  route,
   schema,
   withValues,
 } from "@bomb.sh/router";
 import * as z from "zod";
 
 const app = command(
-  name("simulacrum"),
-  command(
-    name("serve"),
-    withValues([{ name: "defaults", value: { port: 4300 } }]),
-    option(name("port"), schema(z.number().default(4000))),
+  name("gh"),
+  route(
+    name("pr"),
+    command(
+      name("list"),
+      withValues([{ name: "defaults", value: { limit: 50 } }]),
+      option(name("limit"), schema(z.number().default(30))),
+    ),
   ),
 );
 ```
 
-Values attached with `withValues()` are addressed from the route they belong to, so `/serve` reads `{ port: 4300 }`, not `{ serve: { port: 4300 } }`. They take precedence over values passed to `parse()`. Environment sources attached with `withEnvs()` still use the full variable name, such as `SERVE_PORT`.
+Values attached with `withValues()` are addressed from the route they belong to, so `/pr/list` reads `{ limit: 50 }`, not `{ pr: { list: { limit: 50 } } }`. They take precedence over values passed to `parse()`. Environment sources attached with `withEnvs()` still use the full variable name, such as `PR_LIST_LIMIT`.
 
 ## Read the environment on Deno
 

@@ -7,15 +7,15 @@ sidebar:
 
 Parameters are the values a route reads from the command line. There are three kinds:
 
-- `option()` reads a named value, such as `--port 4100`.
-- `toggle()` reads an on or off switch, such as `--dry-run`.
-- `argument()` reads a positional value, such as the `file.txt` in `open file.txt`.
+- `option()` reads a named value, such as `--limit 30`.
+- `toggle()` reads an on or off switch, such as `--draft`.
+- `argument()` reads a positional value, such as the `bombshell-dev/router` in `gh repo clone bombshell-dev/router`.
 
 Each parameter belongs to the route that declares it, and its value appears in that route's `model`.
 
 ## Add an option
 
-`option(name("host"))` reads `--host <value>` or `--host=<value>`. The flag is the kebab-case form of the name, so `option(name("logLevel"))` reads `--log-level`. When the flag is absent, the value is `undefined`.
+`option(name("body"))` reads `--body <value>` or `--body=<value>`. The flag is the kebab-case form of the name, so `option(name("bodyFile"))` reads `--body-file`. When the flag is absent, the value is `undefined`.
 
 ## Validate with a schema
 
@@ -27,25 +27,25 @@ import { command, name, option, parse, schema } from "@bomb.sh/router";
 import * as z from "zod";
 
 const app = command(
-  name("serve"),
-  option(name("host")),
-  option(name("port"), schema(z.number().default(4000))),
-  option(name("zip"), schema(z.string())),
+  name("create"),
+  option(name("body")),
+  option(name("base"), schema(z.string().default("main"))),
+  option(name("title"), schema(z.string())),
 );
 
 const result = parse(app, { argv: process.argv.slice(2) });
 
 if (result.ok && result.method === "execute") {
-  result.model.host; // unknown
-  result.model.port; // number
-  result.model.zip; // string
+  result.model.body; // unknown
+  result.model.base; // string
+  result.model.title; // string
 }
 ```
 
-A schema that rejects `undefined` makes the parameter required. Here `--zip` is required, so `serve` alone fails with `unprocessable-content`:
+A schema that rejects `undefined` makes the parameter required. Here `--title` is required, so `create` alone fails with `unprocessable-content`:
 
 ```text
-zip: Invalid input: expected string, received undefined
+title: Invalid input: expected string, received undefined
 ```
 
 Invalid values fail the same way, and they never reach your application.
@@ -56,92 +56,89 @@ Command-line text is decoded before the schema sees it. The router tries a numbe
 
 | Input | No schema | `schema(z.string())` |
 | --- | --- | --- |
-| `--zip 94110` | `94110` | `"94110"` |
-| `--zip 007` | `7` | `"007"` |
-| `--zip 1e3` | `1000` | `"1e3"` |
-| `--zip abc` | `"abc"` | `"abc"` |
+| `--milestone 2024` | `2024` | `"2024"` |
+| `--milestone 007` | `7` | `"007"` |
+| `--milestone 1e3` | `1000` | `"1e3"` |
+| `--milestone v2` | `"v2"` | `"v2"` |
 
-To keep text that looks like a number, such as a postal code or a version, use a string schema.
+To keep text that looks like a number, such as a milestone or a version, use a string schema.
 
 ## Add a toggle
 
-`toggle(name("dryRun"))` reads a switch. It is `true` with `--dry-run`, `false` with `--no-dry-run`, and `false` when absent. Its type is always `boolean`, so it needs no schema. `--dry-run=false` is not accepted.
+`toggle(name("draft"))` reads a switch. It is `true` with `--draft`, `false` with `--no-draft`, and `false` when absent. Its type is always `boolean`, so it needs no schema. `--draft=false` is not accepted.
 
 ## Read positional arguments
 
-`argument(name("file"))` reads one positional value. A second positional value fails with ``unexpected: `b.txt` ``. As with options, add a schema to make the argument required or typed:
+`argument(name("repository"))` reads one positional value. A second positional value, such as the `docs` in `clone bombshell-dev/router docs`, fails with ``unexpected: `docs` ``. As with options, add a schema to make the argument required or typed:
 
 ```ts twoslash
 import { argument, command, name, schema } from "@bomb.sh/router";
 import * as z from "zod";
 
-const open = command(
-  name("open"),
-  argument(name("file"), schema(z.string())),
+const clone = command(
+  name("clone"),
+  argument(name("repository"), schema(z.string())),
 );
 ```
 
 ## Accept repeated values
 
-`multiple()` turns a parameter into a list. An option collects every occurrence, so `--tag a --tag b` reads `["a", "b"]`. An argument collects every positional value. With `multiple()`, the schema validates the whole list:
+`multiple()` turns a parameter into a list. An option collects every occurrence, so `--label bug --label docs` reads `["bug", "docs"]`. An argument collects every positional value, so `gist create a.ts b.ts` reads `["a.ts", "b.ts"]`. With `multiple()`, the schema validates the whole list:
 
 ```ts twoslash
-import process from "node:process";
 import {
   argument,
   command,
   multiple,
   name,
   option,
-  parse,
   schema,
 } from "@bomb.sh/router";
 import * as z from "zod";
 
-const app = command(
-  name("cat"),
+const prCreate = command(
+  name("create"),
   option(
-    name("tag"),
+    name("label"),
     multiple(),
     schema(z.array(z.string()).default([])),
   ),
+);
+
+const gistCreate = command(
+  name("create"),
   argument(
     name("files"),
     multiple(),
     schema(z.array(z.string())),
   ),
 );
-
-const result = parse(app, { argv: process.argv.slice(2) });
-
-if (result.ok && result.method === "execute") {
-  result.model.tag; // string[]
-  result.model.files; // string[]
-}
 ```
+
+Both values are typed `string[]`. Without `--label`, the default gives an empty list.
 
 ## Rename a flag
 
-`cli()` replaces the flags an option reads. After `cli(["--listen", "-l"])`, the option reads `--listen` and `-l`, and `--port` is no longer accepted:
+`cli()` replaces the flags an option reads. After `cli(["--repo", "-R"])`, an option named `repository` reads `--repo` and `-R`, and `--repository` is no longer accepted:
 
 ```ts twoslash
 import { cli, command, name, option, schema } from "@bomb.sh/router";
 import * as z from "zod";
 
 const app = command(
-  name("serve"),
-  option(name("port"), cli(["--listen", "-l"]), schema(z.number())),
-  option(name("force"), cli(["--force", "-f"], { switch: true })),
+  name("list"),
+  option(name("repository"), cli(["--repo", "-R"]), schema(z.string())),
+  option(name("web"), cli(["--web", "-w"], { switch: true })),
 );
 ```
 
-For most on or off flags, use [`toggle()`](#add-a-toggle) instead. It reads `--force` and `--no-force`, defaults to `false`, and is always a `boolean`.
+For most on or off flags, use [`toggle()`](#add-a-toggle) instead. It reads `--web` and `--no-web`, defaults to `false`, and is always a `boolean`.
 
-`{ switch: true }` makes an option take no value. `--force` or `-f` reads `true`, the value is `undefined` when absent, and its type is `unknown` unless you add a schema. Use it only when you need something a toggle cannot do, such as a short flag like `-f`.
+`{ switch: true }` makes an option take no value. `--web` or `-w` reads `true`, the value is `undefined` when absent, and its type is `unknown` unless you add a schema. Use it only when you need something a toggle cannot do, such as a short flag like `-w`.
 
 ## Read a different environment variable
 
-When you pass the environment to `parse()`, each parameter also reads a variable named after its route and its name. The `port` option of the `/serve` route reads `SERVE_PORT`. `env()` replaces that name:
+When you pass the environment to `parse()`, each parameter also reads a variable named after its route and its name. The `repo` option of the `/pr/list` route reads `PR_LIST_REPO`. `env()` replaces that name:
 
 ```ts twoslash
 import process from "node:process";
@@ -151,18 +148,22 @@ import {
   name,
   option,
   parse,
+  route,
   schema,
 } from "@bomb.sh/router";
 import * as z from "zod";
 
 const app = command(
-  name("simulacrum"),
-  command(
-    name("serve"),
-    option(
-      name("port"),
-      env("PORT"),
-      schema(z.number().default(4000)),
+  name("gh"),
+  route(
+    name("pr"),
+    command(
+      name("list"),
+      option(
+        name("repo"),
+        env("GH_REPO"),
+        schema(z.string().optional()),
+      ),
     ),
   ),
 );
@@ -173,4 +174,4 @@ const result = parse(app, {
 });
 ```
 
-With `env("PORT")`, `PORT=9000 simulacrum serve` sets the port, and `SERVE_PORT` is ignored.
+With `env("GH_REPO")`, `GH_REPO=bombshell-dev/router gh pr list` sets the repository, and `PR_LIST_REPO` is ignored.
