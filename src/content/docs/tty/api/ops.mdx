@@ -223,6 +223,19 @@ fixed(20);          // exactly 20 cells
 `pack()` is also exported for low-level wire-format packing. Most applications use `open`/`text`/`close` and let `term.render()` handle packing internally.
 </Aside>
 
+## Types
+
+The module exports a type for each kind of op and prop:
+
+| Type | Describes |
+|---|---|
+| `Op` | Any op you pass to `term.render()` |
+| `OpenElement`, `CloseElement`, `Text` | The ops `open()`, `close()`, and `text()` return |
+| `SizingAxis` | A `width` or `height` value, such as `grow()` or `fixed(20)` |
+| `BorderSide` | One side of a `border` |
+| `Transition`, `TransitionProperty`, `Easing` | The `transition` prop and its values |
+| `AttachPoint`, `AttachTo`, `PointerCaptureMode`, `ClipTo` | The values of the `floating` props |
+
 ## Next steps
 
 - [Term API](/docs/tty/api/term) (rendering ops to the terminal)

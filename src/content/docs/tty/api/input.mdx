@@ -91,6 +91,28 @@ All keyboard events include:
 | `shifted` | `string?` | Shifted character variant |
 | `alt`, `ctrl`, `shift` | `true?` | Modifier keys held |
 
+### Key codes
+
+`code` names the physical key. It is one of 107 `KeyCode` values:
+
+| Group | Values |
+|---|---|
+| Letters | `"a"` to `"z"` |
+| Digits | `"0"` to `"9"` |
+| Punctuation | `` "`" ``, `"-"`, `"="`, `"["`, `"]"`, `"\\"`, `";"`, `"'"`, `","`, `"."`, `"/"`, and `" "` for space |
+| Function keys | `"F1"` to `"F12"` |
+| Navigation | `"ArrowUp"`, `"ArrowDown"`, `"ArrowLeft"`, `"ArrowRight"`, `"Home"`, `"End"`, `"PageUp"`, `"PageDown"`, `"Insert"`, `"Delete"` |
+| Editing | `"Enter"`, `"Tab"`, `"Backtab"`, `"Backspace"`, `"Escape"` |
+| Numpad | `"Numpad0"` to `"Numpad9"`, `"NumpadDecimal"`, `"NumpadDivide"`, `"NumpadMultiply"`, `"NumpadSubtract"`, `"NumpadAdd"`, `"NumpadEnter"`, `"NumpadEqual"` |
+| Modifiers | `"ShiftLeft"`, `"ShiftRight"`, `"ControlLeft"`, `"ControlRight"`, `"AltLeft"`, `"AltRight"`, `"SuperLeft"`, `"SuperRight"`, `"HyperLeft"`, `"HyperRight"`, `"MetaLeft"`, `"MetaRight"` |
+| Locks | `"CapsLock"`, `"NumLock"`, `"ScrollLock"` |
+
+These are not the browser's `KeyboardEvent.code` names. The `b` key is `"b"`, not `"KeyB"`.
+
+- With the kitty keyboard protocol, which [`progressiveInput()`](/docs/tty/api/settings) turns on, a shifted letter arrives as its lowercase `code` with `shift: true`.
+- Without it, a shifted letter arrives as the uppercase character in both `key` and `code`, such as `"B"`, even though `KeyCode` only lists lowercase letters.
+- Numpad, modifier, and lock keys are reported through the kitty keyboard protocol.
+
 ### Mouse events
 
 | Type | Description |
@@ -100,7 +122,7 @@ All keyboard events include:
 | `mousemove` | Movement while button held |
 | `wheel` | Scroll wheel (`direction: "up"` \| `"down"`) |
 
-Mouse events include `x` and `y` coordinates (0-based) and optional modifiers.
+Mouse events include `x` and `y` coordinates (0-based) and optional modifiers. Press, release, and move events also include the `button`: `"left"`, `"right"`, or `"middle"`. Under the VT200 and urxvt mouse protocols, a release reports `"release"` instead, because those protocols do not say which button was let go.
 
 ### Other events
 
@@ -110,6 +132,32 @@ Mouse events include `x` and `y` coordinates (0-based) and optional modifiers.
 | `cursor` | DSR cursor position report. Returns `{ row, column }` (1-based) |
 
 Pointer events (`pointerenter`, `pointerleave`, `pointerclick`) are produced by the [renderer](/docs/tty/api/term), not the input parser.
+
+## Types
+
+The module exports a type for every shape on this page, so you can type your handlers:
+
+```ts twoslash
+import type { InputEvent } from "@bomb.sh/tty";
+
+function handle(event: InputEvent) {
+  if (event.type === "keydown" && event.code === "Escape") {
+    // quit
+  }
+}
+```
+
+| Type | Describes |
+|---|---|
+| `InputEvent` | Any event `scan()` returns |
+| `KeyEvent` | A `KeyDown`, `KeyRepeat`, or `KeyUp` event |
+| `KeyDown`, `KeyRepeat`, `KeyUp` | One keyboard event type each |
+| `KeyInfo` | The fields every keyboard event has |
+| `KeyModifiers` | The `alt`, `ctrl`, and `shift` flags |
+| `KeyCode` | The values of `code` |
+| `MouseDownEvent`, `MouseUpEvent`, `MouseMoveEvent`, `WheelEvent` | The mouse events |
+| `ResizeEvent`, `CursorEvent` | The other events |
+| `Input`, `InputOptions`, `ScanResult` | What `createInput()` returns, its options, and what `scan()` returns |
 
 ## Supported protocols
 

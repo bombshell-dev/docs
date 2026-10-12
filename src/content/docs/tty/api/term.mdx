@@ -219,6 +219,22 @@ async function main() {
 Line mode (`mode: "line"`) renders into a region of the main screen scrollback instead of the alternate buffer. See the [inline regions example](https://github.com/bombshell-dev/tty/blob/main/examples/inline-regions/index.ts).
 </Aside>
 
+## Types
+
+The module exports a type for each shape on this page:
+
+| Type | Describes |
+|---|---|
+| `Term` | What `createTerm()` returns |
+| `TermOptions` | The options of `createTerm()`, `width` and `height` |
+| `UpdateOptions` | The options of `update()`, in either form |
+| `TermResizeEvent` | A `{ type: "resize", width, height }` event that `update()` reads |
+| `RenderOptions`, `RenderResult` | The options and the result of `render()` |
+| `RenderInfo` | The `info` lookup in a render result |
+| `ElementInfo` | What `info.get(id)` returns, `{ bounds }` |
+| `BoundingBox` | An element's `bounds`, with `x`, `y`, `width`, and `height` |
+| `PointerEvent`, `ClayError` | The entries of `events` and `errors` |
+
 ## Next steps
 
 - [Ops API](/docs/tty/api/ops) (building UI directives)
