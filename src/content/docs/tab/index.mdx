@@ -224,22 +224,29 @@ const main = defineCommand({
   },
 });
 
-// Initialize tab completions
-const completion = await tab(main);
-
-// Add custom completions
-const devCommand = completion.commands.get('dev');
-const portOption = devCommand?.options.get('port');
-if (portOption) {
-  portOption.handler = (complete) => {
-    complete('3000', 'Development port');
-    complete('8080', 'Production port');
-  };
-}
+// Initialize tab completions with custom handlers
+await tab(main, {
+  subCommands: {
+    dev: {
+      options: {
+        port: (complete) => {
+          complete('3000', 'Development port');
+          complete('8080', 'Production port');
+        },
+      },
+    },
+  },
+});
 
 const cli = createMain(main);
 cli();
 ```
+
+Pass custom handlers as the second argument of `tab()`. The object mirrors your command tree: `subCommands` for nested commands, `options` for option values, and `args` for positional arguments. The CAC adapter accepts the same object.
+
+With citty, setting `handler` on an option after `tab()` returns does not work for options that take a value. The adapter registers them as boolean flags, so `my-cli dev --port <TAB>` completes nothing.
+
+Every subcommand needs a `meta.description`. Without one, `tab()` throws `Invalid meta or missing description.`
 
 ### Commander.js Integration
 
