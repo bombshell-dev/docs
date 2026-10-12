@@ -1,0 +1,155 @@
+---
+title: API reference
+description: Every export of @bomb.sh/tab 0.0.22 and its framework adapters
+---
+
+This page lists every export of `@bomb.sh/tab` 0.0.22 and its framework adapters.
+
+## Core
+
+```typescript
+import t, { script, ShellCompDirective } from '@bomb.sh/tab';
+```
+
+### t
+
+The default export. A `RootCommand` that holds your CLI's commands, options, and arguments. Options and arguments declared on `t` itself belong to the root command.
+
+### t.command(name, description)
+
+Declares a command and returns it. Declare a subcommand with its full path, separated by spaces:
+
+```typescript
+t.command('remote', 'Manage remotes');
+t.command('remote add', 'Add a remote');
+```
+
+`my-cli remote <TAB>` then completes `add`.
+
+### command.option(name, description, handler?, alias?)
+
+Declares an option and returns the command, so calls chain. `name` is the long name without dashes. An option with a handler takes a value. An option without one is a boolean flag:
+
+```typescript
+const dev = t.command('dev', 'Start dev server');
+
+// Boolean flags: --open, and --verbose or -v
+dev.option('open', 'Open the browser');
+dev.option('verbose', 'Show more output', 'v');
+
+// A value option: --port <value> or -p <value>
+dev.option(
+  'port',
+  'Specify port',
+  (complete) => {
+    complete('3000', 'Development port');
+  },
+  'p'
+);
+```
+
+The third argument is the handler when it is a function, and the short alias when it is a string. `my-cli dev -<TAB>` completes short aliases, and `my-cli dev --<TAB>` completes long names.
+
+### command.argument(name, handler?, variadic?)
+
+Declares a positional argument and returns the command. Arguments complete in the order you declare them. Pass `true` as `variadic` to let the last argument repeat. See [Positional Arguments](/docs/tab/#positional-arguments).
+
+### Handlers
+
+```typescript
+type Complete = (value: string, description: string) => void;
+
+type OptionHandler = (
+  this: Option,
+  complete: Complete,
+  options: OptionsMap
+) => void;
+
+type ArgumentHandler = (
+  this: Argument,
+  complete: Complete,
+  options: OptionsMap
+) => void;
+```
+
+A handler calls `complete(value, description)` once per suggestion. tab prints only the suggestions that start with what the user has typed. `this` is the option or argument being completed. `options` holds the command's declared options keyed by name, not the values on the command line.
+
+Handlers run synchronously. Suggestions added after an `await` are lost, so read any data your handler needs synchronously.
+
+### t.parse(args)
+
+Completes `args`, the words after `complete --`, and prints the result in the [completion protocol format](/docs/tab/#how-it-works). An empty last word means the shell is completing a new word.
+
+### t.setup(name, executable, shell)
+
+Prints the completion script for `shell`, which is `zsh`, `bash`, `fish`, or `powershell`. `name` is the command the script registers completion for. `executable` is the command the script runs to request completions. Any other shell throws `AssertionError: Unsupported shell`.
+
+### script(shell, name, executable)
+
+Same as `t.setup(name, executable, shell)`, with the shell first.
+
+### ShellCompDirective
+
+The directive values that end every completion response. See [How It Works](/docs/tab/#how-it-works). tab always sends `ShellCompDirectiveNoFileComp` (`4`).
+
+## Framework adapters
+
+Each adapter reads your CLI definition, adds a `complete` command to it, and returns the `RootCommand` it built. The frameworks are optional peer dependencies, so install the one you use.
+
+| Import | Signature | Supported versions |
+| --- | --- | --- |
+| `@bomb.sh/tab/cac` | `tab(cli, config?)`, returns `Promise<RootCommand>` | cac `^6.7.14` or `^7.0.0` |
+| `@bomb.sh/tab/citty` | `tab(command, config?)`, returns `Promise<RootCommand>` | citty `^0.1.6` or `^0.2.0` |
+| `@bomb.sh/tab/commander` | `tab(program, options?)`, returns `RootCommand` | commander `^13.1.0`, `^14.0.0`, or `^15.0.0` |
+
+The Commander adapter's `options` takes only `completionCommandName`. See [Commander.js Integration](/docs/tab/#commanderjs-integration).
+
+### config
+
+The cac and citty adapters accept handlers in an object that mirrors your command tree:
+
+```typescript
+interface CompletionConfig {
+  subCommands?: Record<string, CompletionConfig>;
+  options?: Record<string, OptionHandler>;
+  args?: Record<string, ArgumentHandler>;
+}
+```
+
+tab does not export this type. See [Citty Integration](/docs/tab/#citty-integration) for an example.
+
+### The returned RootCommand
+
+`commands` maps each command's full path, such as `remote add`, to its `Command`. Root options and arguments are on the root command's own `options` and `arguments`. Set `handler` on an option or argument to add completions:
+
+```typescript
+const completion = tab(program);
+
+const option = completion.commands.get('serve')?.options.get('port');
+if (option) {
+  option.handler = (complete) => {
+    complete('3000', 'Default port');
+  };
+}
+```
+
+With citty, setting `handler` afterwards does not work for options that take a value. Use `config` instead.
+
+## Classes
+
+| Class | Properties |
+| --- | --- |
+| `Command` | `value` (the full command path), `description`, `options`, `arguments` |
+| `RootCommand` | Everything on `Command`, plus `commands`, `completions`, and `directive` |
+| `Option` | `value` (the long name), `description`, `handler`, `alias`, `isBoolean`, `command` |
+| `Argument` | `name`, `variadic`, `handler`, `command` |
+
+## Types
+
+| Type | Description |
+| --- | --- |
+| `Complete` | The `complete(value, description)` function passed to handlers. |
+| `OptionHandler` | A handler for an option value. |
+| `ArgumentHandler` | A handler for a positional argument. |
+| `OptionsMap` | `Map<string, Option>`, a command's options keyed by long name. |
+| `Completion` | A suggestion: `{ value, description? }`. |

@@ -7,9 +7,9 @@ Shell autocompletions are largely missing in the JavaScript CLI ecosystem. tab p
 
 Additionally, tab supports autocompletions for `pnpm`, `npm`, `yarn`, and `bun`.
 
-Modern CLI libraries like [Gunshi](https://github.com/kazupon/gunshi) include tab completion natively in their core. 
+Modern CLI libraries build on tab too. [Gunshi](https://github.com/kazupon/gunshi) includes tab completion natively in its core, and [Clerc](https://github.com/clercjs/clerc) ships it as an official plugin.
 
-Major CLIs and tooling projects including Cloudflare, Nuxt, Astro, and Vitest also adopted tab to provide shell completions for their users.
+Major CLIs and tooling projects including Cloudflare, Nuxt, Webpack, Prisma, Astro, and Vitest also adopted tab to provide shell completions for their users.
 
 As CLI tooling authors, if we can spare our users a second or two by not checking documentation or writing the `-h` flag, we're doing them a huge favor. The unconscious mind loves hitting the [TAB] key and always expects feedback. When nothing happens, it breaks the user's flow - a frustration apparent across the whole JavaScript CLI tooling ecosystem.
 

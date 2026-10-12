@@ -189,7 +189,10 @@ export default defineConfig({
 						id: "tab",
 						icon: "right-caret",
 						link: "/tab/",
-						items: [],
+						items: [
+							{ label: "Overview", link: "/tab/" },
+							{ label: "API reference", link: "/tab/api/" },
+						],
 					},
 					{
 						label: "TTY",
