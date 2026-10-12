@@ -84,10 +84,16 @@ The second argument of `t.setup()` is the command the generated script runs to r
 Test your completions:
 
 ```bash
-node my-cli.js complete -- dev --port=<TAB>
-# Output: --port=3000  Development port
-#         --port=8080  Production port
+node my-cli.js complete -- dev --port=
 ```
+
+```text
+3000	Development port
+8080	Production port
+:4
+```
+
+This is the raw output your shell script reads. See [How It Works](#how-it-works) for the format.
 
 Install for users:
 
@@ -170,16 +176,23 @@ As mentioned earlier, tab provides completions for package managers as well:
 
 ```bash
 # Generate and install completion scripts (requires global install)
-tab pnpm zsh > ~/.pnpm-completion.zsh && echo 'source ~/.pnpm-completion.zsh' >> ~/.zshrc
-tab npm bash > ~/.npm-completion.bash && echo 'source ~/.npm-completion.bash' >> ~/.bashrc
+tab pnpm zsh > ~/.pnpm-completion.zsh
+echo 'source ~/.pnpm-completion.zsh' >> ~/.zshrc
+
+tab npm bash > ~/.npm-completion.bash
+echo 'source ~/.npm-completion.bash' >> ~/.bashrc
+
 tab yarn fish > ~/.config/fish/completions/yarn.fish
-tab bun powershell > ~/.bun-completion.ps1 && echo '. ~/.bun-completion.ps1' >> $PROFILE
+
+tab bun powershell > ~/.bun-completion.ps1
+echo '. ~/.bun-completion.ps1' >> $PROFILE
 ```
 
 Without a global install, use `npx`:
 
 ```bash
-npx @bomb.sh/tab pnpm zsh > ~/.pnpm-completion.zsh && echo 'source ~/.pnpm-completion.zsh' >> ~/.zshrc
+npx @bomb.sh/tab pnpm zsh > ~/.pnpm-completion.zsh
+echo 'source ~/.pnpm-completion.zsh' >> ~/.zshrc
 ```
 
 Example in action:
@@ -197,9 +210,12 @@ yarn add --emoji=<TAB>
 Package manager completion does more than complete the package manager's own flags — it also **delegates to CLIs installed as local project dependencies**. If a CLI implements tab's completion protocol (directly or via a [framework adapter](#framework-adapters)), it becomes completable through your package manager _without_ being on your `PATH` and without installing its completion script separately:
 
 ```bash
-pnpm exec my-cli <TAB>      # completes my-cli's subcommands and flags
+# completes my-cli's subcommands and flags
+pnpm exec my-cli <TAB>
 pnpm dlx my-cli <TAB>
-pnpm my-cli <TAB>           # the bare form works too
+
+# the bare form works too
+pnpm my-cli <TAB>
 ```
 
 Under the hood, tab strips the package-manager wrapper (`exec`, `x`, `run`, `dlx`), detects whether the target CLI supports completion, and forwards the request to it — falling back to running the CLI _through_ the package manager (e.g. `pnpm my-cli complete -- …`) so locally-installed binaries resolve. The same works for `npm exec`, `yarn`, and `bun x`.
@@ -360,7 +376,9 @@ Options defined with Commander's `.choices()` are picked up automatically — no
 The Commander integration supports customising the command name used to generate shell completion scripts. The default is `complete`. If you use a custom name like `completion`, it appears in help as `completion <shell>`, while runtime suggestions stay on the hidden `complete -- [args...]` command. Use your custom command when generating shell scripts:
 
 ```javascript
-const completion = tab(program, { completionCommandName: 'completion' });
+const completion = tab(program, {
+  completionCommandName: 'completion',
+});
 ```
 
 ## How It Works
@@ -372,16 +390,32 @@ tab uses a standardized completion protocol that any CLI can implement:
 my-cli complete zsh
 
 # Parse completion request (called by shell)
-my-cli complete -- install --port=""
+my-cli complete -- dev --port ""
 ```
 
 **Output Format:**
 
-```
---port=3000    Development port
---port=8080    Production port
+```text
+3000	Development port
+8080	Production port
 :4
 ```
+
+Each line is a completion value, a tab, and its description. Values never include an `--option=` prefix. For `--port=<TAB>`, the zsh and fish scripts add the prefix back. The bash script does not, so in bash only `--port <TAB>` completes.
+
+The last line is `:` followed by a directive, a bit flag that tells the shell how to treat the completions. tab always sends `:4`. A CLI that implements the protocol itself can send any of these values, or add several together. tab exports them as `ShellCompDirective`:
+
+| Value | Name | Effect |
+| --- | --- | --- |
+| `0` | `ShellCompDirectiveDefault` | Use the shell's default completion, such as file names |
+| `1` | `ShellCompDirectiveError` | Something failed, so the shell shows no completions |
+| `2` | `ShellCompDirectiveNoSpace` | Do not add a space after the completion |
+| `4` | `ShellCompDirectiveNoFileComp` | Do not fall back to file completion |
+| `8` | `ShellCompDirectiveFilterFileExt` | Complete file names, using the values as allowed extensions |
+| `16` | `ShellCompDirectiveFilterDirs` | Complete directory names only |
+| `32` | `ShellCompDirectiveKeepOrder` | Keep the completions in the order sent, instead of sorting them |
+
+fish does not support `8` and `16`, and completes any file name instead.
 
 ## Contributing
 
