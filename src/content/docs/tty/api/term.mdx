@@ -24,7 +24,7 @@ async function main() {
 | `width` | `number` | Terminal width in columns |
 | `height` | `number` | Terminal height in rows |
 
-Returns a `Term` with a single `render()` method.
+Returns a `Term` with a `render()` method and an `update()` method.
 
 ## term.render(ops, options?)
 
@@ -137,6 +137,59 @@ Layout errors include a `type` and `message`. Known error types:
 - `INTERNAL_ERROR`
 - `UNBALANCED_OPEN_CLOSE`
 - `CLIP_DEPTH_EXCEEDED`
+
+## term.update(options)
+
+Resizes the renderer in place. Call it when the terminal changes size instead of creating a new `Term`, which would load the WebAssembly module again:
+
+```ts twoslash
+import process from "node:process";
+import { close, createTerm, grow, open, text } from "@bomb.sh/tty";
+
+async function main() {
+  let term = await createTerm({
+    width: process.stdout.columns,
+    height: process.stdout.rows,
+  });
+
+  function frame() {
+    let { output } = term.render([
+      open("root", { layout: { width: grow(), height: grow() } }),
+      text("Hello"),
+      close(),
+    ]);
+    process.stdout.write(output);
+  }
+
+  process.stdout.on("resize", () => {
+    term.update({
+      width: process.stdout.columns,
+      height: process.stdout.rows,
+    });
+    process.stdout.write("\x1b[2J");
+    frame();
+  });
+
+  frame();
+}
+```
+
+`update()` takes one of two forms:
+
+| Option | Type | Description |
+|---|---|---|
+| `{ width, height }` | `number`, `number` | The new size in columns and rows |
+| `{ events }` | `Array<{ type: string }>` | A list of events. Only `{ type: "resize", width, height }` events are read, and the last one wins |
+
+`update()` is synchronous. After a real size change, the next `render()` redraws every cell. An update to the same size changes nothing.
+
+`update()` does not clear the screen. When the terminal shrinks, cells outside the new size stay visible, so clear the screen before the next frame, as the example does with `\x1b[2J`.
+
+`update()` also empties the `output` of earlier renders. Write each frame's output before you call `update()`, or copy it with `output.slice()`.
+
+<Aside type="note">
+In 0.9.0, the [input parser](/docs/tty/api/input) does not produce `resize` events. Build them from your runtime's resize signal, such as `process.stdout`'s `"resize"` event in Node or `SIGWINCH` in Deno.
+</Aside>
 
 ## Frame loop with transitions
 

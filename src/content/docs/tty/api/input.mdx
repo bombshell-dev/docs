@@ -106,7 +106,7 @@ Mouse events include `x` and `y` coordinates (0-based) and optional modifiers.
 
 | Type | Description |
 |---|---|
-| `resize` | Terminal resized. Returns `{ width, height }` |
+| `resize` | Terminal resized, with `{ width, height }`. Declared in the types, but the 0.9.0 parser never emits it. See [`term.update()`](/docs/tty/api/term#termupdateoptions) |
 | `cursor` | DSR cursor position report. Returns `{ row, column }` (1-based) |
 
 Pointer events (`pointerenter`, `pointerleave`, `pointerclick`) are produced by the [renderer](/docs/tty/api/term), not the input parser.
