@@ -70,6 +70,8 @@ cursor(false); // hide
 cursor(true);  // show
 ```
 
+If you render text with a [`caret`](/docs/tty/api/ops#caret), the renderer shows the cursor while a caret is set and hides it once you remove the caret. Frames without a caret leave visibility as `cursor()` set it.
+
 ## `saveCursorPosition()`
 
 Save and restore cursor position using DECSC (`ESC 7`) / DECRC (`ESC 8`).
