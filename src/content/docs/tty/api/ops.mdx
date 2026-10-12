@@ -100,6 +100,37 @@ Renders a text node inside the current open element.
 | `fontId` | `number` | Font identifier |
 | `wrap` | `number` | Wrap width |
 | `attrs` | `number` | Text attributes (bold, italic, etc.) |
+| `caret` | `number` | Places the terminal cursor at this offset in the text. See [Caret](#caret) |
+
+### Caret
+
+`caret` gives a text input a real cursor. The renderer moves the terminal cursor to that offset in the text and shows it:
+
+```ts twoslash
+import { close, open, rgba, text } from "@bomb.sh/tty";
+
+let value = "hello";
+let position = 2;
+
+let ops = [
+  open("input", {
+    border: {
+      color: rgba(0, 255, 0),
+      left: 1, right: 1, top: 1, bottom: 1,
+    },
+  }),
+  text(value, { caret: position }),
+  close(),
+];
+```
+
+Here the cursor lands between `he` and `llo`, inside the border.
+
+- The offset counts code points, and follows wrapping and wide characters. In `日本語` and `👍a`, a caret of `1` lands in the third column.
+- An offset at or past the end of the text places the cursor one cell after the last character, where the next typed character goes.
+- If more than one text node sets a caret, the first one wins.
+- When you stop setting a caret, the next render hides the cursor. Frames that never set a caret leave the cursor alone.
+- Moving only the caret is cheap. The render writes just the cursor move.
 
 ## close()
 
