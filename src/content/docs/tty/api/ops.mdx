@@ -17,7 +17,6 @@ let ops = [
     layout: { width: grow(), height: grow(), direction: "ttb" },
   }),
   open("panel", {
-    layout: { padding: { left: 1, right: 1, top: 1, bottom: 1 } },
     border: { color: rgba(0, 255, 0), left: 1, right: 1, top: 1, bottom: 1 },
     cornerRadius: { tl: 1, tr: 1, bl: 1, br: 1 },
   }),
@@ -49,7 +48,7 @@ Opens a layout element. Every element needs a unique string `id` for pointer hit
 |---|---|---|
 | `bg` | `number` | Background color (packed RGBA via `rgba()`) |
 | `cornerRadius` | `{ tl?, tr?, bl?, br? }` | Rounded corners |
-| `border` | `{ color, bg?, left?, right?, top?, bottom? }` | Border sides (number or `{ width, color?, bg? }`) |
+| `border` | `{ color, bg?, left?, right?, top?, bottom? }` | Border sides (number or `{ width, color?, bg? }`). Each side reserves its width inside the element, in addition to `padding` |
 | `clip` | `{ horizontal?, vertical? }` | Clip overflowing content |
 
 ### Floating
