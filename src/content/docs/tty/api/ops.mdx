@@ -17,7 +17,10 @@ let ops = [
     layout: { width: grow(), height: grow(), direction: "ttb" },
   }),
   open("panel", {
-    border: { color: rgba(0, 255, 0), left: 1, right: 1, top: 1, bottom: 1 },
+    border: {
+      color: rgba(0, 255, 0),
+      left: 1, right: 1, top: 1, bottom: 1,
+    },
     cornerRadius: { tl: 1, tr: 1, bl: 1, br: 1 },
   }),
   text("Hello, World!"),
@@ -175,7 +178,9 @@ Pre-packs an op array into a reusable snapshot op. Useful when part of the UI is
 import { close, open, snapshot, text, grow } from "@bomb.sh/tty";
 
 let chrome = snapshot([
-  open("header", { layout: { width: grow(), height: { type: "fixed", value: 1 } } }),
+  open("header", {
+    layout: { width: grow(), height: { type: "fixed", value: 1 } },
+  }),
   text("My App"),
   close(),
 ]);

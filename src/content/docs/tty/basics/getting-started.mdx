@@ -158,7 +158,14 @@ To render this:
 ```
 
 ```ts twoslash
-import { close, createTerm, grow, open, rgba, text } from "@bomb.sh/tty";
+import {
+  close,
+  createTerm,
+  grow,
+  open,
+  rgba,
+  text,
+} from "@bomb.sh/tty";
 
 async function main() {
   let term = await createTerm({ width: 80, height: 24 });
