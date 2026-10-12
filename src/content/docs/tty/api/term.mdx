@@ -60,15 +60,26 @@ async function main() {
 Pass pointer state to get hit-testing events alongside output:
 
 ```ts twoslash
-import { close, createTerm, fixed, grow, open, text } from "@bomb.sh/tty";
+import {
+  close,
+  createTerm,
+  fixed,
+  grow,
+  open,
+  text,
+} from "@bomb.sh/tty";
 
 async function main() {
   let term = await createTerm({ width: 80, height: 24 });
 
   let { output, events } = term.render(
     [
-      open("root", { layout: { width: grow(), height: grow(), direction: "ltr" } }),
-      open("sidebar", { layout: { width: fixed(20), height: grow() } }),
+      open("root", {
+        layout: { width: grow(), height: grow(), direction: "ltr" },
+      }),
+      open("sidebar", {
+        layout: { width: fixed(20), height: grow() },
+      }),
       text("Sidebar"),
       close(),
       open("main", { layout: { width: grow(), height: grow() } }),
