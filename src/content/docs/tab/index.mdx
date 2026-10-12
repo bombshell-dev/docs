@@ -70,11 +70,16 @@ if (process.argv[2] === 'complete') {
   if (shell === '--') {
     const args = process.argv.slice(4);
     t.parse(args);
+  } else if (['zsh', 'bash', 'fish', 'powershell'].includes(shell)) {
+    t.setup('my-cli', 'my-cli', shell);
   } else {
-    t.setup('my-cli', 'node my-cli.js', shell);
+    console.error('Usage: my-cli complete <shell>');
+    process.exit(1);
   }
 }
 ```
+
+The second argument of `t.setup()` is the command the generated script runs to request completions. Pass your program name, so completions work from any directory. The framework adapters do the same.
 
 Test your completions:
 
@@ -87,13 +92,43 @@ node my-cli.js complete -- dev --port=<TAB>
 Install for users:
 
 ```bash
-# One-time setup
-source <(my-cli complete zsh)
-
-# Permanent setup
+# zsh
 my-cli complete zsh > ~/.my-cli-completion.zsh
 echo 'source ~/.my-cli-completion.zsh' >> ~/.zshrc
+
+# bash
+my-cli complete bash > ~/.my-cli-completion.bash
+echo 'source ~/.my-cli-completion.bash' >> ~/.bashrc
+
+# fish
+my-cli complete fish > ~/.config/fish/completions/my-cli.fish
+
+# powershell
+my-cli complete powershell > ~/.my-cli-completion.ps1
+echo '. ~/.my-cli-completion.ps1' >> $PROFILE
 ```
+
+The bash script needs bash 4 or later and the [bash-completion](https://github.com/scop/bash-completion) package. macOS ships bash 3.2, so install both with Homebrew (`brew install bash bash-completion@2`).
+
+### Development Workflow
+
+Generated scripts run your CLI by its program name, which the shell resolves through `PATH`, an alias, or a shell function. During development your CLI usually isn't on `PATH`, so define a shell function that runs it from source, then load the completions. The function lasts until you close the terminal. Run these from your project directory:
+
+```bash
+# zsh or bash
+my-cli() { node my-cli.js "$@"; }
+source <(my-cli complete zsh)  # or bash
+
+# fish
+function my-cli; node my-cli.js $argv; end
+source (my-cli complete fish | psub)
+
+# powershell
+function my-cli { node my-cli.js $args }
+my-cli complete powershell | Out-String | Invoke-Expression
+```
+
+The function name must match your program name, so the shell routes completion requests back to it.
 
 ## Positional Arguments
 
