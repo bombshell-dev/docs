@@ -58,10 +58,41 @@ Opens a layout element. Every element needs a unique string `id` for pointer hit
 | `floating.x`, `floating.y` | `number` | Position offset |
 | `floating.expand` | `{ width?, height? }` | Expand floating bounds |
 | `floating.attachTo` | `"none"` \| `"parent"` \| `"element"` \| `"root"` | Attachment target |
-| `floating.attachPoints` | `{ element?, parent? }` | Anchor points |
+| `floating.attachPoints` | `{ element?, parent? }` | Which point of the element pins to which point of its target. Both default to `"left-top"`. See [Attach points](#attach-points) |
 | `floating.pointerCaptureMode` | `"capture"` \| `"passthrough"` | Pointer event capture |
 | `floating.clipTo` | `"none"` \| `"attached-parent"` | Clip to attached parent |
 | `floating.zIndex` | `number` | Stacking order |
+
+#### Attach points
+
+An attach point names a horizontal side, then a vertical side. There are nine:
+
+| | Top | Center | Bottom |
+|---|---|---|---|
+| **Left** | `"left-top"` | `"left-center"` | `"left-bottom"` |
+| **Center** | `"center-top"` | `"center-center"` | `"center-bottom"` |
+| **Right** | `"right-top"` | `"right-center"` | `"right-bottom"` |
+
+The renderer places the element so that its `element` point lands on the target's `parent` point, then shifts it by `floating.x` and `floating.y`. Use the same point on both to pin the element inside a corner or an edge. This badge sits in the panel's top-right corner:
+
+```ts twoslash
+import { close, fixed, open, text } from "@bomb.sh/tty";
+
+let ops = [
+  open("panel", { layout: { width: fixed(20), height: fixed(6) } }),
+  open("badge", {
+    floating: {
+      attachTo: "parent",
+      attachPoints: { element: "right-top", parent: "right-top" },
+    },
+  }),
+  text("NEW"),
+  close(),
+  close(),
+];
+```
+
+Pairing different points places the element outside its target. With `element: "left-top"` and `parent: "right-bottom"`, the element starts just past the target's bottom-right corner.
 
 ### Transitions
 
