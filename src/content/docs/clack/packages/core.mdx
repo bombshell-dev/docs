@@ -171,13 +171,12 @@ p.on('cancel', () => {
 
 2. **SelectPrompt**: For selection from options
    - Custom rendering
-   - Option filtering
-   - Disabled options support
-   - Text wrapping support
+   - Disabled options support (the cursor skips them)
+   - `initialValue` to start the cursor on an option
 
 3. **ConfirmPrompt**: For yes/no confirmations
-   - Yes/No shortcuts
-   - Custom messages
+   - `y` and `n` shortcuts submit right away
+   - Required `active` and `inactive` labels
 
 4. **AutocompletePrompt**: For searchable selection
    - Type-ahead filtering
@@ -188,27 +187,27 @@ p.on('cancel', () => {
    - As of v1.2.0, the built-in default filter runs only when `filter` is set explicitly **or** when `options` is not a getter—so lazy `options` getters are not pre-filtered unexpectedly
 
 5. **PasswordPrompt**: For secure input
-   - Character masking
+   - Character masking with the `mask` option
    - Validation support
-   - `clearOnError` option to reset on validation failure
+   - `clearOnError` is an option of [`password()`](/docs/clack/packages/prompts#password-input) in `@clack/prompts`, not of `PasswordPrompt`
    - Empty submit resolves to `""`, matching `TextPrompt` and `Promise<string | symbol>` (v1.4.2)
 
 6. **MultiSelectPrompt**: For multiple selections
    - Checkbox interface
-   - Selection limits
    - Custom rendering
    - Disabled options support
-   - Invert selection support
+   - `a` toggles every option and `i` inverts the selection
+   - `initialValues`, `cursorAt`, and `required` options
 
 7. **GroupMultiSelectPrompt**: For grouped selections
    - Hierarchical options
    - Group selection (`selectableGroups` option)
    - Custom rendering
-   - Group spacing control
+   - `initialValues`, `cursorAt`, and `required` options
 
 8. **SelectKeyPrompt**: For key-based selection
-   - Custom key bindings
-   - Multiple selection support
+   - Submits the option whose `value` starts with the pressed key
+   - Matches keys case-insensitively unless `caseSensitive` is `true`
 
 9. **DatePrompt**: For structured date entry
    - Segment-based editing (year, month, day) with `DateFormat` (`YMD`, `MDY`, or `DMY`)
@@ -216,7 +215,11 @@ p.on('cancel', () => {
    - Optional `separator` override for display
    - `minDate` / `maxDate` bounds and `DateParts` segment values
 
-10. **Multi-line input**: Use [`multiline()`](/docs/clack/packages/prompts#multi-line-text) from `@clack/prompts` for multi-line text entry (since v1.3.0). `@clack/core` provides the underlying prompt primitive; extend `Prompt` directly only when you need custom multi-line TTY behavior.
+10. **MultiLinePrompt**: For multi-line text input (v1.3.0)
+    - Pressing Enter twice at the end of the input submits
+    - With `showSubmit: true`, Enter adds a new line and Tab focuses a submit button, tracked in `focused` (`'editor'` or `'submit'`)
+    - `placeholder` and `defaultValue`, like `TextPrompt`
+    - Use **`userInputWithCursor`** when rendering
 
 ## Layout utilities
 
