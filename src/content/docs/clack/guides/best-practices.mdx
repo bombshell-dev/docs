@@ -92,7 +92,6 @@ Async schemas work the same way (v1.8.0): a schema whose validation returns a `P
 Use clear and consistent messaging across your prompts:
 
 ```ts twoslash
-// @errors: 2322
 import { select, isCancel } from '@clack/prompts';
 
 // Good
@@ -157,7 +156,6 @@ if (projectType === 'web') {
 Provide sensible defaults when appropriate:
 
 ```ts twoslash
-// @errors: 2353
 import { text, select, isCancel } from '@clack/prompts';
 
 // Define types for better type safety
@@ -341,7 +339,6 @@ const serverPort = await text({
 Use conditional logic to show relevant prompts:
 
 ```ts twoslash
-// @errors: 2339
 import { text, select, isCancel } from '@clack/prompts';
 
 interface DatabaseConfig {
