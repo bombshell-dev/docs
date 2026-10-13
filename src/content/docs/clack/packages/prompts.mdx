@@ -1325,3 +1325,80 @@ Options:
 - `columnPadding`: Number of columns to reserve for padding (default: `0`).
 - `rowPadding`: Number of rows to reserve for padding (default: `0`).
 - All [Common Options](#common-options)
+
+### Utilities
+
+These exports help you build [custom prompts](/docs/clack/packages/core#creating-custom-prompts) on `@clack/core` that look like the built-in ones:
+
+```ts twoslash
+import { TextPrompt } from '@clack/core';
+import {
+  S_BAR,
+  formatInstructionFooter,
+  isCancel,
+  symbol,
+} from '@clack/prompts';
+
+const name = await new TextPrompt({
+  render() {
+    const title = `${symbol(this.state)}  What is your name?`;
+    if (this.state === 'submit') {
+      return `${title}\n${S_BAR}  ${this.value}`;
+    }
+    return [
+      title,
+      `${S_BAR}  ${this.userInputWithCursor}`,
+      ...formatInstructionFooter(['Enter: submit'], true),
+    ].join('\n');
+  },
+}).prompt();
+
+if (isCancel(name)) process.exit(0);
+```
+
+<pre class="cli-preview"><font color="#06989A">◆</font>  What is your name?
+│  Ada█
+<font color="#06989A">│</font>  Enter: submit
+<font color="#06989A">└</font></pre>
+
+| Export | Description |
+| --- | --- |
+| `symbol(state)` | The colored step symbol for a prompt state: cyan `◆` while active, dim `◆` while validating, green `◇` on submit, red `■` on cancel, and yellow `▲` on error. |
+| `symbolBar(state)` | The guide bar `│` in the same color. Returns `undefined` while validating. |
+| `formatInstructionFooter(instructions, hasGuide)` | Joins keyboard hints with ` • ` and returns the footer lines. With `hasGuide`, it adds a cyan `│` prefix and a closing `└` line. |
+| `SELECT_INSTRUCTIONS` | The hints `select` shows: `↑/↓ to navigate` and `Enter: confirm`. |
+| `MULTISELECT_INSTRUCTIONS` | The hints `multiselect` shows, which add `Space: select`. |
+| `unicode` | `true` when the terminal supports Unicode. |
+| `unicodeOr(char, fallback)` | Returns `char` when `unicode` is `true`, and `fallback` otherwise. |
+| `isCI()` | `true` when the `CI` environment variable is exactly `"true"`. |
+| `isTTY(output)` | `true` when `output` is a TTY stream. |
+
+The symbol constants switch to a plain fallback in terminals without Unicode support:
+
+| Constant | Unicode | Fallback |
+| --- | --- | --- |
+| `S_STEP_ACTIVE` | `◆` | `*` |
+| `S_STEP_CANCEL` | `■` | `x` |
+| `S_STEP_ERROR` | `▲` | `x` |
+| `S_STEP_SUBMIT` | `◇` | `o` |
+| `S_BAR_START` | `┌` | `T` |
+| `S_BAR` | `│` | `\|` |
+| `S_BAR_END` | `└` | `—` |
+| `S_BAR_START_RIGHT` | `┐` | `T` |
+| `S_BAR_END_RIGHT` | `┘` | `—` |
+| `S_RADIO_ACTIVE` | `●` | `>` |
+| `S_RADIO_INACTIVE` | `○` | a space |
+| `S_CHECKBOX_ACTIVE` | `◻` | `[•]` |
+| `S_CHECKBOX_SELECTED` | `◼` | `[+]` |
+| `S_CHECKBOX_INACTIVE` | `◻` | `[ ]` |
+| `S_PASSWORD_MASK` | `▪` | `•` |
+| `S_BAR_H` | `─` | `-` |
+| `S_CORNER_TOP_RIGHT` | `╮` | `+` |
+| `S_CONNECT_LEFT` | `├` | `+` |
+| `S_CORNER_BOTTOM_RIGHT` | `╯` | `+` |
+| `S_CORNER_BOTTOM_LEFT` | `╰` | `+` |
+| `S_CORNER_TOP_LEFT` | `╭` | `+` |
+| `S_INFO` | `●` | `•` |
+| `S_SUCCESS` | `◆` | `*` |
+| `S_WARN` | `▲` | `!` |
+| `S_ERROR` | `■` | `x` |
