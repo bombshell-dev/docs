@@ -163,7 +163,7 @@ export default defineConfig({
 						icon: "seti:hex",
 						link: "/clack/basics/getting-started",
 						items: [
-							{ label: "Basics", autogenerate: { directory: "clack/basics" } },
+							{ label: "Overview", autogenerate: { directory: "clack/basics" } },
 							{
 								label: "Packages",
 								autogenerate: { directory: "clack/packages" },
@@ -177,7 +177,7 @@ export default defineConfig({
 						icon: "seti:shell",
 						link: "/args/getting-started",
 						items: [
-							{ label: "Basics", link: "/args/getting-started" },
+							{ label: "Overview", link: "/args/getting-started" },
 							{
 								label: "API",
 								link: "args/api",
@@ -200,7 +200,7 @@ export default defineConfig({
 						icon: "seti:config",
 						link: "/tty/basics/getting-started",
 						items: [
-							{ label: "Basics", autogenerate: { directory: "tty/basics" } },
+							{ label: "Overview", autogenerate: { directory: "tty/basics" } },
 							{ label: "Guides", autogenerate: { directory: "tty/guides" } },
 							{
 								label: "API",
@@ -221,7 +221,7 @@ export default defineConfig({
 						icon: "random",
 						link: "/router/basics/overview",
 						items: [
-							{ label: "Basics", autogenerate: { directory: "router/basics" } },
+							{ label: "Overview", autogenerate: { directory: "router/basics" } },
 							{ label: "Guides", autogenerate: { directory: "router/guides" } },
 							{ label: "API", items: [{ label: "Reference", link: "/router/api/" }] },
 						],
