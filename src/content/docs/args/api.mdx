@@ -21,7 +21,7 @@ The `@bomb.sh/args` package is a &lt;1kB library for parsing CLI flags. Inspired
 ```ts twoslash
 import { parse } from "@bomb.sh/args"
 
-const args = parse(process.argv, {
+const args = parse(process.argv.slice(2), {
   default: { a: 1, b: 2, c: "value" },
   alias: { h: "help" },
   boolean: ["foo", "bar"],
@@ -30,7 +30,7 @@ const args = parse(process.argv, {
 });
 ```
 
-- The first parameter is the raw CLI parameters list (in most case, it will be `process.argv`)
+- The first parameter is the list of CLI arguments to parse. In most cases it is `process.argv.slice(2)`, which drops the Node.js binary and script path from `process.argv`
 - The second parameter is the (optional) configuration to parse raw CLI parameters
 
 <Aside type="note">
@@ -53,7 +53,7 @@ It provides the default value to set if the <var>option</var> is missing
 ```ts twoslash
 import { parse } from "@bomb.sh/args"
 
-const args = parse(process.argv, {
+const args = parse(process.argv.slice(2), {
   default: { a: 1, b: 2, c: "value" },
 });
 ```
@@ -75,7 +75,7 @@ The object key is the alternative name, the value the name used in the parsing r
 ```ts twoslash
 import { parse } from "@bomb.sh/args"
 
-const args = parse(process.argv, {
+const args = parse(process.argv.slice(2), {
   alias: { h: 'help' },
 });
 ```
@@ -94,7 +94,7 @@ Indicate that an <var>option</var> is <var>flag</var>, and so <var>argument</var
 ```ts twoslash
 import { parse } from "@bomb.sh/args"
 
-const args = parse(process.argv, {
+const args = parse(process.argv.slice(2), {
   boolean: ['get'],
 });
 ```
@@ -113,7 +113,7 @@ Indicate that an <var>option</var> have a value, and so the <var>argument</var> 
 ```ts twoslash
 import { parse } from "@bomb.sh/args"
 
-const args = parse(process.argv, {
+const args = parse(process.argv.slice(2), {
   string: ['get', 'user'],
 });
 ```
@@ -133,7 +133,7 @@ Indicate that an <var>option</var> have a value and can be repeated several time
 ```ts twoslash
 import { parse } from "@bomb.sh/args"
 
-const args = parse(process.argv, {
+const args = parse(process.argv.slice(2), {
   array: ['tag'],
 });
 ```
@@ -154,7 +154,7 @@ If a boolean <var>option</var> is prefixed by `--no-` it will parse as a `false`
 ```ts twoslash
 import { parse } from "@bomb.sh/args"
 
-const args = parse(process.argv);
+const args = parse(process.argv.slice(2));
 ```
 the variable `args` will be equals to (assuming CLI parameters are `my-command --no-color`):
 ```js
@@ -169,13 +169,13 @@ args = {
     ```ts twoslash
     import { parse } from "@bomb.sh/args"
 
-    const args = parse(process.argv, { string: ['no-name'] });
+    const args = parse(process.argv.slice(2), { string: ['no-name'] });
     ```
     the variable `args` will be equals to (assuming CLI parameters are `my-command --no-color --no-name John`):
     ```js
     args = {
         _: [],
-        'color': false
+        'color': false,
         'no-name': 'John'
     }
     ```

@@ -60,7 +60,7 @@ Parsing can be configured to ensure arguments are coerced to specific types, whi
 ```ts twoslash
 import { parse } from "@bomb.sh/args";
 
-const args = parse(process.argv, {
+const args = parse(process.argv.slice(2), {
   default: { a: 1, b: 2, c: "value" },
   alias: { h: "help" },
   boolean: ["foo", "bar"],
