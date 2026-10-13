@@ -111,7 +111,6 @@ const name = await text({
 The text prompt accepts a single line of text.
 
 ```ts twoslash
-// @errors: 2339 18048
 import { text } from '@clack/prompts';
 
 const name = await text({
@@ -604,7 +603,6 @@ Options:
 The `groupMultiselect` prompt extends the [`multiselect`](#multiple-values) prompt to allow arranging distinct Multi-Selects, whilst keeping all of them interactive.
 
 ```ts twoslash
-// @errors: 2353
 import { groupMultiselect } from '@clack/prompts';
 
 const projectOptions = await groupMultiselect({
@@ -1019,7 +1017,6 @@ note(
 The second parameter (the title) is optional. You can also provide a format function to customize how each line is displayed:
 
 ```ts twoslash
-// @errors: 2345 7006
 import { note } from '@clack/prompts';
 
 note(
@@ -1079,7 +1076,6 @@ Options:
 The `taskLog` prompt provides a way to display log output that is cleared on success. This is useful for showing progress or status updates that should be removed once the task is complete.
 
 ```ts twoslash
-// @errors: 2345
 import { taskLog } from '@clack/prompts';
 
 const log = taskLog({
@@ -1114,7 +1110,6 @@ Options:
 Task logs support named groups, which allow you to organize logs into separate sections with their own headers and completion states:
 
 ```ts twoslash
-// @errors: 2345
 import { taskLog } from '@clack/prompts';
 
 const log = taskLog({
