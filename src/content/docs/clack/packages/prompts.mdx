@@ -251,6 +251,8 @@ const framework = await select({
 <font color="#06989A">│</font>  <font color="#AAAAAA">↑/↓ to navigate • Enter: confirm</font>
 <font color="#06989A">└</font></pre>
 
+Pass `initialValue` to start the cursor on that option, so pressing Enter submits it right away.
+
 #### Hide instructions
 
 ```ts twoslash
@@ -348,6 +350,12 @@ const framework = await multiselect({
 <font color="#06989A">│</font>  <font color="#AAAAAA">↑/↓ to navigate • Space: select • Enter: confirm</font>
 <font color="#06989A">└</font></pre>
 
+Options:
+
+- `initialValues`: Options that are already selected when the prompt opens.
+- `cursorAt`: The option the cursor starts on. Default: the first option.
+- `required`: When `true`, submitting with nothing selected shows `Please select at least one option.` Set it to `false` to allow an empty array. Default: `true`.
+
 ### Select by key
 
 `selectKey` shows each option with a visible key (the option `value`, typically one character). The user presses that key instead of moving a cursor with arrows—useful for compact yes/no/maybe menus or vim-style shortcuts.
@@ -369,6 +377,8 @@ if (isCancel(action)) {
   process.exit(0);
 }
 ```
+
+`initialValue` highlights that option's key when the prompt opens. It does not select it, so the user still presses a key to choose.
 
 ### Autocomplete
 
@@ -955,6 +965,8 @@ Additional methods:
 - `error(msg?)`: Stop with an error indicator
 - `clear()`: Stop and clear the progress bar without a message
 
+`progress` also accepts every [spinner option](#customization-options), such as custom `frames` or `delay`.
+
 You can also use the timer indicator mode for time-based feedback:
 
 ```ts twoslash
@@ -1088,6 +1100,15 @@ log.success('Installation complete');
 <font color="#555753">│</font>  Installing packages...
 <font color="#4E9A06">◆</font>  Installation complete</pre>
 
+Options:
+
+- `title`: The heading shown above the log.
+- `limit`: Maximum number of log lines shown at once.
+- `retainLog`: Keep the lines that `limit` scrolls out of view, so the log shown after the task finishes includes every line. Default: `false`.
+- `spacing`: Number of blank lines between the title and the log. Default: `1`.
+
+`success()` clears the log and `error()` keeps it on screen. Pass `{ showLog: true }` to `success()` to keep the log, or `{ showLog: false }` to `error()` to clear it.
+
 #### Task Log Groups
 
 Task logs support named groups, which allow you to organize logs into separate sections with their own headers and completion states:
@@ -1157,6 +1178,12 @@ log.step('Check files');
 <font color="#4E9A06">◆</font>  Installation complete
 <font color="#555753">│</font>
 <font color="#4E9A06">◇</font>  Check files</pre>
+
+Each method takes an options object as its second argument:
+
+- `symbol`: The prefix of the first line. Only `log.message` uses it, because the other methods set their own symbol.
+- `secondarySymbol`: The prefix of blank lines and of every line after the first. Default: a gray `│`.
+- `spacing`: Number of blank lines before the message. Default: `1`.
 
 ### Internationalization
 
