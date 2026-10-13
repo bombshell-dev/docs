@@ -145,6 +145,41 @@ args = {
 }
 ```
 
+### How values are parsed
+
+```ts twoslash
+import { parse } from "@bomb.sh/args"
+
+const args = parse(process.argv.slice(2), {
+  string: ['zip'],
+});
+```
+the variable `args` will be equals to (assuming CLI parameters are `my-command build 2 --port 3000 --zip 08 --open true -rf src --db.host=localhost`):
+```js
+args = {
+    _: ['build', 2],
+    port: 3000,
+    zip: '08',
+    open: true,
+    r: true,
+    f: 'src',
+    db: { host: 'localhost' }
+}
+```
+
+- Values that look like numbers become numbers, including <var>arguments</var>. List an <var>option</var> in `string` to keep its value as text, as `zip` does above.
+- `true` and `false` become booleans. For an <var>option</var> listed in `boolean`, any value other than `true`, such as `--open=yes`, becomes `false`.
+- A value wrapped in matching quotes loses them.
+- `--name=value` and `-n=value` set a value directly.
+- `-rf` sets each letter to `true`. The last letter takes the next <var>argument</var> as its value when it does not start with `-`, so `-rf src` sets `f` to `'src'`.
+- A dot in the name nests the value, so `--db.host=localhost` becomes `{ db: { host: 'localhost' } }`.
+- An <var>option</var> used more than once keeps its last value, unless it is listed in `array`.
+
+<Aside type="caution">
+    In 0.3.1, two dotted <var>options</var> with the same parent overwrite each other: `--db.host=localhost --db.port=5432` keeps only `port`.
+    `--` does not end option parsing either, so <var>options</var> after it are still parsed.
+</Aside>
+
 ### Special <var>option</var>
 
 #### Negation variant
