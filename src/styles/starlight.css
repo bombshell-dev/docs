@@ -664,6 +664,15 @@ ul.starlight-sidebar-topics
     margin-top: auto;
   }
 
+  /* Center the topics between the header and the rule */
+  .starlight-sidebar-topics > li:first-child {
+    margin-top: auto;
+  }
+
+  .starlight-sidebar-topics > li:last-of-type {
+    margin-bottom: 1rem;
+  }
+
   /* When the title panel grows to meet a taller topics column, anchor the
      title to the bottom of the available space, just above the shared rule */
   main .content-panel:first-of-type {
