@@ -100,6 +100,7 @@ export default defineConfig({
 						compilerOptions: {
 							module: 99,
 							moduleResolution: 100,
+							lib: ["lib.es2022.d.ts"],
 							baseUrl: docsRoot,
 							paths: {
 								"@bomb.sh/tty": ["node_modules/@bomb.sh/tty/esm/mod.d.ts"],
@@ -163,12 +164,12 @@ export default defineConfig({
 						icon: "seti:hex",
 						link: "/clack/basics/getting-started",
 						items: [
-							{ label: "Overview", autogenerate: { directory: "clack/basics" } },
+							{ label: "Overview", items: [{ autogenerate: { directory: "clack/basics" } }] },
 							{
 								label: "Packages",
-								autogenerate: { directory: "clack/packages" },
+								items: [{ autogenerate: { directory: "clack/packages" } }],
 							},
-							{ label: "Guides", autogenerate: { directory: "clack/guides" } },
+							{ label: "Guides", items: [{ autogenerate: { directory: "clack/guides" } }] },
 						],
 					},
 					{
@@ -200,8 +201,8 @@ export default defineConfig({
 						icon: "seti:config",
 						link: "/tty/basics/getting-started",
 						items: [
-							{ label: "Overview", autogenerate: { directory: "tty/basics" } },
-							{ label: "Guides", autogenerate: { directory: "tty/guides" } },
+							{ label: "Overview", items: [{ autogenerate: { directory: "tty/basics" } }] },
+							{ label: "Guides", items: [{ autogenerate: { directory: "tty/guides" } }] },
 							{
 								label: "API",
 								items: [
@@ -221,8 +222,8 @@ export default defineConfig({
 						icon: "random",
 						link: "/router/basics/overview",
 						items: [
-							{ label: "Overview", autogenerate: { directory: "router/basics" } },
-							{ label: "Guides", autogenerate: { directory: "router/guides" } },
+							{ label: "Overview", items: [{ autogenerate: { directory: "router/basics" } }] },
+							{ label: "Guides", items: [{ autogenerate: { directory: "router/guides" } }] },
 							{ label: "API", items: [{ label: "Reference", link: "/router/api/" }] },
 						],
 					},

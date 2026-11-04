@@ -448,7 +448,7 @@
     padding-inline-end: 1rem;
   }
 
-  starlight-menu-button button {
+  .sl-menu-button {
     top: unset;
     bottom: calc(
       (var(--sl-mobile-toc-height) - var(--sl-menu-button-size)) / 2
