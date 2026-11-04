@@ -50,7 +50,8 @@ import SiteTitle from './SiteTitle.astro';
 		/* Stretch through the nav's block padding so the search runs the full
 		   nav height — its side borders become vertical grid bars. */
 		align-self: stretch;
-		margin-block: calc(-1 * var(--sl-nav-pad-y));
+		margin-block-start: calc(-1 * var(--header-pad-start));
+		margin-block-end: calc(-1 * var(--header-pad-end));
 	}
 
 	@media (min-width: 50rem) {
@@ -84,6 +85,7 @@ import SiteTitle from './SiteTitle.astro';
 		color: var(--sl-color-text);
 		text-decoration: none;
 		padding-inline: var(--space-150);
+		padding-block-end: 3px;
 		border-radius: 4px;
 		transition: color 300ms cubic-bezier(0.23, 1, 0.32, 1);
 	}
