@@ -7,7 +7,7 @@
     "start": "astro dev",
     "prebuild": "pnpm run snapshot && pnpm run generate:docs-index",
     "predev": "pnpm run generate:docs-index",
-    "build": "astro build && cp public/_headers dist/_headers",
+    "build": "NODE_OPTIONS=--max-old-space-size=8192 astro build && cp public/_headers dist/_headers",
     "preview": "astro preview",
     "astro": "astro",
     "test": "node --experimental-strip-types --test \"src/**/*.test.ts\"",
@@ -15,7 +15,7 @@
     "generate:docs-index": "node --experimental-strip-types ./scripts/generate-docs-index.ts"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.37.1",
+    "@astrojs/starlight": "^0.42.8",
     "@bomb.sh/args": "^0.3.1",
     "@bomb.sh/router": "^0.8.0",
     "@bomb.sh/tty": "^0.9.0",
@@ -29,12 +29,12 @@
     "@xterm/addon-web-links": "^0.12.0",
     "@xterm/xterm": "^6.0.0",
     "arktype": "^2.2.0",
-    "astro": "^5.16.6",
-    "astro-mermaid": "^2.1.0",
-    "expressive-code-twoslash": "^0.5.3",
+    "astro": "^7.4.5",
+    "astro-mermaid": "^2.2.0",
+    "expressive-code-twoslash": "^0.6.1",
     "mermaid": "^11.16.0",
     "sharp": "^0.33.5",
-    "starlight-sidebar-topics": "^0.6.2"
+    "starlight-sidebar-topics": "^0.9.0"
   },
   "devDependencies": {
     "astro-vtbot": "^3.1.0",
