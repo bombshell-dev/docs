@@ -355,6 +355,36 @@ Options:
 - `cursorAt`: The option the cursor starts on. Default: the first option.
 - `required`: When `true`, submitting with nothing selected shows `Please select at least one option.` Set it to `false` to allow an empty array. Default: `true`.
 
+If your options live in a constant, add `as const` and TypeScript keeps track of exactly which values can come back (v1.9.0). That pays off as soon as you hand the result to code that only accepts those values:
+
+```ts twoslash
+import { isCancel, multiselect } from '@clack/prompts';
+
+const tools = [
+  { value: 'eslint', label: 'ESLint' },
+  { value: 'prettier', label: 'Prettier' },
+  { value: 'vitest', label: 'Vitest' },
+] as const;
+
+const picked = await multiselect({
+  message: 'Which tools do you want?',
+  options: tools,
+  initialValues: ['prettier'] as const,
+});
+
+if (!isCancel(picked)) {
+  for (const tool of picked) {
+    install(tool);
+  }
+}
+
+declare function install(
+  tool: 'eslint' | 'prettier' | 'vitest',
+): void;
+```
+
+If you pass `initialValues` too, mark that array `as const` as well. Otherwise TypeScript widens the values back to `string`, and `install(tool)` stops compiling. Before 1.9.0, passing a readonly array like `tools` was a type error.
+
 ### Select by key
 
 `selectKey` shows each option with a visible key (the option `value`, typically one character). The user presses that key instead of moving a cursor with arrows—useful for compact yes/no/maybe menus or vim-style shortcuts.
@@ -378,6 +408,26 @@ if (isCancel(action)) {
 ```
 
 `initialValue` highlights that option's key when the prompt opens. It does not select it, so the user still presses a key to choose.
+
+Sometimes an option should stay on screen even though it can't be picked right now. Set `disabled: true` on it (v1.9.0). clack dims it, ignores its key, and won't use it as the `initialValue` either. Use the `hint` to tell people why it's off:
+
+```ts twoslash
+import { selectKey } from '@clack/prompts';
+
+const action = await selectKey({
+  message: 'What next?',
+  options: [
+    {
+      value: 'd',
+      label: 'Deploy',
+      disabled: true,
+      hint: 'needs a clean branch',
+    },
+    { value: 'r', label: 'Run tests' },
+    { value: 'q', label: 'Quit' },
+  ],
+});
+```
 
 ### Autocomplete
 
