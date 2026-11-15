@@ -1343,7 +1343,7 @@ const name = await new TextPrompt({
     return [
       title,
       `${S_BAR}  ${this.userInputWithCursor}`,
-      ...formatInstructionFooter(['Enter: submit'], true),
+      ...formatInstructionFooter(undefined, ['Enter: submit'], true),
     ].join('\n');
   },
 }).prompt();
@@ -1360,7 +1360,7 @@ if (isCancel(name)) process.exit(0);
 | --- | --- |
 | `symbol(state)` | The colored step symbol for a prompt state: cyan `◆` while active, dim `◆` while validating, green `◇` on submit, red `■` on cancel, and yellow `▲` on error. |
 | `symbolBar(state)` | The guide bar `│` in the same color. Returns `undefined` while validating. |
-| `formatInstructionFooter(instructions, hasGuide)` | Joins keyboard hints with ` • ` and returns the footer lines. With `hasGuide`, it adds a cyan `│` prefix and a closing `└` line. |
+| `formatInstructionFooter(output, instructions, hasGuide)` | Joins keyboard hints with ` • `, wraps them to the width of the `output` stream (stdout when `undefined`), and returns the footer lines. With `hasGuide`, it adds a cyan `│` prefix and a closing `└` line. |
 | `SELECT_INSTRUCTIONS` | The hints `select` shows: `↑/↓ to navigate` and `Enter: confirm`. |
 | `MULTISELECT_INSTRUCTIONS` | The hints `multiselect` shows, which add `Space: select`. |
 | `unicode` | `true` when the terminal supports Unicode. |
