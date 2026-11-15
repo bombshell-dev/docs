@@ -87,9 +87,14 @@
     background-repeat: no-repeat;
   }
 
-  /* bomb.sh hatched separator strip along the bottom of the navbar.
-     Nav content stays centered across the full nav height; the strip
-     overlays the bottom edge like the homepage separator. */
+  header.header {
+    --header-pad-start: calc(var(--s-grid-padding) + var(--s-grid-width));
+    --header-pad-end: var(--hatch-height);
+    padding-block: var(--header-pad-start) var(--header-pad-end);
+  }
+
+  /* bomb.sh hatched separator strip along the bottom of the navbar,
+     overlaying its bottom edge like the homepage separator. */
   header.header::after {
     content: "";
     position: absolute;
@@ -358,11 +363,18 @@
     }
   }
 
+  @media (max-width: 49.9375rem) {
+    site-search {
+      padding-block: var(--header-pad-start) var(--header-pad-end);
+    }
+  }
+
   @media (min-width: 50rem) {
     site-search button[data-open-modal] {
       border-radius: 0;
       max-width: 100%;
       height: 100%;
+      padding-block: var(--header-pad-start) var(--header-pad-end);
       border-block: none;
       border-inline: 1px solid var(--surface-border-fill);
       /* No fill — the nav's hatch strip stays visible through the section */
@@ -445,7 +457,7 @@
   }
 
   [data-has-sidebar] header.header {
-    padding-inline-end: 1rem;
+    padding-inline-end: calc(var(--sl-nav-pad-x) + 0.1rem);
   }
 
   starlight-menu-button button {
