@@ -207,6 +207,7 @@ p.on('cancel', () => {
 8. **SelectKeyPrompt**: For key-based selection
    - Submits the option whose `value` starts with the pressed key
    - Matches keys case-insensitively unless `caseSensitive` is `true`
+   - Skips disabled options: their key does nothing, and they can't be the `initialValue` (v1.6.0)
 
 9. **DatePrompt**: For structured date entry
    - Segment-based editing (year, month, day) with `DateFormat` (`YMD`, `MDY`, or `DMY`)
